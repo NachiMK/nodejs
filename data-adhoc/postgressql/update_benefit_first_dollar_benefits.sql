@@ -1,0 +1,4 @@
+UPDATE "PlanBenefits" SET "FirstDollarVisits" = "CoverageVisitLimit", "IsGrouped" = true WHERE "Benefit" = 'PrimaryCarePhysicianOfficeVisit' AND "CoverageVisitLimit" >= 1;
+UPDATE "PlanBenefits" SET "FirstDollarVisits" = "CoverageVisitLimit", "IsGrouped" = true WHERE "Benefit" = 'MentalHealthOutpatient' AND "CoverageVisitLimit" >= 1;
+UPDATE "PlanBenefits" SET "FirstDollarVisits" = "CoverageVisitLimit", "IsGrouped" = true WHERE "Benefit" = 'SpecialistVisit' AND "CoverageVisitLimit" >= 1;
+UPDATE "PlanBenefits" SET "FirstDollarVisits" = "CoverageVisitLimit", "IsGrouped" = true WHERE "Benefit" = 'UrgentCare' AND "CoverageVisitLimit" >= 1;

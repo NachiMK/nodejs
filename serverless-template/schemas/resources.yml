@@ -1,0 +1,15 @@
+-
+  path:        examples/ping
+  description: Ping / Pong Response, Including Data About Service Uptime Info [GET]
+-
+  path:        examples/get
+  description: Responds to Incoming HTTP Request Event [GET]
+-
+  path:        examples/post
+  description: Responds to Incoming HTTP Request Event [POST]
+-
+  path:        examples/proxy/{acronym}
+  description: Wraps (In Promise Func) The Fetching of Data From an External (Medical) Acronym API [GET]
+# -
+#   path:        your/path/name/{including}/all/variables/{and}/{+proxy}
+#   description: Dexcription Of The Path Here [GET]

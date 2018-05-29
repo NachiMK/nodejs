@@ -1,0 +1,10 @@
+$schema:    http://json-schema.org/draft-04/schema#
+title:      Standard Error Response Object
+type:       object
+properties:
+  errors:
+    items:
+      type:      string
+    minItems:    0
+    type:        array
+    uniqueItems: true

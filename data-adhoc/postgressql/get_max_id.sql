@@ -1,0 +1,1 @@
+select max("ServiceAreaID") FROM public."ServiceAreas"

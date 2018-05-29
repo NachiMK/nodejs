@@ -1,0 +1,41 @@
+# We want the latest-stable version of Node 'v9.x.x'
+# (Helpful list of versions here: https://github.com/nodejs/Release)
+# As of Feb 27, 2018 the latest version is 'v9.6.1'
+image: node:9
+
+pipelines:
+  default:
+    - step:
+        caches: [ 'node' ]
+        script:
+          - npm i -g npm@5.7.1
+          - node --version
+          - npm --version
+          - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
+          - npm ci
+          - npm test
+
+  branches:
+    master:
+      - step:
+          caches: [ 'node' ]
+          script:
+            - npm i -g npm@5.7.1
+            - node --version
+            - npm --version
+            - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
+            - npm install
+            - npm ci
+            - npm run deploy:prod
+
+    develop:
+      - step:
+          caches: [ 'node' ]
+          script:
+            - npm i -g npm@5.7.1
+            - node --version
+            - npm --version
+            - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
+            - npm install
+            - npm ci
+            - npm run deploy:int

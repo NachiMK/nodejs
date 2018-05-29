@@ -1,0 +1,40 @@
+###################################################################
+##   FYI  ————————————————————————————————————————————————————   ##
+##   Usually, nothing needs to be changed in this config file.   ##
+##   Most everything you need to configure is in 'src/config/'   ##
+###################################################################
+
+service:                  ${file(package.json):name} # TODO: might we instead run
+# one of the js functions in ./src/utils/index.js, like `${file(env.js):getAPIBasePath}`, etc.
+frameworkVersion:         ">=1.26.0 <2.0.0"
+plugins:
+                          - 'serverless-plugin-webpack'   # must be listed FIRST
+                          - 'serverless-aws-documentation'
+                          - 'serverless-domain-manager'
+                          - 'serverless-offline'          # must be listed LAST
+package:
+  individually:           true
+  excludeDevDependencies: false
+  exclude:                ['node_modules/**/aws-sdk/**']
+custom:                   ${file(src/config/custom.yml)}
+provider:
+  name:                   aws
+  memorySize:             1024
+  timeout:                30
+  runtime:                ${self:custom.service.RUNTIME}
+  stage:                  ${self:custom.service.STAGE}
+  region:                 ${self:custom.service.REGION}
+  deploymentBucket:
+    serverSideEncryption: AES256
+  stackTags:              &stackTags
+    BASE_PATH:            ${self:custom.customDomain.basePath}
+    DOMAIN_NAME:          ${self:custom.customDomain.domainName}
+    REGION:               ${self:custom.service.REGION}
+    SERVICE:              ${self:custom.service.NAME}
+    STAGE:                ${self:custom.service.STAGE}
+    VERSION:              ${self:custom.service.VERSION}
+  # TODO: improve the (below) 'environment' function so that it exports 'stackTags'!
+  environment:            ${file(env.js):getAndSetVarsFromEnvFile}
+  iamRoleStatements:      ${file(src/config/iam-role-statements.yml)}
+functions:                ${file(src/config/functions.yml)}
+resources:                ${file(src/config/resources.yml)}

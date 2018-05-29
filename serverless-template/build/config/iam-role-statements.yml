@@ -1,0 +1,44 @@
+# These IAM roles `Allow` and `Deny` access to resources and services for this
+# particular ENTIRE serverless project!
+
+- Effect: Allow
+  Action:
+    - dynamodb:DescribeTable
+    - dynamodb:Query
+    - dynamodb:Scan
+    - dynamodb:GetItem
+    - dynamodb:PutItem
+    - dynamodb:UpdateItem
+    # - dynamodb:DeleteItem
+  Resource:
+    - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-platform-configuration*
+    - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-platform-login*
+    - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-persons*
+
+- Effect: Allow
+  Action:
+    - cognito-idp:AdminGetUser
+    - cognito-idp:AdminConfirmSignUp
+    - cognito-idp:AdminDeleteUser
+    - cognito-idp:AdminDisableUser
+    - cognito-idp:AdminEnableUser
+  Resource:
+    - ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+
+# Two more generic examples:
+
+# - Effect: Allow
+#   Action:
+#     - service:action_1
+#     - service:action_2
+#     - service:action_3
+#   Resource:
+#     - arn:aws:service:region:aws_account_number:something_1
+#     - arn:aws:service:region:aws_account_number:something_2
+#     - arn:aws:service:region:aws_account_number:something_3
+
+# - Effect: Deny
+#   Action:
+#     - service:action_name
+#   Resource:
+#     - '*'  # <— all resources

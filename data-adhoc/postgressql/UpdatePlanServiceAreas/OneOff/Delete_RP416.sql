@@ -1,0 +1,8 @@
+CREATE TABLE public."PlanServiceAreas_BAK_04132018_RP416" AS 
+SELECT * FROM "PlanServiceAreas" WHERE "HiosPlanID" = '36096IL099' AND "Year" = 2018;
+
+SELECT * FROM "PlanServiceAreas_BAK_04132018_RP416"
+
+BEGIN;
+DELETE FROM "PlanServiceAreas" WHERE "HiosPlanID" = '36096IL099' AND "Year" = 2018;
+COMMIT;

@@ -1,0 +1,1 @@
+UPDATE "PlanBenefits" SET "ServiceNotCovered" = FALSE WHERE "Benefit" NOT IN ('Acupuncture', 'Chiropractic') AND "ServiceNotCovered" = TRUE

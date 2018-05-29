@@ -1,0 +1,25 @@
+-
+  contentType: application/json
+  description: Example Request [GET]
+  name:        ExampleGetRequest
+  schema:      ${file(build/routes/examples/get/request.json)}
+-
+  contentType: application/json
+  description: Example Response [GET]
+  name:        ExampleGetResponse
+  schema:      ${file(build/routes/examples/get/response.json)}
+-
+  contentType: application/json
+  description: Example Request [POST]
+  name:        ExamplePostRequest
+  schema:      ${file(build/routes/examples/get/request.json)}
+-
+  contentType: application/json
+  description: Example Response [POST]
+  name:        ExamplePostResponse
+  schema:      ${file(build/routes/examples/get/response.json)}
+-
+  contentType: application/json
+  description: Standard Error Response Object
+  name:        ErrorResponse
+  schema:      ${file(schemas/_error.yml)}

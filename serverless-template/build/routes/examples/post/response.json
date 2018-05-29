@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Example POST | Response Schema",
+    "definitions": {},
+    "properties": {
+        "message": {
+            "description": "Example POST response success message.",
+            "id": "/properties/message",
+            "type": "string"
+        },
+        "input": {
+            "description": "Example POST response event object.",
+            "id": "/properties/input",
+            "type": "object"
+        },
+        "incomingRequestBody": {
+            "description": "Example POST incoming request body.",
+            "id": "/properties/input",
+            "type": "object"
+        }
+    },
+    "type": "object"
+}
