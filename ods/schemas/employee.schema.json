@@ -1,0 +1,522 @@
+{
+    "title": "Employee",
+    "type": "object",
+    "properties": {
+        "AccountCreated": {
+            "format": "date-time",
+            "type": "string",
+            "description": "When the person was first created",
+            "aliases": [
+                "DateCreated"
+            ]
+        },
+        "AlternateEmailAddress": {
+            "format": "email",
+            "type": "string",
+            "description": "Secondary email address"
+        },
+        "AlternateEmailAddressType": {
+            "type": "string",
+            "enum": [
+                "Home",
+                "Work"
+            ]
+        },
+        "AlternatePhoneNumber": {
+            "type": "string",
+            "maxLength": 10,
+            "minLength": 10
+        },
+        "AlternatePhoneNumberSmsEnabled": {
+            "type": "boolean",
+            "description": "To know if we can send out SMS campaigns"
+        },
+        "AlternatePhoneType": {
+            "type": "string",
+            "enum": [
+                "Mobile",
+                "Home",
+                "Work",
+                "Unknown"
+            ]
+        },
+        "BatchPublicKey": {
+            "description": "Each person in a census import batch will have this to help troubleshoot import issues",
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 36
+        },
+        "BenefitsEffectiveDate": {
+            "format": "date",
+            "type": "string",
+            "description": "Used to provide an effective date for health bundle cart and benefits tables. Allows overriding the client level BenefitsEffectiveDate for special enrollment."
+        },
+        "BenefitsEligible": {
+            "type": "boolean",
+            "default": true,
+            "description": "We should not allow anyone that is not eligible in our system.  If they fall out of eligibility we can deactivate them.  Leaving this in case there is something in our system that is still using it."
+        },
+        "City": {
+            "type": "string"
+        },
+        "ClientPublicKey": {
+            "description": "The company the person is a member of.",
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 36
+        },
+        "CobraBenefitsEffectiveDate": {
+            "format": "date",
+            "type": "string",
+            "description": "If the employee elects to extend their benefits via COBRA this is the date that those benefits would become effective.  The is always the first of the month following TerminationDate."
+        },
+        "CobraBenefitsEligibleEndDate": {
+            "format": "date",
+            "type": "string",
+            "description": "The end of the window of time that the employee can decide if they want to extend their benefits via COBRA. This date is inclusive"
+        },
+        "CobraBenefitsEligibleStartDate": {
+            "format": "date",
+            "type": "string",
+            "description": "The start of the window of time that the employee can decide if they want to extend their benefits via COBRA. This date is inclusive"
+        },
+        "CobraContinueBenefits": {
+            "type": "object",
+            "description": "list of benefits being continued"
+        },
+        "CobraLetterPostDate": {
+            "format": "date",
+            "type": "string",
+            "description": "When manually entered, this tracks the date the COBRA letter sent to the employee was postmarked and is used to determine the CobraBenefitsEligibleStartDate if it is later than the CobraBenefitsEffectiveDate."
+        },
+        "CobraMonthsOnExisting": {
+            "type": "number",
+            "description": "The number of months the employee has been on COBRA before migrating to Hixme.    Leave blank if not on COBRA."
+        },
+        "CobraStatus": {
+            "type": "string",
+            "description": "Current status of COBRA",
+            "enum": [
+                "Pending",
+                "Elected",
+                "Declined",
+                "Ineligible",
+                "Canceled - Non-payment"
+            ]
+        },
+        "CompanyEmployeeId": {
+            "type": "string",
+            "description": "The id provided by the company for the employee.  The dependent also has a matching id so we know they are related"
+        },
+        "CompanyEmployeeIdEncrypted": {
+            "type": "string"
+        },
+        "ContributionGroup": {
+            "type": "string",
+            "default": "default",
+            "exists": {
+                "tableName": "client-contributions",
+                "indexName": "ClientPublicKey"
+            },
+            "description": "Optional field that allows a person to override the default contribution to get special bundle rates"
+        },
+        "County": {
+            "type": "string"
+        },
+        "CustomField1": {
+            "type": "string",
+            "description": "Not used by Hixme but passed through for payroll and funding"
+        },
+        "CustomField2": {
+            "type": "string",
+            "description": "Not used by Hixme but passed through for payroll and funding"
+        },
+        "CustomField3": {
+            "type": "string",
+            "description": "Not used by Hixme but passed through for payroll and funding"
+        },
+        "CustomField4": {
+            "type": "string",
+            "description": "Not used by Hixme but passed through for payroll and funding"
+        },
+        "DateOfBirth": {
+            "format": "date",
+            "type": "string",
+            "description": "Used to know their age as of the BenefitsEffectiveDate as this can affect rates and elgibility"
+        },
+        "Department": {
+            "type": "string",
+            "description": "Will be used in the future"
+        },
+        "DepartmentCode": {
+            "type": "string",
+            "description": "Not used by Hixme but passed through for payroll and funding"
+        },
+        "CompanyCode": {
+            "type": "string",
+            "description": "Not used by Hixme but passed through for payroll and funding"
+        },
+        "DivisionCode": {
+            "type": "string",
+            "description": "Currently used by HCC for payroll deductions"
+        },
+        "EmailAddress": {
+            "format": "email",
+            "type": "string",
+            "unique": {
+                "tableName": "persons"
+            },
+            "description": "Not required, but highly recommended for employee. Otherwise phone number must be provided. Must be unique, used for login and carrier application submission"
+        },
+        "EmailAddressType": {
+            "type": "string",
+            "enum": [
+                "Home",
+                "Work"
+            ]
+        },
+        "EmployeePublicKey": {
+            "description": "Used to identify the employee in the family.  All members will have matching EmployeePublicKey",
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 36
+        },
+        "EmploymentStatus": {
+            "type": "string",
+            "description": "Set to Terminated to show Cobra rates.  Full-Time and Part-Time are required for ACA reporting",
+            "enum": [
+                "Full-Time",
+                "Part-Time",
+                "Retired",
+                "Terminated",
+                "Terminated No COBRA",
+                "Leave"
+            ]
+        },
+        "EnrollmentEndDate": {
+            "format": "date",
+            "type": "string",
+            "description": "Optional.  Used to allow the person to override client level enrollment period for special enrollment. This date is inclusive."
+        },
+        "EnrollmentStartDate": {
+            "format": "date",
+            "type": "string",
+            "description": "Optional.  Used to allow the person to override client level enrollment period for special enrollment. This date is inclusive."
+        },
+        "ExistingMedicalPlanEnrollmentTier": {
+            "type": "string",
+            "description": "Optional.  This is to capture their existing group plan enrollment tier and used to be used for pricing. ContributionGroup is now used.",
+            "enum": [
+                "EE",
+                "EF",
+                "ES",
+                "EC",
+                "EE plus 1",
+                "EE plus 2 or more"
+            ]
+        },
+        "ExistingMedicalPlanName": {
+            "type": "string",
+            "description": "Optional.  This is to capture their existing group plan name and used to be used for special pricing. ContributionGroup is now used."
+        },
+        "ExistingMedicalPlanWaived": {
+            "type": "boolean",
+            "description": "Used to be used know if they waived their existing group plan.  If not waived, plan name and tier were used for grandfathering.   ContributionGroup is now used."
+        },
+        "FirstName": {
+            "type": "string"
+        },
+        "Gender": {
+            "type": "string",
+            "enum": [
+                "Male",
+                "Female"
+            ]
+        },
+        "HireDate": {
+            "format": "date",
+            "type": "string",
+            "description": "Used to generate a BenefitsEffectiveDate for a special enrollments period."
+        },
+        "HixmeEmailAlias": {
+            "format": "email",
+            "type": "string",
+            "description": "We generate this email for use during carrier submission so they don't get spammed durring the submission"
+        },
+        "Id": {
+            "description": "Unique person key",
+            "type": "string",
+            "format": "uuid"
+        },
+        "IdentityCreated": {
+            "type": "boolean",
+            "default": false,
+            "description": "Used by cognito user creation to know if the identity has been created yet"
+        },
+        "IdentityVerified": {
+            "type": "boolean",
+            "default": false,
+            "description": "Used by cognito user creation to know if the identity has been verified yet"
+        },
+        "IncludedInMedical": {
+            "type": "boolean",
+            "default": true,
+            "description": "If false, allows person to quickly bypass questions and bundle selection"
+        },
+        "IsActive": {
+            "type": "boolean",
+            "default": true,
+            "description": "If false, person will not show up in lists"
+        },
+        "IsEligibleForEmployeerPaidBenefits": {
+            "type": "boolean",
+            "description": "True when they not a child or they are under 26 years old"
+        },
+        "IsExempt": {
+            "type": "boolean",
+            "description": "Exempt employees are salaried and are exempt from getting overtime"
+        },
+        "IsOnGroupHealth": {
+            "type": "boolean",
+            "description": "If person has unmigrated from inidividual to group health."
+        },
+        "IsTestUser": {
+            "type": "boolean",
+            "default": false,
+            "description": "Allows test users to be excluded from reports"
+        },
+        "IsValid": {
+            "type": "boolean",
+            "default": true,
+            "description": "If person has passed model validation, will be true.  Used by front end to know if they need to edit thier personal info because rating area or something else important has not been set."
+        },
+        "JobTitle": {
+            "type": "string",
+            "description": "Was used by one company to filter which benefits the person was shown"
+        },
+        "LastName": {
+            "type": "string"
+        },
+        "MarriageStatus": {
+            "type": "string",
+            "description": "Needed for some carrier sites to submit applications",
+            "enum": [
+                "Single",
+                "Married",
+                "Domestic Partner",
+                "Divorced",
+                "Widowed",
+                "Other"
+            ]
+        },
+        "MiddleName": {
+            "type": "string"
+        },
+        "PayrollClass": {
+            "type": "string",
+            "description": "Will be used in the future"
+        },
+        "PayrollCycle": {
+            "type": "integer",
+            "description": "Used to show appropriate payroll cycle",
+            "enum": [
+                12,
+                24,
+                26,
+                52
+            ]
+        },
+        "PhoneNumber": {
+            "type": "string",
+            "maxLength": 10,
+            "minLength": 10
+        },
+        "PhoneNumberSmsEnabled": {
+            "type": "boolean",
+            "description": "To know if we can send out SMS campaigns"
+        },
+        "PhoneType": {
+            "type": "string",
+            "enum": [
+                "Mobile",
+                "Home",
+                "Work",
+                "Unknown"
+            ]
+        },
+        "PostalCode": {
+            "type": "string",
+            "maxLength": 5,
+            "minLength": 5
+        },
+        "PreviousCoverageEndDate": {
+            "format": "date",
+            "type": "string",
+            "description": "The last day of coverage after termination"
+        },
+        "RatingArea": {
+            "description": "Affects the health insurance premiums",
+            "maximum": 99,
+            "type": "integer",
+            "minimum": 1,
+            "even": true,
+            "range": [
+                1,
+                99
+            ],
+            "exclusiveRange": true
+        },
+        "Relationship": {
+            "type": "string",
+            "enum": [
+                "Employee"
+            ]
+        },
+        "SSN": {
+            "description": "This is required mostly for use as a person id so when a census update is done we can identify which person is being updated because some companies don't have a CompanyEmployeeId.   It is optional for most carrier health applications.",
+            "type": "string",
+            "maxLength": 9,
+            "minLength": 9,
+            "encrypt": {
+                "when": "at-rest",
+                "related": "SSNEncrypted"
+            }
+        },
+        "SSNEncrypted": {
+            "type": "string"
+        },
+        "SSNHmac": {
+            "type": "string",
+            "unique": {
+                "tableName": "persons"
+            },
+            "description": "Used for ensuring SSN is unique"
+        },
+        "SSNLastFour": {
+            "type": "string",
+            "maxLength": 4,
+            "minLength": 4
+        },
+        "Salary": {
+            "type": "number",
+            "default": 0,
+            "description": "Used for calculating gap financing.  If zero no gap will be available.   ACA, Payroll, and Kashable need it too. Voluntary ADD uses to calculate max limit on benefit provided"
+        },
+        "Smoker": {
+            "type": "boolean",
+            "description": "Some states have higher health insurance premiums if you smoke"
+        },
+        "StateProvince": {
+            "description": "Uppercase two letter state the worker lives in",
+            "type": "string",
+            "maxLength": 2,
+            "minLength": 2
+        },
+        "StreetAddress": {
+            "type": "string",
+            "description": "Home address line one"
+        },
+        "StreetAddressExt": {
+            "type": "string",
+            "description": "Home address line two"
+        },
+        "TerminationDate": {
+            "format": "date",
+            "type": "string",
+            "description": "Used to calculate Cobra eligible date"
+        },
+        "UserRole": {
+            "type": "string",
+            "default": "PlatformEmployee",
+            "description": "Role used for access control",
+            "enum": [
+                "PlatformEmployee",
+                "PlatformHixmeAdmin",
+                "PlatformSalesRep",
+                "PlatformClientAdmin"
+            ]
+        },
+        "VerifiedPersonalInfo": {
+            "type": "boolean",
+            "default": false,
+            "description": "True if the person has verfied their personal info in enrollme"
+        }
+    },
+    "dynamicDefaults": {
+        "id": "uuid"
+    },
+    "required": [
+        "BenefitsEligible",
+        "City",
+        "ClientPublicKey",
+        "County",
+        "DateOfBirth",
+        "EmployeePublicKey",
+        "EmploymentStatus",
+        "FirstName",
+        "Gender",
+        "HireDate",
+        "IncludedInMedical",
+        "IsActive",
+        "IsExempt",
+        "LastName",
+        "MarriageStatus",
+        "PayrollCycle",
+        "PostalCode",
+        "RatingArea",
+        "Relationship",
+        "Smoker",
+        "StateProvince",
+        "StreetAddress",
+        "SSN"
+    ],
+    "censusProperties": [
+        "Action",
+        "CompanyEmployeeId",
+        "QualifyingEventType",
+        "QualifyingEventDate",
+        "Relationship",
+        "FirstName",
+        "MiddleName",
+        "LastName",
+        "Gender",
+        "DateOfBirth",
+        "MarriageStatus",
+        "Smoker",
+        "SSN",
+        "StreetAddress",
+        "StreetAddressExt",
+        "City",
+        "PostalCode",
+        "StateProvince",
+        "County",
+        "EmailAddress",
+        "EmailAddressType",
+        "AlternateEmailAddress",
+        "AlternateEmailType",
+        "PhoneNumber",
+        "PhoneType",
+        "AlternatePhoneNumber",
+        "AlternatePhoneType",
+        "BenefitsEligible",
+        "EmploymentStatus",
+        "IsExempt",
+        "HireDate",
+        "CobraMonthsOnExisting",
+        "DivisionCode",
+        "Department",
+        "JobTitle",
+        "PayrollClass",
+        "PayrollCycle",
+        "ContributionGroup",
+        "Salary",
+        "TerminationDate",
+        "ExistingMedicalPlanWaived",
+        "ExistingMedicalPlanEnrollmentTier",
+        "ExistingMedicalPlanName",
+        "CustomField1",
+        "CustomField2",
+        "CustomField3",
+        "CustomField4"
+    ]
+}

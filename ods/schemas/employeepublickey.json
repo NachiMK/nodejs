@@ -1,0 +1,14 @@
+{
+    "title": "EmployeePublicKey",
+    "type": "object",
+    "properties": {
+        "EmployeePublicKey": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        }
+    },
+    "required": [
+        "EmployeePublicKey"
+    ]
+}

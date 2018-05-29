@@ -1,0 +1,27 @@
+
+{
+    "Persons" : [
+        {
+        "Id": "string",
+        "ReadableId": "string",
+        "FirstName": "string",
+        "LastName": "string",
+        "Gender": "string",
+        "DateOfBirth": "string",
+        "IsActive": "string",
+        "PhoneNumber": "string",
+        "Salary" : "string",
+        "Benefits": [
+            {
+                "PBId": "string",
+                "ReadableId": "string",
+                "PersonId": "string",
+                "BenefitType": "string",
+                "BenefitName": "string",
+                "EffectiveDate": "string",
+                "IsActive": "string"
+            }
+        ]
+        }
+    ]
+}

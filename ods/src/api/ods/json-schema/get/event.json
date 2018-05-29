@@ -1,0 +1,16 @@
+{
+    "pathParameters": {
+        "Datafile": "s3://ods-files/persons-etl.json",
+        "Output": "s3://ods-files/complete",
+        "FilePrefix": "",
+        "Overwrite": "Yes"
+    },
+    "requestContext": {
+        "authorizer": {
+            "claims": {
+                "custom:user-role": "PlatformEmployee",
+                "cognito:username": "e768256d-cb16-46fa-bfd6-6ff1d637bd2b"
+            }
+        }
+    }
+}

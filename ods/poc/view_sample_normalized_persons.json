@@ -1,0 +1,334 @@
+{
+  "root": [
+    {
+      "Id": 1,
+      "FirstName": "John",
+      "LastName": "Smith",
+      "Gender": "M",
+      "DateOfBirth": "1976-01-01",
+      "IsActive": true,
+      "Salary": 100,
+      "PhoneNumber": 8188188181,
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 0
+    },
+    {
+      "Id": 2,
+      "FirstName": "Jane",
+      "LastName": "Doe",
+      "Gender": "F",
+      "DateOfBirth": "1976-01-02",
+      "IsActive": true,
+      "Salary": 200,
+      "PhoneNumber": "8188187171",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 17
+    },
+    {
+      "Id": 3,
+      "FirstName": "Raj",
+      "LastName": "Smith",
+      "Gender": "M",
+      "DateOfBirth": "1976-01-03",
+      "Salary": 150,
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 30
+    },
+    {
+      "Id": 4,
+      "FirstName": "Ron",
+      "LastName": "K",
+      "Gender": "M",
+      "DateOfBirth": "1976-01-04",
+      "IsActive": true,
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 33
+    },
+    {
+      "Id": 5,
+      "FirstName": "Bruce",
+      "LastName": "Lee",
+      "Gender": "M",
+      "DateOfBirth": "1946-01-03",
+      "Salary": 150,
+      "PhoneNumber": 8181001000,
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 35
+    },
+    {
+      "Id": 6,
+      "FirstName": "Jackie",
+      "LastName": "Chan",
+      "Gender": "M",
+      "DateOfBirth": "1966-01-03",
+      "Salary": 165,
+      "Address": "Aguora hills, CA",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 36
+    }
+  ],
+  "Spouse": [
+    {
+      "Id": 100,
+      "SpouseName": "Mrs.Smith",
+      "SpouseDOB": "1979-01-01",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 1,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "Id": 101,
+      "SpouseName": "Mr.Doe",
+      "SpouseDOB": "1979-01-01",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 18,
+      "Parent.Batch_Unique_Id.0": 17
+    },
+    {
+      "Id": 103,
+      "SpouseName": "Mrs.Raj",
+      "SpouseDOB": "1979-01-01",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 31,
+      "Parent.Batch_Unique_Id.0": 30
+    },
+    {
+      "Id": 104,
+      "SpouseName": "Mrs.K",
+      "SpouseDOB": "1979-01-01",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 34,
+      "Parent.Batch_Unique_Id.0": 33
+    }
+  ],
+  "Children": [
+    {
+      "ArrayIndex": 0,
+      "ArrayValue": "Child1",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 2,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 1,
+      "ArrayValue": "Child2",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 3,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 0,
+      "ArrayValue": "Child1",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 19,
+      "Parent.Batch_Unique_Id.0": 17
+    },
+    {
+      "ArrayIndex": 1,
+      "ArrayValue": "Child2",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 20,
+      "Parent.Batch_Unique_Id.0": 17
+    },
+    {
+      "ArrayIndex": 0,
+      "ArrayValue": "Child1",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 32,
+      "Parent.Batch_Unique_Id.0": 30
+    }
+  ],
+  "Benefits": [
+    {
+      "Id": 1.1,
+      "BenefitType": "Health",
+      "BenefitName": "HealthPlan",
+      "EffectiveDate": "2017-10-10",
+      "IsActive": "1",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 4,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "Id": 1.2,
+      "BenefitType": "Vision",
+      "BenefitName": "VisionPlan",
+      "EffectiveDate": "2017-10-10",
+      "IsActive": "1",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 11,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "Id": 2.1,
+      "BenefitType": "Health",
+      "BenefitName": "HealthPlan",
+      "IsActive": "1",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 21,
+      "Parent.Batch_Unique_Id.0": 17
+    },
+    {
+      "Id": 2.2,
+      "BenefitType": "Vision",
+      "BenefitName": "VisionPlan",
+      "IsActive": "1",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 26,
+      "Parent.Batch_Unique_Id.0": 17
+    }
+  ],
+  "CoveredBenefits": [
+    {
+      "ArrayIndex": 0,
+      "ArrayValue": "Checkup",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 5,
+      "Parent.Batch_Unique_Id.1": 4,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 1,
+      "ArrayValue": "Surgery",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 6,
+      "Parent.Batch_Unique_Id.1": 4,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 2,
+      "ArrayValue": "Drugs",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 7,
+      "Parent.Batch_Unique_Id.1": 4,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 0,
+      "ArrayValue": "Checkup",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 12,
+      "Parent.Batch_Unique_Id.1": 11,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 1,
+      "ArrayValue": "lens",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 13,
+      "Parent.Batch_Unique_Id.1": 11,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 2,
+      "ArrayValue": "frame",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 14,
+      "Parent.Batch_Unique_Id.1": 11,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 0,
+      "ArrayValue": "Checkup",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 22,
+      "Parent.Batch_Unique_Id.1": 21,
+      "Parent.Batch_Unique_Id.0": 17
+    },
+    {
+      "ArrayIndex": 1,
+      "ArrayValue": "Surgery",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 23,
+      "Parent.Batch_Unique_Id.1": 21,
+      "Parent.Batch_Unique_Id.0": 17
+    },
+    {
+      "ArrayIndex": 2,
+      "ArrayValue": "Drugs",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 24,
+      "Parent.Batch_Unique_Id.1": 21,
+      "Parent.Batch_Unique_Id.0": 17
+    },
+    {
+      "ArrayIndex": 0,
+      "ArrayValue": "Checkup",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 27,
+      "Parent.Batch_Unique_Id.1": 26,
+      "Parent.Batch_Unique_Id.0": 17
+    },
+    {
+      "ArrayIndex": 1,
+      "ArrayValue": "lens",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 28,
+      "Parent.Batch_Unique_Id.1": 26,
+      "Parent.Batch_Unique_Id.0": 17
+    },
+    {
+      "ArrayIndex": 2,
+      "ArrayValue": "frame",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 29,
+      "Parent.Batch_Unique_Id.1": 26,
+      "Parent.Batch_Unique_Id.0": 17
+    }
+  ],
+  "Provider": [
+    {
+      "Id": 1.11,
+      "Name": "Aetna",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 8,
+      "Parent.Batch_Unique_Id.1": 4,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "Id": 1.21,
+      "Name": "VisionPlan",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 15,
+      "Parent.Batch_Unique_Id.1": 11,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "Id": 2.11,
+      "Name": "Oscar",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 25,
+      "Parent.Batch_Unique_Id.1": 21,
+      "Parent.Batch_Unique_Id.0": 17
+    }
+  ],
+  "ERLocations": [
+    {
+      "ArrayIndex": 0,
+      "ArrayValue": "CA",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 9,
+      "Parent.Batch_Unique_Id.2": 8,
+      "Parent.Batch_Unique_Id.1": 4,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 1,
+      "ArrayValue": "AZ",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 10,
+      "Parent.Batch_Unique_Id.2": 8,
+      "Parent.Batch_Unique_Id.1": 4,
+      "Parent.Batch_Unique_Id.0": 0
+    },
+    {
+      "ArrayIndex": 0,
+      "ArrayValue": "NV",
+      "ODS_Batch_Id": 18581,
+      "Batch_Unique_Id": 16,
+      "Parent.Batch_Unique_Id.2": 15,
+      "Parent.Batch_Unique_Id.1": 11,
+      "Parent.Batch_Unique_Id.0": 0
+    }
+  ]
+}

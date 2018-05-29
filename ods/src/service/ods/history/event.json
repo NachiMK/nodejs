@@ -1,0 +1,6 @@
+{
+    "DynamoTableName": "dev-ods-persons-history-v2",
+    "StartDate":"",
+    "EndDate":"",
+    "PathToStorefile":""
+}

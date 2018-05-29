@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "persons-complex",
+  "type": "object",
+  "properties": {
+    "Persons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "number"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "Gender": {
+            "type": "string"
+          },
+          "DateOfBirth": {
+            "type": "string",
+            "format": "date"
+          },
+          "IsActive": {
+            "type": "boolean"
+          },
+          "Salary": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "PhoneNumber": {
+            "type": [
+              "number",
+              "string"
+            ]
+          },
+          "Spouse": {
+            "type": "object",
+            "properties": {
+              "Id": {
+                "type": "number"
+              },
+              "SpouseName": {
+                "type": "string"
+              },
+              "SpouseDOB": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          },
+          "Children": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "Benefits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Id": {
+                  "type": "number"
+                },
+                "BenefitType": {
+                  "type": "string"
+                },
+                "BenefitName": {
+                  "type": "string"
+                },
+                "EffectiveDate": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "CoveredBenefits": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "Provider": {
+                  "type": "object",
+                  "properties": {
+                    "Id": {
+                      "type": "number"
+                    },
+                    "Name": {
+                      "type": "string"
+                    },
+                    "ERLocations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "IsActive": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "Id",
+                "BenefitType",
+                "BenefitName",
+                "EffectiveDate",
+                "CoveredBenefits",
+                "Provider",
+                "IsActive"
+              ]
+            }
+          },
+          "ReadableId": {
+            "type": "number"
+          },
+          "Address": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Id",
+          "FirstName",
+          "LastName",
+          "Gender",
+          "DateOfBirth",
+          "IsActive",
+          "Salary",
+          "PhoneNumber",
+          "Spouse",
+          "Children",
+          "Benefits",
+          "ReadableId"
+        ]
+      }
+    }
+  }
+}

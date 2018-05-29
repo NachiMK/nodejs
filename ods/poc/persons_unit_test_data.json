@@ -1,0 +1,32 @@
+{
+    "Persons" : [
+        {
+            "Id": 1,
+            "FirstName": "John",
+            "LastName": "Smith",
+            "Gender": "M",
+            "DateOfBirth": "1976-01-01",
+            "IsActive": true,
+            "Salary": 100.00,
+            "PhoneNumber": 8188188181
+        },
+        {
+            "Id": 5,
+            "FirstName": "Bruce",
+            "LastName": "Lee",
+            "Gender": "M",
+            "DateOfBirth": "1946-01-03",
+            "Salary": 150.00,
+            "PhoneNumber" : 8181001000
+        },
+        {
+            "Id": 6,
+            "FirstName": "Jackie",
+            "LastName": "Chan",
+            "Gender": "M",
+            "DateOfBirth": "1966-01-03",
+            "Salary": 165.00,
+            "Address": "Aguora hills, CA"
+        }
+    ]
+}

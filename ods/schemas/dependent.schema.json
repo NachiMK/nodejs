@@ -1,0 +1,263 @@
+{
+    "title": "Dependent",
+    "type": "object",
+    "properties": {
+      "AccountCreated": {
+        "format": "date-time",
+        "type": "string",
+        "description": "When the person was first created"
+      },
+      "AddressSameAsParent": {
+        "type": "boolean",
+        "description": "If true, the dependents address is the same as the worker and is kept in sync with the worker's address"
+      },
+      "AlternatePhoneNumber": {
+        "description": "No formatting characters. 10 digits required",
+        "type": "string",
+        "maxLength": 10,
+        "minLength": 10
+      },
+      "AlternatePhoneNumberSmsEnabled": {
+        "type": "boolean",
+        "description": "To know if we can send out SMS campaigns"
+      },
+      "AlternatePhoneType": {
+        "type": "string",
+        "enum": [
+          "Mobile",
+          "Home",
+          "Work",
+          "Unknown"
+        ]
+      },
+      "BatchPublicKey": {
+        "description": "Each person in a census import batch will have this to help troubleshoot import issues",
+        "type": "string",
+        "maxLength": 36,
+        "minLength": 36
+      },
+      "City": {
+        "type": "string"
+      },
+      "ClientPublicKey": {
+        "description": "The company the person is a member of.",
+        "type": "string",
+        "maxLength": 36,
+        "minLength": 36
+      },
+      "CompanyEmployeeId": {
+        "type": "string",
+        "description": "The id provided by the company for the employee.  The dependent also has a matching id so we know they are related"
+      },
+      "CompanyEmployeeIdEncrypted": {
+        "type": "string"
+      },
+      "County": {
+        "type": "string"
+      },
+      "DateOfBirth": {
+        "format": "date",
+        "type": "string",
+        "description": "Used to know their age as of the BenefitsEffectiveDate as this can affect rates and elgibility"
+      },
+      "EmailAddress": {
+        "format": "email",
+        "type": "string",
+        "description": "Not required, but highly recommended for employee. Otherwise phone number must be provided. Must be unique, used for login and carrier application submission"
+      },
+      "EmailAddressType": {
+        "type": "string",
+        "enum": [
+          "Home",
+          "Work"
+        ]
+      },
+      "EmployeePublicKey": {
+        "description": "Used to identify the employee in the family.  All members will have matching EmployeePublicKey",
+        "type": "string",
+        "maxLength": 36,
+        "minLength": 36
+      },
+      "FirstName": {
+        "type": "string"
+      },
+      "Gender": {
+        "type": "string",
+        "enum": [
+          "Male",
+          "Female"
+        ]
+      },
+      "HixmeEmailAlias": {
+        "format": "email",
+        "type": "string",
+        "description": "We generate this email for use during carrier submission so they don't get spammed durring the submission"
+      },
+      "Id": {
+        "description": "Unique person key",
+        "type": "string",
+        "maxLength": 36,
+        "minLength": 36
+      },
+      "IncludedInMedical": {
+        "type": "boolean",
+        "default": true,
+        "description": "If false, allows person to quickly bypass questions and bundle selection"
+      },
+      "IsActive": {
+        "type": "boolean",
+        "default": true,
+        "description": "If false, person will not show up in list or be able to login"
+      },
+      "IsEligibleForEmployeerPaidBenefits": {
+        "type": "boolean",
+        "description": "True when they not a child or they are under 26 years old"
+      },
+      "IsTestUser": {
+        "type": "boolean",
+        "description": "Allows test users to be excluded from reports"
+      },
+      "IsValid": {
+        "type": "boolean",
+        "default": true,
+        "description": "If person has passed model validation, will be true.  Used by front end to know if they need to edit thier personal info because rating area or something else important has not been set."
+      },
+      "LastName": {
+        "type": "string"
+      },
+      "MarriageStatus": {
+        "type": "string",
+        "description": "Needed for some carrier sites to submit applications",
+        "enum": [
+          "Single",
+          "Married",
+          "Domestic Partner",
+          "Divorced",
+          "Widowed",
+          "Other"
+        ]
+      },
+      "MiddleName": {
+        "type": "string"
+      },
+      "PhoneNumber": {
+        "type": "string",
+        "maxLength": 10,
+        "minLength": 10
+      },
+      "PhoneNumberSmsEnabled": {
+        "type": "boolean",
+        "description": "To know if we can send out SMS campaigns"
+      },
+      "PhoneType": {
+        "type": "string",
+        "enum": [
+          "Mobile",
+          "Home",
+          "Work",
+          "Unknown"
+        ]
+      },
+      "PostalCode": {
+        "type": "string",
+        "maxLength": 5,
+        "minLength": 5
+      },
+      "RatingArea": {
+        "description": "Affects the health insurance premiums",
+        "maximum": 99,
+        "type": "integer",
+        "minimum": 1
+      },
+      "Relationship": {
+        "type": "string",
+        "enum": [
+          "Spouse",
+          "Child",
+          "Domestic Partner",
+          "Child of Domestic Partner"
+        ]
+      },
+      "SSN": {
+        "description": "This is required mostly for use as a person id so when a census update is done we can identify which person is being updated because some companies don't have a CompanyEmployeeId.   It is optional for most carrier health applications.",
+        "type": "string",
+        "maxLength": 9,
+        "minLength": 9
+      },
+      "SSNEncrypted": {
+        "type": "string"
+      },
+      "SSNHmac": {
+        "type": "string",
+        "description": "Used for ensuring SSN is unique"
+      },
+      "SSNLastFour": {
+        "type": "string",
+        "maxLength": 4,
+        "minLength": 4
+      },
+      "Smoker": {
+        "type": "boolean",
+        "description": "Some states have higher health insurance premiums if you smoke"
+      },
+      "StateProvince": {
+        "description": "Uppercase two letter state the worker lives in",
+        "type": "string",
+        "maxLength": 2,
+        "minLength": 2
+      },
+      "StreetAddress": {
+        "type": "string",
+        "description": "Home address line one"
+      },
+      "StreetAddressExt": {
+        "type": "string",
+        "description": "Home address line two"
+      }
+    },
+    "required": [
+      "AddressSameAsParent",
+      "City",
+      "ClientPublicKey",
+      "County",
+      "DateOfBirth",
+      "EmployeePublicKey",
+      "FirstName",
+      "Gender",
+      "IncludedInMedical",
+      "IsActive",
+      "LastName",
+      "PostalCode",
+      "RatingArea",
+      "Relationship",
+      "Smoker",
+      "StateProvince",
+      "StreetAddress",
+      "SSN"
+    ],
+    "censusProperties": [
+      "Action",
+      "CompanyEmployeeId",
+      "Relationship",
+      "FirstName",
+      "MiddleName",
+      "LastName",
+      "Gender",
+      "DateOfBirth",
+      "MarriageStatus",
+      "Smoker",
+      "SSN",
+      "StreetAddress",
+      "StreetAddressExt",
+      "City",
+      "PostalCode",
+      "StateProvince",
+      "County",
+      "EmailAddress",
+      "EmailAddressType",
+      "PhoneNumber",
+      "PhoneType",
+      "AlternatePhoneNumber",
+      "AlternatePhoneType"
+    ]
+  }

@@ -1,0 +1,27 @@
+{
+    "body": {
+        "AddressSameAsParent": true,
+        "City": "Los Angeles",
+        "County": "Los Angeles",
+        "DateOfBirth": "2007-06-22",
+        "FirstName": "B",
+        "Id": "fabf8ae6-a7d5-4bc6-ac9e-870adc627a59",
+        "Gender": "Female",
+        "LastName": "B",
+        "PhoneNumber": "8761283761",
+        "PostalCode": "91304",
+        "Relationship": "Child",
+        "SSN": "189273817",
+        "Smoker": true,
+        "StateProvince": "CA",
+        "StreetAddress": "1234 Street st."
+    },
+    "requestContext": {
+        "authorizer": {
+            "claims": {
+                "custom:user-role": "PlatformEmployee",
+                "cognito:username": "277a2be1-b2f7-45a5-b675-452189d2f52a"
+            }
+        }
+    }
+}

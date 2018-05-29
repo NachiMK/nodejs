@@ -1,0 +1,14 @@
+{
+    "title": "DynamoTableName",
+    "type": "object",
+    "properties": {
+        "DynamoTableName": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100
+        }
+    },
+    "required": [
+        "DynamoTableName"
+    ]
+}

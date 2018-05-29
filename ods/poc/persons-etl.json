@@ -1,0 +1,194 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "persons-complex",
+  "type": "object",
+  "properties": {
+    "Persons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "number",
+            "default": -999999.99,
+            "transfer_type": "string",
+            "db_type": "number"
+          },
+          "FirstName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+          },
+          "LastName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+          },
+          "Gender": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+          },
+          "DateOfBirth": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "date"
+          },
+          "IsActive": {
+            "type": "boolean",
+            "default": false,
+            "transfer_type": "string",
+            "db_type": "boolean"
+          },
+          "Salary": {
+            "type": "number",
+            "default": -999999.99,
+            "transfer_type": "string",
+            "db_type": "number"
+          },
+          "PhoneNumber": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+          },
+          "Spouse": {
+            "type": "object",
+            "properties": {
+              "Id": {
+                "type": "number",
+                "default": -999999.99,
+                "transfer_type": "string",
+                "db_type": "number"
+              },
+              "SpouseName": {
+                "type": "string",
+                "default": "",
+                "transfer_type": "string",
+                "db_type": "string"
+              },
+              "SpouseDOB": {
+                "type": "string",
+                "default": "",
+                "transfer_type": "string",
+                "db_type": "date"
+              }
+            }
+          },
+          "Children": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "Benefits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Id": {
+                  "type": "number",
+                  "default": -999999.99,
+                  "transfer_type": "string",
+                  "db_type": "number"
+                },
+                "BenefitType": {
+                  "type": "string",
+                  "default": "",
+                  "transfer_type": "string",
+                  "db_type": "string"
+                },
+                "BenefitName": {
+                  "type": "string",
+                  "default": "",
+                  "transfer_type": "string",
+                  "db_type": "string"
+                },
+                "EffectiveDate": {
+                  "type": "string",
+                  "default": "",
+                  "transfer_type": "string",
+                  "db_type": "date"
+                },
+                "CoveredBenefits": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "Provider": {
+                  "type": "object",
+                  "properties": {
+                    "Id": {
+                      "type": "number",
+                      "default": -999999.99,
+                      "transfer_type": "string",
+                      "db_type": "number"
+                    },
+                    "Name": {
+                      "type": "string",
+                      "default": "",
+                      "transfer_type": "string",
+                      "db_type": "string"
+                    },
+                    "ERLocations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "IsActive": {
+                  "type": "string",
+                  "default": "",
+                  "transfer_type": "string",
+                  "db_type": "string"
+                }
+              },
+              "required": [
+                "Id",
+                "BenefitType",
+                "BenefitName",
+                "EffectiveDate",
+                "CoveredBenefits",
+                "Provider",
+                "IsActive"
+              ]
+            }
+          },
+          "ReadableId": {
+            "type": "number",
+            "default": -999999.99,
+            "transfer_type": "string",
+            "db_type": "number"
+          },
+          "Address": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+          }
+        },
+        "required": [
+          "Id",
+          "FirstName",
+          "LastName",
+          "Gender",
+          "DateOfBirth",
+          "IsActive",
+          "Salary",
+          "PhoneNumber",
+          "Spouse",
+          "Children",
+          "Benefits",
+          "ReadableId"
+        ]
+      }
+    }
+  }
+}

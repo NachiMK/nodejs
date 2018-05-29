@@ -1,0 +1,329 @@
+service: ${self:custom.service.NAME}
+
+# This simply locks us into a specific version range of Serverless
+frameworkVersion: ">=1.26.0 <2.0.0"
+
+plugins: [
+  'serverless-aws-documentation',
+  'serverless-plugin-webpack',
+  'serverless-domain-manager' ]
+
+custom:
+  service:
+    NAME: ${file(package.json):name}
+    REGION: ${opt:region, file(package.json):config.region}
+    RUNTIME: ${file(package.json):config.runtime}
+    STAGE: ${opt:stage, env:NODE_ENV, file(package.json):config.stage}
+    VERSION: ${file(package.json):version}
+    DESCRIPTION: ${file(package.json):description}
+  environment: ${file(./env.js):default}
+  documentation:
+    # authorizers:  ${file(schemas/authorizers.yml)}
+    description: "Hixme API | ${self:custom.service.DESCRIPTION}"
+    models:       ${file(schemas/all.yml)}
+    # resources:    ${file(schemas/resources.yml)}
+    summary: ${self:custom.service.DESCRIPTION}
+    version: ${self:custom.service.VERSION}
+  customDomain:
+    basePath: ${file(./env.js):getAPIBasePath}
+    domainName: "${file(./env.js):getDomainName}"
+    stage: ${self:custom.service.STAGE}
+    certificateName: "*.hixme.com"
+  cognitoPools:
+    dev: arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_AXPnJkIR9
+    int: arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_aZ2JNiTZp
+    prod: arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_Guj3GDdPC
+
+provider:
+  name: aws
+  runtime: ${self:custom.service.RUNTIME}
+  stage: ${self:custom.service.STAGE}
+  memorySize: 1024
+  timeout: 30
+  region: ${self:custom.service.REGION}
+  #stackTags: ${self:custom.environment}
+  environment: ${self:custom.environment}
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+      Resource:
+        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-*history*
+        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}*
+    # - Effect: Allow
+    #   Action:
+    #     - sts:AssumeRole
+    #   Condition:
+    #     StringLike:
+    #       - aws:userid:*:awslambda_*
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource:
+        - arn:aws:lambda:us-west-2:409076796536:function:*record-dynamo-table-expanded-history-v2*
+    - Effect: Allow
+      Action:
+        - lambda:CreateEventSourceMapping
+      Resource:
+        - arn:aws:lambda:us-west-2:409076796536:function:*
+    - Effect: Allow
+      Action:
+        - dynamodb:GetRecords
+        - dynamodb:GetShardIterator
+        - dynamodb:DescribeStream
+        - dynamodb:ListStreams
+        - dynamodb:CreateTable
+        - dynamodb:DescribeTable
+        - dynamodb:UpdateTable
+      Resource:
+        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-*
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+        - logs:DescribeLogStreams
+      Resource:
+        - arn:aws:logs:*:*:*
+functions:
+  history-get:
+    handler: lib/api/ods/history/get/index.getHistory
+    description: ${self:custom.documentation.summary}
+    timeout: 200
+    events:
+      - http:
+          path: get-history
+          method: GET
+          cors: true
+          documentation:
+            summary: "[GET] History"
+            queryParams:
+            -
+              name: "table_name"
+              description: "Name of table to get history from"
+            -
+              name: "start_date"
+              description: "Optional. Date from when to get history from."
+            -
+              name: "end_date"
+              description: "Optional. Get history upto end date"
+  record-dynamo-table-history-v2:
+    handler: lib/service/dbadmin/dynamo/trigger/index.handler
+    description: ${self:custom.documentation.summary}
+    timeout: 200
+  # enable-stream-history:
+  #   handler: lib/api/dbadmin/dynamo/history/index.EnableHistory
+  #   description: ${self:custom.documentation.summary}
+  #   timeout: 280
+  #   events:
+  #     - http:
+  #         path: enable-history
+  #         method: GET
+  #         cors: true
+  #         documentation:
+  #           summary: "[GET] Enable Streaming and History"
+  #           queryParams:
+  #           -
+  #             name: "DynamoTableName"
+  #             description: "Name of table to enable streaming and history"
+  migrate-history-to-v2:
+    handler: lib/api/dbadmin/dynamo/migratehistory/index.MigrateHistory
+    description: ${self:custom.documentation.summary}
+    timeout: 299
+    events:
+      - http:
+          path: migrate-history
+          method: GET
+          cors: true
+          documentation:
+            summary: "[GET] Migrate History v1 to v2"
+            queryParams:
+            -
+              name: "DynamoTableName"
+              description: "Name of table to migrate history from"
+
+  build-json-schema:
+    handler: lib/api/ods/json-schema/get/index.build
+    description: ${self:custom.documentation.summary}
+    timeout: 300 
+    events:
+      - http:
+          path: json-schema 
+          method: GET
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                Output: true 
+                Datafile: true 
+                FilePrefix: false
+                Overwrite: false
+          documentation:
+            summary: "[GET] Build ODS JSON Schema from baseline JSON Schema"
+            queryParams:
+            -
+              name: "Output"
+              description: "S3 file path to store the JSON schema."
+            -
+              name: "Datafile"
+              description: "S3 file path of the source of the JSON schema to build from."
+            -
+              name: "FilePrefix"
+              description: "Optional. Prefix for output file."
+            -
+              name: "Overwrite"
+              description: "Optional. Yes or No to overwrite the Output file if it exists. Defaults to Yes."
+  # create-batch:
+  #   handler: lib/data/psql/index.createBatchId
+  #   description: ${self:custom.documentation.summary}
+  #   timeout: 60
+  # search:
+  #   handler: lib/api/persons/search/index.get
+  #   description: ${self:custom.documentation.summary}
+  #   timeout: 20
+  #   memorySize: 1512
+  #   events:
+  #     - http:
+  #         path: search
+  #         method: GET
+  #         cors: true
+  #         request:
+  #           parameters:
+  #             querystrings:
+  #               ClientPublicKey: false
+  #         authorizer:
+  #           arn: ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+  #         documentation:
+  #           summary: "[GET] Persons Search"
+  #           description: "Get All Persons"
+  #           methodResponses:
+  #             -
+  #               statusCode: "200"
+  #               responseBody:
+  #                 description: "Persons"
+  #               responseModels:
+  #                 "application/json": "PersonsSearchResponse"
+  #             -
+  #               statusCode: "400"
+  #               responseModels:
+  #                 "application/json": "ErrorResponse"
+  # get-identity-status:
+  #   handler: lib/api/persons/identity/get/index.get
+  #   description: "${self:custom.documentation.summary} | [GET] Identity Status"
+  #   events:
+  #     - http:
+  #         path: identity
+  #         method: GET
+  #         cors: true
+  #         documentation:
+  #           summary: "[GET] Identity Status"
+  #           queryParams:
+  #           -
+  #             name: "PersonPublicKey"
+  #             description: "Person Public Key"
+  # person-get:
+  #   handler: lib/api/persons/get/index.get
+  #   description: "${self:custom.documentation.summary}"
+  #   events:
+  #     - http:
+  #         path: persons/{PersonPublicKey}
+  #         method: get
+  #         cors: true
+  #         request:
+  #           parameters:
+  #             paths:
+  #               PersonPublicKey: true
+  #         authorizer: ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+  #         documentation:
+  #           summary: "Persons GET"
+  #           description: "Get person"
+  #           methodResponses:
+  #             -
+  #               statusCode: "200"
+  #               responseBody:
+  #                 description: "Person body description"
+  #               responseModels:
+  #                 "application/json": "PersonGetResponse"
+  #             -
+  #               statusCode: "400"
+  #               responseModels:
+  #                 "application/json": "ErrorResponse"
+  # person-post:
+  #   handler: lib/api/persons/post/index.post
+  #   description: "${self:custom.documentation.summary}"
+  #   events:
+  #     - http:
+  #         path: persons
+  #         method: post
+  #         cors: true
+  #         request:
+  #           parameters:
+  #             paths:
+  #               PersonPublicKey: true
+  #         authorizer: ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+  #         documentation:
+  #           summary: "Persons POST"
+  #           description: "Save person"
+  #           requestModels:
+  #             "application/json": "PersonPostRequest"
+  #           methodResponses:
+  #             -
+  #               statusCode: "200"
+  #               responseBody:
+  #                 description: "Person body description"
+  #               responseModels:
+  #                 "application/json": "PersonPostResponse"
+  #             -
+  #               statusCode: "400"
+  #               responseModels:
+  #                 "application/json": "ErrorResponse"
+  # record-person-index:
+  #   handler: lib/api/persons/record-index/index.trigger
+  #   description: ${self:custom.documentation.summary}
+  #   timeout: 10
+  #   events:
+  #     - stream: ${self:custom.streams.persons.${self:custom.service.STAGE}}
+  # family:
+  #   handler: lib/api/persons/family/get/index.get
+  #   description: "${self:custom.documentation.summary}"
+  #   events:
+  #     - http:
+  #         path: persons/{PersonPublicKey}/family
+  #         method: get
+  #         cors: true
+  #         request:
+  #           parameters:
+  #             paths:
+  #               PersonPublicKey: true
+  #         authorizer: ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+  #         documentation:
+  #           summary: "Family GET"
+  #           description: "Get family"
+  #           methodResponses:
+  #             -
+  #               statusCode: "200"
+  #               responseBody:
+  #                 description: "Family body description"
+  #               responseModels:
+  #                 "application/json": "FamilyGetResponse"
+  #             -
+  #               statusCode: "400"
+  #               responseModels:
+  #                 "application/json": "ErrorResponse"
+
+resources:
+  Resources:
+    GatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: EXPIRED_TOKEN
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'

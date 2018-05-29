@@ -1,0 +1,50 @@
+{
+    "title": "RawHistory",
+    "type": "object",
+    "properties": {
+        "JSONFile": {
+            "type": "string",
+            "description": "File name and path where data is stored"
+        },
+        "BatchId": {
+            "format": "number",
+            "type": "string",
+            "description": "Batch Id"
+        },
+        "RowCount": {
+            "format": "number",
+            "type": "string",
+            "description": "Number of rows."
+            
+        },
+        "S3Bucket":{
+            "type": "string",
+            "description": "Bucket and S3 path where file is stored."
+        },
+        "InputTableName": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 100
+        },
+        "InputStartDate":{
+            "format": "date",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 30
+        },
+        "InputEndDate":{
+            "format": "date",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 30
+        }
+    },
+    "required": [
+        "JSONFile",
+        "BatchId",
+        "RowCount",
+        "InputTableName",
+        "StartDate",
+        "EndDate"
+    ]
+}

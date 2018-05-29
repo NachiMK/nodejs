@@ -1,0 +1,20 @@
+-
+  name: "ErrorResponse"
+  description: "Standard Error Response"
+  contentType: "application/json"
+  schema: ${file(lib/error.json)}
+# -
+#   name: "PersonPostRequest"
+#   description: "Save person request"
+#   contentType: "application/json"
+#   schema: ${file(lib/api/persons/post/request.schema.json)}
+# -
+#   name: "PersonPostResponse"
+#   description: "Save person response"
+#   contentType: "application/json"
+#   schema: ${file(lib/api/persons/post/response.schema.json)}
+# -
+#   name: "PersonGetResponse"
+#   description: "Get person response"
+#   contentType: "application/json"
+#   schema: ${file(lib/api/persons/get/response.schema.json)}

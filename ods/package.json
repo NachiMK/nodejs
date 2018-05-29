@@ -1,0 +1,185 @@
+{
+  "name": "ods-service",
+  "version": "0.0.1",
+  "description": "Operational Data Store Service",
+  "author": "Nachi <nachi.muthukumar@hixme.com> (https://hixme.com)",
+  "contributors": [
+    "Bill Tran <bill.tran@hixme.com> (https://hixme.com)",
+    "Bill Barnes <bill.barnes@hixme.com> (https://hixme.com)",
+    "Billy M <billy@hixme.com> (https://hixme.com)"
+  ],
+  "homepage": "https://hixme.com",
+  "license": "MIT",
+  "main": "lib/service/dbamin/dynamo/index.js",
+  "private": true,
+  "config": {
+    "NOTE": "THE FOLLOWING VALUES ARE USED BY SERVERLESS!",
+    "log_tailing_interval": 5000,
+    "region": "us-west-2",
+    "runtime": "nodejs8.10",
+    "stage": "dev",
+    "log_dbname": "ODSLog"
+  },
+  "scripts": {
+    "knex:dev": "knex --env dev",
+    "knex:int": "knex --env int",
+    "knex:prod": "knex --env prod",
+    "build:watch": "npm run build -- --watch",
+    "build": "npm run clean && npm install && cross-env BABEL_ENV=commonjs babel src __tests__ schemas --out-dir lib --source-maps --copy-files",
+    "clean": "rimraf lib coverage .webpack .serverless",
+    "coverage": "npm run test -- --coverage",
+    "deleteTheEntireDevService:AreYouAbsolutelySure:YES": "SLS_DEBUG=* sls remove --verbose --stage dev --region $npm_package_config_region",
+    "deploy:custom": "npm run build && SLS_DEBUG=* sls deploy --verbose --region $npm_package_config_region --stage",
+    "deploy:dev": "npm run build && SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region",
+    "deploy:function:dev": "npm run build && SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region function --function",
+    "deploy:function:int": "npm run build && sls deploy --stage int --region $npm_package_config_region function --function",
+    "~deploy:function:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region function --function",
+    "deploy:function": "npm run deploy:function:dev --",
+    "deploy:int": "npm run build && sls deploy --stage int --region $npm_package_config_region",
+    "~deploy:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region",
+    "deploy": "npm run deploy:dev --",
+    "info:stage": "sls info --verbose --region $npm_package_config_region --stage",
+    "info": "sls info --verbose --region $npm_package_config_region",
+    "invoke:local": "DEBUG_SLS=* sls invoke local --function",
+    "invoke:locally": "npm run invoke:local --",
+    "lint": "eslint src __tests__",
+    "logs:custom": "sls logs --verbose --tail --interval $npm_package_config_log_tailing_interval --region $npm_package_config_region --function",
+    "logs:dev": "sls logs --verbose --tail --interval $npm_package_config_log_tailing_interval --stage dev --region $npm_package_config_region --function",
+    "logs:int": "sls logs --tail --interval $npm_package_config_log_tailing_interval --stage int --region $npm_package_config_region --function",
+    "~logs:prod": "sls logs --tail --interval $npm_package_config_log_tailing_interval --stage prod --region $npm_package_config_region --function",
+    "logs": "npm run logs:dev --",
+    "package": "npm run build && SLS_DEBUG=* sls package",
+    "test": "jest",
+    "qtest": "npm run build && jest --",
+    "watch": "npm run build:watch --",
+    "release:dev:enablehistory": "run-func /lib/scripts/deploy/index.js deploy_enableHistory_ontables dev",
+    "release:int:enablehistory": "run-func /lib/scripts/deploy/index.js deploy_enableHistory_ontables int",
+    "release:prod:enablehistory": "run-func /lib/scripts/deploy/index.js deploy_enableHistory_ontables prod",
+    "release:dev:migratehistory": "run-func /lib/scripts/deploy/index.js deploy_migrate_history_allTables dev",
+    "release:int:migratehistory": "run-func /lib/scripts/deploy/index.js deploy_migrate_history_allTables int",
+    "release:prod:migratehistory": "run-func /lib/scripts/deploy/index.js deploy_migrate_history_allTables prod"
+  },
+  "dependencies": {
+    "@hixme/aws-utils": "^1.1.0",
+    "@hixme/before-after-middleware": "^1.1.0",
+    "@hixme/error-middleware": "^1.4.6",
+    "@hixme/role-authorizer-middleware": "^1.1.0",
+    "@hixme/role-policy": "^5.10.0",
+    "@hixme/sanitizer-middleware": "^1.0.0",
+    "@hixme/stage-middleware": "^3.0.0",
+    "@hixme/tables": "^6.1.0",
+    "@hixme/validator-middleware": "^1.0.1",
+    "aws-sdk": "^2.85.0",
+    "babel-runtime": "^6.23.0",
+    "delay": "^2.0.0",
+    "knex": "^0.14.4",
+    "lodash": "^4.17.4",
+    "moment": "^2.22.1",
+    "npm": "^5.10.0",
+    "pg": "^7.4.1",
+    "run-func": "^1.0.2",
+    "warewolf": "^2.0.6"
+  },
+  "devDependencies": {
+    "babel-cli": "6.26.0",
+    "babel-core": "6.26.0",
+    "babel-eslint": "7.2.3",
+    "babel-jest": "20.0.3",
+    "babel-loader": "7.1.2",
+    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-plugin-transform-class-properties": "6.24.1",
+    "babel-plugin-transform-export-extensions": "6.22.0",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
+    "babel-plugin-transform-runtime": "6.23.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-es2015-node6": "0.4.0",
+    "babel-preset-es2016": "6.24.1",
+    "babel-preset-es2017": "6.24.1",
+    "cross-env": "5.0.5",
+    "dotenv": "^4.0.0",
+    "eslint": "4.5.0",
+    "eslint-config-airbnb-base": "11.3.2",
+    "eslint-plugin-import": "2.7.0",
+    "jest-cli": "20.0.4",
+    "rimraf": "2.6.1",
+    "serverless": "^1.26.0",
+    "serverless-aws-documentation": "^0.8.0",
+    "serverless-domain-manager": "^1.1.12",
+    "serverless-plugin-webpack": "^1.5.0",
+    "source-map-loader": "^0.2.1",
+    "webpack": "^3.5.5",
+    "webpack-node-externals": "^1.6.0",
+    "yargs": "^8.0.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "verbose": true
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "extends": "airbnb-base",
+    "env": {
+      "node": true,
+      "jest": true
+    },
+    "plugins": [
+      "import"
+    ],
+    "root": true,
+    "rules": {
+      "import/no-extraneous-dependencies": [
+        "error",
+        {
+          "devDependencies": [
+            "__tests__/**"
+          ]
+        }
+      ],
+      "import/prefer-default-export": 0,
+      "no-console": [
+        "error",
+        {
+          "allow": [
+            "warn",
+            "error",
+            "time",
+            "timeEnd"
+          ]
+        }
+      ],
+      "no-use-before-define": 0,
+      "no-param-reassign": 0,
+      "max-len": 0
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/hixme/operational-data-store-service.git"
+  },
+  "bugs": {
+    "url": "https://bitbucket.com/hixme/serverless-template/issues"
+  },
+  "keywords": [
+    "hixme",
+    "serverless",
+    "template",
+    "lambda"
+  ],
+  "directories": {
+    "src": "./src",
+    "schemas": "./schemas",
+    "tests": "./__tests__"
+  },
+  "readmeFilename": "README.md",
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "engines": {
+    "node": ">=6 <8.0",
+    "npm": ">=4.0 <5.0"
+  }
+}

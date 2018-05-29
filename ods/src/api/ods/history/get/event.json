@@ -1,0 +1,15 @@
+{
+    "pathParameters": {
+        "DynamoTableName": "dev-ods-persons-history-v2",
+        "StartDate": "2017-01-01",
+        "PathToStorefile": "s3:\\bucket\name"
+    },
+    "requestContext": {
+        "authorizer": {
+            "claims": {
+                "custom:user-role": "PlatformEmployee",
+                "cognito:username": "e768256d-cb16-46fa-bfd6-6ff1d637bd2b"
+            }
+        }
+    }
+}

@@ -1,0 +1,31 @@
+{
+  "Id": -999999.99,
+  "FirstName": "",
+  "LastName": "",
+  "Gender": "",
+  "DateOfBirth": "",
+  "IsActive": false,
+  "Salary": -999999.99,
+  "PhoneNumber": "",
+  "Spouse": {
+    "Id": -999999.99,
+    "SpouseName": "",
+    "SpouseDOB": ""
+  },
+  "Children": [],
+  "Benefits": [
+    {
+      "Id": -999999.99,
+      "BenefitType": "",
+      "BenefitName": "",
+      "EffectiveDate": "",
+      "CoveredBenefits": [],
+      "Provider": {
+        "Id": -999999.99,
+        "Name": "",
+        "ERLocations": []
+      },
+      "IsActive": ""
+    }
+  ]
+}

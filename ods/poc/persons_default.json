@@ -1,0 +1,26 @@
+{
+    "Persons" : [
+        {
+        "Id": null,
+        "ReadableId": null,
+        "FirstName": null,
+        "LastName": null,
+        "Gender": null,
+        "DateOfBirth": null,
+        "IsActive": true,
+        "PhoneNumber": null,
+        "Salary" : null,
+        "Benefits": [
+            {
+                "PBId": null,
+                "ReadableId": null,
+                "PersonId": null,
+                "BenefitType": null,
+                "BenefitName": null,
+                "EffectiveDate": null,
+                "IsActive": false
+            }
+        ]
+        }
+    ]
+}

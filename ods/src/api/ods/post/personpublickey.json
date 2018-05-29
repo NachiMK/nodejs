@@ -1,0 +1,14 @@
+{
+    "title": "PersonPublicKey",
+    "type": "object",
+    "properties": {
+        "PersonPublicKey": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        }
+    },
+    "required": [
+        "PersonPublicKey"
+    ]
+}

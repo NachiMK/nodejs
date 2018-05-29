@@ -1,0 +1,137 @@
+{
+    "Persons" : [
+        {
+            "Id": 1,
+            "FirstName": "John",
+            "LastName": "Smith",
+            "Gender": "M",
+            "DateOfBirth": "1976-01-01",
+            "IsActive": true,
+            "Salary": 100.00,
+            "PhoneNumber": 8188188181,
+            "Spouse" : 
+            {
+                "Id" : 100,
+                "SpouseName" : "Mrs.Smith",
+                "SpouseDOB"  : "1979-01-01"
+            },
+            "Children" : ["Child1", "Child2" ],
+            "Benefits": [
+                {
+                    "Id": 1.1,
+                    "BenefitType": "Health",
+                    "BenefitName": "HealthPlan",
+                    "EffectiveDate": "2017-10-10",
+                    "CoveredBenefits" : ["Checkup", "Surgery", "Drugs"],
+                    "Provider" :
+                    {
+                        "Id" : 1.11,
+                        "Name" : "Aetna",
+                        "ERLocations" : ["CA", "AZ"]
+                    },
+                    "IsActive": "1"
+                },
+                {
+                    "Id": 1.2,
+                    "BenefitType": "Vision",
+                    "BenefitName": "VisionPlan",
+                    "EffectiveDate": "2017-10-10",
+                    "CoveredBenefits" : ["Checkup", "lens", "frame"],
+                    "Provider" :
+                    {
+                        "Id" : 1.21,
+                        "Name" : "VisionPlan",
+                        "ERLocations" : ["NV"]
+                    },
+                    "IsActive": "1"
+                }
+            ]
+        },
+        {
+            "Id": 2,
+            "FirstName": "Jane",
+            "LastName": "Doe",
+            "Gender": "F",
+            "DateOfBirth": "1976-01-02",
+            "IsActive": true,
+            "Salary": 200.00,
+            "PhoneNumber": "8188187171",
+            "Spouse" : 
+            {
+                "Id" : 101,
+                "SpouseName" : "Mr.Doe",
+                "SpouseDOB"  : "1979-01-01"
+            },
+            "Children" : ["Child1", "Child2" ],
+            "Benefits": [
+                {
+                    "Id": 2.1,
+                    "BenefitType": "Health",
+                    "BenefitName": "HealthPlan",
+                    "CoveredBenefits" : ["Checkup", "Surgery", "Drugs"],
+                    "Provider" :
+                    {
+                        "Id" : 2.11,
+                        "Name" : "Oscar"
+                    },
+                    "IsActive": "1"
+                },
+                {
+                    "Id": 2.2,
+                    "BenefitType": "Vision",
+                    "BenefitName": "VisionPlan",
+                    "CoveredBenefits" : ["Checkup", "lens", "frame"],
+                    "IsActive": "1"
+                }
+            ]
+        },
+        {
+            "Id": 3,
+            "FirstName": "Raj",
+            "LastName": "Smith",
+            "Gender": "M",
+            "DateOfBirth": "1976-01-03",
+            "Salary": 150.00,
+            "Spouse" : 
+            {
+                "Id" : 103,
+                "SpouseName" : "Mrs.Raj",
+                "SpouseDOB"  : "1979-01-01"
+            },
+            "Children" : ["Child1"]
+        },
+        {
+            "Id": 4,
+            "FirstName": "Ron",
+            "LastName": "K",
+            "Gender": "M",
+            "DateOfBirth": "1976-01-04",
+            "IsActive": true,
+            "Salary": null,
+            "Spouse" : 
+            {
+                "Id" : 104,
+                "SpouseName" : "Mrs.K",
+                "SpouseDOB"  : "1979-01-01"
+            }
+        },
+        {
+            "Id": 5,
+            "FirstName": "Bruce",
+            "LastName": "Lee",
+            "Gender": "M",
+            "DateOfBirth": "1946-01-03",
+            "Salary": 150.00,
+            "PhoneNumber" : 8181001000
+        },
+        {
+            "Id": 6,
+            "FirstName": "Jackie",
+            "LastName": "Chan",
+            "Gender": "M",
+            "DateOfBirth": "1966-01-03",
+            "Salary": 165.00,
+            "Address": "Aguora hills, CA"
+        }
+    ]
+}

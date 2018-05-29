@@ -1,0 +1,23 @@
+{
+    "title": "DynamoTableName",
+    "type": "object",
+    "properties": {
+        "DynamoTableName": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 100
+        },
+        "EventDate":{
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 30
+        },
+        "PathToStorefile":{
+            "type": "string"
+        }
+    },
+    "required": [
+        "DynamoTableName",
+        "PathToStorefile"
+    ]
+}
