@@ -1,5 +1,5 @@
 INSERT INTO
-    public."DataSource"
+    ods."DataSource"
     (
          "DataSourceId"
         ,"DataSourceName"
@@ -14,7 +14,7 @@ FROM    (
             UNION   SELECT 50 AS "DataSourceId", 'postgres/raw' as "DataSourceName"
             UNION   SELECT 60 AS "DataSourceId", 'postgres/clean' as "DataSourceName"
         ) AS ST
-WHERE   NOT EXISTS (SELECT 1 FROM "DataSource" AS S WHERE S."DataSourceName" = ST."DataSourceName");
+WHERE   NOT EXISTS (SELECT 1 FROM ods."DataSource" AS S WHERE S."DataSourceName" = ST."DataSourceName");
 
-SELECT * FROM "DataSource";
+SELECT * FROM ods."DataSource";
 

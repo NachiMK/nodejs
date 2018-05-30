@@ -1,5 +1,5 @@
 INSERT INTO
-    "Attribute"
+    ods."Attribute"
     (
         "AttributeName"
     )
@@ -31,8 +31,8 @@ FROM    (
 
             UNION   SELECT 'aws.region' as "AttributeName"
         ) as S
-WHERE   NOT EXISTS (SELECT 1 FROM "Attribute" AS T WHERE S."AttributeName" = T."AttributeName")
+WHERE   NOT EXISTS (SELECT 1 FROM ods."Attribute" AS T WHERE S."AttributeName" = T."AttributeName")
 ORDER BY
         "AttributeName";
 
-SELECT * FROM "Attribute";
+SELECT * FROM ods."Attribute";

@@ -1,12 +1,12 @@
-DROP FUNCTION IF EXISTS public."udf_createDynamoDBToS3PipeLineTask"(varchar(255), INT);
-DROP TYPE IF EXISTS public.DynamoDBtoS3ReturnType;
-CREATE TYPE public.DynamoDBtoS3ReturnType as ("DataFilePrefix" VARCHAR(500), "S3DataFileFolderPath" VARCHAR(500), "DataPipeLineTaskQueueId" INT);
+DROP FUNCTION IF EXISTS ods."udf_createDynamoDBToS3PipeLineTask"(varchar(255), INT);
+DROP TYPE IF EXISTS ods.DynamoDBtoS3ReturnType;
+CREATE TYPE ods.DynamoDBtoS3ReturnType as ("DataFilePrefix" VARCHAR(500), "S3DataFileFolderPath" VARCHAR(500), "DataPipeLineTaskQueueId" INT);
 
-CREATE OR REPLACE FUNCTION public."udf_createDynamoDBToS3PipeLineTask"(TableName VARCHAR(255), RowCnt INT) 
+CREATE OR REPLACE FUNCTION ods."udf_createDynamoDBToS3PipeLineTask"(TableName VARCHAR(255), RowCnt INT) 
 RETURNS 
-    SETOF DynamoDBtoS3ReturnType AS $$
+    SETOF ods.DynamoDBtoS3ReturnType AS $$
 DECLARE
-    retRecord DynamoDBtoS3ReturnType%rowtype;
+    retRecord ods.DynamoDBtoS3ReturnType%rowtype;
     dataFilePrefix VARCHAR(200);
     S3DataFileFolderPath VARCHAR(600);
     DataPipeLineTaskQueueId INT;
@@ -17,7 +17,7 @@ BEGIN
     END IF;
 
     -- Insert a Row
-    INSERT INTO "public"."DataPipeLineTaskQueue" 
+    INSERT INTO "ods"."DataPipeLineTaskQueue" 
     (
         "DataPipeLineTaskId"
         ,"ParentTaskId"
@@ -29,16 +29,16 @@ BEGIN
     SELECT   DPL."DataPipeLineTaskId"
             ,NULL               AS "ParentTaskId"
             ,DPL."RunSequence"
-            ,(SELECT "TaskStatusId" FROM "TaskStatus" WHERE "TaskStatusDesc" = 'Ready') as "TaskStatusId"
+            ,(SELECT "TaskStatusId" FROM ods."TaskStatus" WHERE "TaskStatusDesc" = 'Ready') as "TaskStatusId"
             ,CURRENT_TIMESTAMP  AS "StartDtTm"
             ,CURRENT_TIMESTAMP  AS "CreatedDtTm"
-    FROM    "DataPipeLineTask"  DPL
+    FROM    ods."DataPipeLineTask"  DPL
     INNER
-    JOIN    "DataPipeLineTaskConfig"   DPC ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
+    JOIN    ods."DataPipeLineTaskConfig"   DPC ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
     INNER
-    JOIN    "TaskAttribute"         TA  ON  TA."DataPipeLineTaskId" = DPL."DataPipeLineTaskId"
+    JOIN    ods."TaskAttribute"         TA  ON  TA."DataPipeLineTaskId" = DPL."DataPipeLineTaskId"
     INNER
-    JOIN    "Attribute"             A   ON  A."AttributeId"         = TA."AttributeId"
+    JOIN    ods."Attribute"             A   ON  A."AttributeId"         = TA."AttributeId"
     WHERE   A."AttributeName"       = 'Dynamo.TableName'
     AND     DPL."TaskName"          LIKE TableName || '%DynamoDB to S3'
     AND     TA."AttributeValue"     LIKE '%' || TableName || '%'

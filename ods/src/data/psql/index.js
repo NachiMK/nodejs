@@ -131,7 +131,7 @@ export const logSQLCommand = async (params = {}, commandType = "UNKNOWN") => {
 
   try {
     let localKnex = knex(dbName);
-    let resp = await localKnex.raw('SELECT udf_insert_commandlog(?,?,?,?)', [BatchKey, DBName, Query, commandType]);
+    let resp = await localKnex.raw('SELECT udf_insert_commandlog(?,?,?,?)', [BatchKey, dbName, Query, commandType]);
     if (resp) {
       if (resp.hasOwnProperty("rows") && (resp.rows.length > 0)) {
         let value = Object.values(resp.rows[0])[0];

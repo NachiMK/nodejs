@@ -5,10 +5,10 @@ CREATE TEMPORARY TABLE DPLTables
     ,"CleanTableName"        VARCHAR(100)
 );
 INSERT INTO DPLTables ("TableName", "CleanTableName")
-SELECT "DynamoTableName", REPLACE(REPLACE("DynamoTableName", 'prod-', ''), '-history-v2', '') FROM "DynamoTablesHelper" WHERE "Stage" = 'prod';
+SELECT "DynamoTableName", REPLACE(REPLACE("DynamoTableName", 'prod-', ''), '-history-v2', '') FROM ods."DynamoTablesHelper" WHERE "Stage" = 'prod';
 
 INSERT INTO
-    "TaskAttribute"
+    ods."TaskAttribute"
     (
          "DataPipeLineTaskId"
         ,"AttributeId"
@@ -19,16 +19,16 @@ SELECT   DPT."DataPipeLineTaskId"
         ,Tbls."TableName" AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
-JOIN    "DataPipeLineTask" DPT   ON DPT."TaskName" LIKE  Tbls."CleanTableName" || ' - %'
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."TaskName" LIKE  Tbls."CleanTableName" || ' - %'
 INNER
-JOIN    "TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
+JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER
-JOIN    "Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
+JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" = 'Dynamo.TableName'
-AND     NOT EXISTS (SELECT 1 FROM "TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
 
 INSERT INTO
-    "TaskAttribute"
+    ods."TaskAttribute"
     (
          "DataPipeLineTaskId"
         ,"AttributeId"
@@ -36,19 +36,19 @@ INSERT INTO
     )
 SELECT   DPT."DataPipeLineTaskId"
         ,TCA."AttributeId"
-        ,'s3://dev-ods-data/dynamodb/{Id}/' || Tbls."CleanTableName" || '/'  AS "AttributeValue"
+        ,'dev-ods-data'
 FROM    DPLTables Tbls
 INNER
-JOIN    "DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'
 INNER
-JOIN    "TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
+JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER
-JOIN    "Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
+JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" LIKE 'S3.%.FolderPath'
-AND     NOT EXISTS (SELECT 1 FROM "TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
 
 INSERT INTO
-    "TaskAttribute"
+    ods."TaskAttribute"
     (
          "DataPipeLineTaskId"
         ,"AttributeId"
@@ -56,19 +56,19 @@ INSERT INTO
     )
 SELECT   DPT."DataPipeLineTaskId"
         ,TCA."AttributeId"
-        ,'{Id}-' || Tbls."CleanTableName" || '-' || REPLACE(REPLACE(A."AttributeName", 'Prefix.', ''), 'File', '') || '-' AS "AttributeValue"
+        ,'/dynamodb/' || Tbls."CleanTableName" || '/{Id}-' || Tbls."CleanTableName" || '-' || REPLACE(REPLACE(A."AttributeName", 'Prefix.', ''), 'File', '') || '-' AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
-JOIN    "DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'
 INNER
-JOIN    "TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
+JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER
-JOIN    "Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
+JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" LIKE 'Prefix.%File'
-AND     NOT EXISTS (SELECT 1 FROM "TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
 
 INSERT INTO
-    "TaskAttribute"
+    ods."TaskAttribute"
     (
          "DataPipeLineTaskId"
         ,"AttributeId"
@@ -79,12 +79,12 @@ SELECT   DPT."DataPipeLineTaskId"
         ,'{Id}_stage_' || REPLACE(lower(Tbls."CleanTableName"), '-', '_') || '_' AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
-JOIN    "DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'
 INNER
-JOIN    "TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
+JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER
-JOIN    "Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
+JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" LIKE 'psql.PreStageTable.Prefix'
-AND     NOT EXISTS (SELECT 1 FROM "TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
 
-SELECT * FROM "TaskAttribute";
+SELECT * FROM ods."TaskAttribute";

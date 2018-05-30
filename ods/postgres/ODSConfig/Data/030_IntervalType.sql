@@ -1,5 +1,5 @@
 INSERT INTO
-    public."IntervalType"
+    ods."IntervalType"
     (
          "IntervalTypeId"
         ,"IntervalTypeDesc"
@@ -14,6 +14,6 @@ FROM    (
             UNION   SELECT 50 AS "IntervalTypeId", 'ROW_COUNT'  as "IntervalTypeDesc"
             --UNION   SELECT 20 AS "IntervalTypeId", 'postgres' as "IntervalTypeDesc"
         ) AS ST
-WHERE   NOT EXISTS (SELECT 1 FROM "IntervalType" AS S WHERE S."IntervalTypeDesc" = ST."IntervalTypeDesc");
+WHERE   NOT EXISTS (SELECT 1 FROM ods."IntervalType" AS S WHERE S."IntervalTypeDesc" = ST."IntervalTypeDesc");
 
-SELECT * FROM "IntervalType" ORDER BY "IntervalType";
+SELECT * FROM ods."IntervalType" ORDER BY "IntervalType";

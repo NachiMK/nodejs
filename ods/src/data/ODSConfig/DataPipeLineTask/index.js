@@ -12,15 +12,16 @@ async function createDynamoDBToS3PipeLineTask(TableName, RowCount){
     let DataPipeLineTaskQueueId = undefined;
 
     try {
-        let sqlQuery = getQuery(TableName, RowCount);
-        let dbName = getDBName("ODSConfig");
+        let sqlQuery = await getQuery(TableName, RowCount);
+        let dbName = await getDBName("ODSConfig");
         let batchKey = 1;
         let params = {
-            "Query" : sqlQuery,
-            "DBName" : dbName,
-            "BatchKey" : batchKey,
+            "Query": sqlQuery,
+            "DBName": dbName,
+            "BatchKey": batchKey,
         }
         let retRS = await executeQueryRS(params);
+        console.log(`create DataPipeLinetaskQueue status: ${JSON.stringify(retRS)}`);
     }
     catch(err){
         let msg = `Issue creating DataPipeLineTaskQueueId for Table: ${TableName} with Rows: ${RowCount}`;
@@ -39,4 +40,12 @@ async function createDynamoDBToS3PipeLineTask(TableName, RowCount){
 
 async function UpdatePipeLineTaskStatus(DataPipeLineTaskQueueId, Status, StatusError={}){
 
+}
+
+async function getQuery(TableName, RowCount){
+    return `SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('${TableName}', ${RowCount})`;
+}
+
+async function getDBName(DBName){
+    return ((typeof DBName === undefined) || (DBName.Length === 0)) ? "ODSConfig" : DBName;
 }

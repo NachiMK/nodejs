@@ -1,6 +1,6 @@
 
 INSERT INTO 
-    public."DataPipeLineMapping"
+    ods."DataPipeLineMapping"
     (
         "DataPipeLineMappingId"
         ,"SourceDataSourceId"
@@ -20,11 +20,11 @@ FROM    (
         UNION   SELECT  70 as "DataPipeLineMappingId", 'postgres/raw'       as "Source", 'postgres/clean'       as  "Target"
         ) as ST
 INNER
-JOIN    "DataSource" as S   ON  S."DataSourceName" = ST."Source"
+JOIN    ods."DataSource" as S   ON  S."DataSourceName" = ST."Source"
 INNER
-JOIN    "DataSource" as T   ON  T."DataSourceName" = ST."Target"
-WHERE   NOT EXISTS (SELECT 1 FROM "DataPipeLineMapping" DP 
+JOIN    ods."DataSource" as T   ON  T."DataSourceName" = ST."Target"
+WHERE   NOT EXISTS (SELECT 1 FROM ods."DataPipeLineMapping" DP 
                     WHERE DP."SourceDataSourceId" = S."DataSourceId" 
                     AND DP."TargetDataSourceId" = T."DataSourceId");
 
-SELECT * FROM "DataPipeLineMapping";
+SELECT * FROM ods."DataPipeLineMapping";

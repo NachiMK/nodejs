@@ -5,7 +5,7 @@ CREATE TEMPORARY TABLE DPLTables
      ,"CleanTableName"        VARCHAR(100)
 );
 INSERT INTO DPLTables ("TableName", "CleanTableName")
-SELECT "DynamoTableName", "CleanTableName" FROM "DynamoTablesHelper" WHERE "Stage" = 'prod';
+SELECT "DynamoTableName", "CleanTableName" FROM ods."DynamoTablesHelper" WHERE "Stage" = 'prod';
 
 DROP TABLE IF EXISTS DLPTasksTemp;
 CREATE TEMPORARY TABLE DLPTasksTemp AS
@@ -16,12 +16,12 @@ SELECT
         ,"TaskTypeId"
         ,"ParentId"
         ,"RunSequence"
-FROM    "DataPipeLineTaskConfig"
+FROM    ods."DataPipeLineTaskConfig"
 WHERE   (("TaskName" LIKE '%DynamoDB to S3%') OR ("TaskName" LIKE  '%Process JSON to Postgres%'))
 AND     "ParentId" IS NULL;
 
 INSERT INTO
-        "DataPipeLineTask"
+        ods."DataPipeLineTask"
         ("TaskName", "DataPipeLineTaskConfigId", "DataPipeLineMappingId", "TaskTypeId", "ParentTaskId", "RunSequence")
 SELECT   Tbls."CleanTableName" || ' - ' || "TaskName"  as "TaskName"
         ,TT."DataPipeLineTaskConfigId"
@@ -31,7 +31,7 @@ SELECT   Tbls."CleanTableName" || ' - ' || "TaskName"  as "TaskName"
         ,TT."RunSequence"
 FROM    DLPTasksTemp TT, DPLTables Tbls
 WHERE NOT EXISTS (
-                  SELECT 1 FROM "DataPipeLineTask" TGT
+                  SELECT 1 FROM ods."DataPipeLineTask" TGT
                   WHERE TGT."TaskName" = Tbls."CleanTableName" || ' - ' || "TaskName"
                   AND   TGT."DataPipeLineMappingId" = TT."DataPipeLineMappingId"
                   AND   TGT."DataPipeLineTaskConfigId" = TT."DataPipeLineTaskConfigId"
@@ -43,7 +43,7 @@ ORDER BY
 ;
 
 INSERT INTO
-        "DataPipeLineTask"
+        ods."DataPipeLineTask"
         ("TaskName", "DataPipeLineTaskConfigId", "DataPipeLineMappingId", "TaskTypeId", "ParentTaskId", "RunSequence")
 SELECT   REPLACE(DPL."TaskName", P."TaskName", C."TaskName") as "TaskName"
         ,C."DataPipeLineTaskConfigId"
@@ -51,15 +51,15 @@ SELECT   REPLACE(DPL."TaskName", P."TaskName", C."TaskName") as "TaskName"
         ,C."TaskTypeId"
         ,DPL."DataPipeLineTaskId" AS "ParentTaskId"
         ,C."RunSequence"
-FROM    "DataPipeLineTaskConfig" AS C
+FROM    ods."DataPipeLineTaskConfig" AS C
 INNER
-JOIN    "DataPipeLineTaskConfig" AS P ON P."DataPipeLineTaskConfigId" = C."ParentId"
+JOIN    ods."DataPipeLineTaskConfig" AS P ON P."DataPipeLineTaskConfigId" = C."ParentId"
 INNER
-JOIN    "DataPipeLineTask" as DPL ON DPL."DataPipeLineTaskConfigId" = P."DataPipeLineTaskConfigId"
+JOIN    ods."DataPipeLineTask" as DPL ON DPL."DataPipeLineTaskConfigId" = P."DataPipeLineTaskConfigId"
 WHERE   ((P."TaskName" LIKE '%DynamoDB to S3%') OR (P."TaskName" LIKE  '%Process JSON to Postgres%'))
 AND     C."ParentId" IS NOT NULL
 AND     NOT EXISTS (
-                  SELECT 1 FROM "DataPipeLineTask" TGT
+                  SELECT 1 FROM ods."DataPipeLineTask" TGT
                   WHERE TGT."TaskName" = REPLACE(DPL."TaskName", P."TaskName", C."TaskName")
                   AND   TGT."DataPipeLineMappingId" = C."DataPipeLineMappingId"
                   AND   TGT."DataPipeLineTaskConfigId" = C."DataPipeLineTaskConfigId"
@@ -71,7 +71,7 @@ ORDER   BY
 
 
 SELECT  *
-FROM    "DataPipeLineTask" as DPL
+FROM   ods."DataPipeLineTask" as DPL
 ORDER   BY
    LEFT("TaskName", 20), "TaskTypeId", "RunSequence"
 ;

@@ -1,5 +1,5 @@
 INSERT INTO
-    public."TaskType"
+    ods."TaskType"
     (
          "TaskTypeId"
         ,"TaskTypeDesc"
@@ -11,6 +11,6 @@ FROM    (
             UNION   SELECT 20 AS "TaskTypeId", 'Child'      as "TaskTypeDesc"
             --UNION   SELECT 20 AS "TaskTypeId", 'postgres' as "TaskTypeDesc"
         ) AS ST
-WHERE   NOT EXISTS (SELECT 1 FROM "TaskType" AS S WHERE S."TaskTypeDesc" = ST."TaskTypeDesc");
+WHERE   NOT EXISTS (SELECT 1 FROM ods."TaskType" AS S WHERE S."TaskTypeDesc" = ST."TaskTypeDesc");
 
-SELECT * FROM "TaskType" ORDER BY "TaskType";
+SELECT * FROM ods."TaskType" ORDER BY "TaskType";

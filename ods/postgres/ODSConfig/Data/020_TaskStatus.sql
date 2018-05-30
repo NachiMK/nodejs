@@ -1,5 +1,5 @@
 INSERT INTO
-    public."TaskStatus"
+    ods."TaskStatus"
     (
          "TaskStatusId"
         ,"TaskStatusDesc"
@@ -16,6 +16,6 @@ FROM    (
             UNION   SELECT 70 AS "TaskStatusId", 'Re-Process'          as "TaskStatusDesc"
             --UNION   SELECT 20 AS "TaskStatusId", 'postgres' as "TaskStatusDesc"
         ) AS ST
-WHERE   NOT EXISTS (SELECT 1 FROM "TaskStatus" AS S WHERE S."TaskStatusDesc" = ST."TaskStatusDesc");
+WHERE   NOT EXISTS (SELECT 1 FROM ods."TaskStatus" AS S WHERE S."TaskStatusDesc" = ST."TaskStatusDesc");
 
-SELECT * FROM "TaskStatus" ORDER BY "TaskStatus";
+SELECT * FROM ods."TaskStatus" ORDER BY "TaskStatus";

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION DateDiff (units VARCHAR(30), start_t TIME, end_t TIME) 
+CREATE OR REPLACE FUNCTION public.DateDiff (units VARCHAR(30), start_t TIME, end_t TIME) 
      RETURNS INT AS $$
    DECLARE
      diff_interval INTERVAL; 

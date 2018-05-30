@@ -47,7 +47,7 @@ echo "Create:"$create
 echo "HostName: (Type rds if deploying to Aurora)"$dbhostname
 
 if [ "${create}" = "CreateDB:TRUE" ]; then 
-    echo "Creating Database:" '000_CreateDatabase.sql' 
+    echo "Creating Database:odsconfig_${stagename}"
     echo "Create:"$create
     psql ${dbhostname} -d postgres -c "DROP DATABASE IF EXISTS odsconfig_${stagename};"
     psql ${dbhostname} -d postgres -c "CREATE DATABASE odsconfig_${stagename} WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';"

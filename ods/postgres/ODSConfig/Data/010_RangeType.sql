@@ -1,5 +1,5 @@
 INSERT INTO
-    public."RangeType"
+    ods."RangeType"
     (
          "RangeTypeId"
         ,"RangeTypeDesc"
@@ -11,6 +11,6 @@ FROM    (
             UNION   SELECT 20 AS "RangeTypeId", 'timestamp'  as "RangeTypeDesc"
             --UNION   SELECT 20 AS "RangeTypeId", 'postgres' as "RangeTypeDesc"
         ) AS ST
-WHERE   NOT EXISTS (SELECT 1 FROM "RangeType" AS S WHERE S."RangeTypeDesc" = ST."RangeTypeDesc");
+WHERE   NOT EXISTS (SELECT 1 FROM ods."RangeType" AS S WHERE S."RangeTypeDesc" = ST."RangeTypeDesc");
 
-SELECT * FROM "RangeType";
+SELECT * FROM ods."RangeType";

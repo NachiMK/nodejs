@@ -31,7 +31,7 @@ INNER
 JOIN    "TaskConfigAttribute"         TA  ON  TA."DataPipeLineTaskConfigId" = DPC."DataPipeLineTaskConfigId"
 INNER
 JOIN    "Attribute"             A   ON  A."AttributeId"         = TA."AttributeId"
-WHERE   DPC."TaskName"          = '10.DynamoDB to S3'
+WHERE   DPC."TaskName"          = 'DynamoDB to S3'
 ;
 
 SELECT  *
@@ -43,7 +43,7 @@ JOIN    "TaskAttribute"         TA  ON  TA."DataPipeLineTaskId" = DPL."DataPipeL
 INNER
 JOIN    "Attribute"             A   ON  A."AttributeId"         = TA."AttributeId"
 WHERE   A."AttributeName"       = 'Dynamo.TableName'
-AND     DPC."TaskName"          = '10.DynamoDB to S3'
+AND     DPC."TaskName"          = 'DynamoDB to S3'
 AND     TA."AttributeValue"     =  'prod-clients-history-v2';
 
 
