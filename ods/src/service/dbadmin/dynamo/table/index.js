@@ -205,6 +205,7 @@ export const EnableHistoryOnTables = async (EnableTableList) => {
     }));
     return objRetArray;
   }
+  return undefined;
 };
 
 export const createHistoryTable = async (tablename) => {

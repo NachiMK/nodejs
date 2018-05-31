@@ -1,18 +1,17 @@
 import table from '@hixme/tables';
 
 export async function getHistory(options = {}) {
-  const {
-    table_name = "",
-    start_date = "",
-    end_date = "",
+  let {
+    startDate = '',
+    endDate = '',
   } = options;
+  const tableName = options.tableName;
 
-  let params = ''
-  if (start_date){
-    start_date = Date.now();
+  if (startDate) {
+    startDate = Date.now();
   }
-  if (end_date){
-    end_date = Date.now();
+  if (endDate) {
+    endDate = Date.now();
   }
 
   // // TableName and IndexName come for free with @hixme/tables query
@@ -27,36 +26,38 @@ export async function getHistory(options = {}) {
   //   })
   // }
 
-  const historytable = createTable(table_name);
+  const historytable = createTable(tableName);
 
   const historyRows = await historytable.getAll();
   return historyRows;
 }
 
-function createTable(table_name) {
-  const stage = "";//process.env.stage;
+function createTable(tableName) {
+  const stage = '';// process.env.stage;
 
   table.config({
     tablePrefix: stage,
     debug: false,
   });
 
-  return table.create(table_name);
+  return table.create(tableName);
 }
 
 export async function getHistoryv1(options = {}) {
   const {
-    table_name = "",
-    event_date = ""
+    tableName = '',
+    eventDate = '',
   } = options;
-  const historytable = createTable(table_name);
+  console.log(`getHistoryv1: ${eventDate} not used.`);
+
+  const historytable = createTable(tableName);
 
   const historyRows = await historytable.getAll();
 
   // in version 1 we had the history embeded so just extract those out.
   const normaliedrows = normalizeHistory(historyRows);
 
-  //return
+  // return
   return normaliedrows;
 }
 
@@ -70,18 +71,18 @@ export async function getHistoryv1(options = {}) {
 //   return table.create(table_name);
 // }
 
-function normalizeHistory(rows_to_normalize){
-  return rows_to_normalize.map(e => {
-      var item = {
-        "HistoryId": e.Id,
-        "HistoryAction": e.eventName,
-        "HistoryDate": e.created.slice(0,10).replace(/-/g,""),
-        "HistoryCreated":e.created,
-        "Rowkey": e.key,
-      };
-      Object.assign(item, e.eventRecord);
-      return item;
-  })
+function normalizeHistory(rowToNormalize) {
+  return rowToNormalize.map((e) => {
+    const item = {
+      HistoryId: e.Id,
+      HistoryAction: e.eventName,
+      HistoryDate: e.created.slice(0, 10).replace(/-/g, ''),
+      HistoryCreated: e.created,
+      Rowkey: e.key,
+    };
+    Object.assign(item, e.eventRecord);
+    return item;
+  });
 }
 
 

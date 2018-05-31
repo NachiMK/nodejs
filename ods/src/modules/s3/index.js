@@ -1,13 +1,13 @@
-import AWS from 'aws-sdk'
+import AWS from 'aws-sdk';
 
-export const s3 = new AWS.S3({ region: 'us-west-2' })
+export const s3 = new AWS.S3({ region: 'us-west-2' });
 
 export const s3BucketFactory = Bucket => (Key, options) =>
   s3.getObject({
     Bucket,
     Key,
     ...options,
-  }).promise()
+  }).promise();
 
 export const uploadFileToS3 = async ({
   Bucket,
@@ -19,37 +19,37 @@ export const uploadFileToS3 = async ({
       Bucket,
       Key,
       Body,
-    }).promise()
+    }).promise();
   } catch (err) {
-    const error = new Error(err.message)
-    error.status = err.status
+    const error = new Error(err.message);
+    error.status = err.status;
 
-    throw error
+    throw error;
   }
-}
+};
 
 export const s3FileParser = (filepath) => {
-  const [source, empty, Bucket, ...file] = filepath.split('/')
-  console.log(source, empty, Bucket, file)
+  const [source, empty, Bucket, ...file] = filepath.split('/');
+  console.log(source, empty, Bucket, file);
   return {
     Bucket,
     Key: file.join('/'),
-  }
-}
+  };
+};
 
 export const getS3JSON = async ({
   Bucket,
   Key,
 }) => {
   try {
-    const file = await s3BucketFactory(Bucket)(Key)
-    return JSON.parse(file.Body)
+    const file = await s3BucketFactory(Bucket)(Key);
+    return JSON.parse(file.Body);
   } catch (e) {
-    throw e
+    throw e;
   }
-}
+};
 
-const s3FileExists = async ({
+export const s3FileExists = async ({
   Bucket,
   Key,
 }) => {
@@ -57,14 +57,14 @@ const s3FileExists = async ({
     const findFile = await getS3JSON({
       Bucket,
       Key,
-    })
+    });
 
-    return true
-  } catch(e) {
+    return true && findFile;
+  } catch (e) {
     if (e.code === 'NoSuchKey') {
-      return false
+      return false;
     }
 
-    throw e
+    throw e;
   }
-}
+};

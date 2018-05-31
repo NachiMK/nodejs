@@ -19,7 +19,7 @@ import InvalidParameterError from '../../../../modules/ODSErrors/InvalidParamete
 const _ = require('lodash');
 // let AWS = require('aws-sdk');
 
-exports.handler = async (event, context, callback) => {
+export const handler = async (event) => {
   let RetError;
   const S3FilePath = '';
   let S3BucketName;

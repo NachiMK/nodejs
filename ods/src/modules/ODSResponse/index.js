@@ -39,7 +39,7 @@ export async function SetOdsResponseStatusToError(ODSResponse, err) {
   return ODSResponse;
 }
 
-export async function setODSResponseStatus_Processing(ODSResponse, err) {
+export async function SetOdsResponseStatusToProcessing(ODSResponse) {
   if (ODSResponse) {
     ODSResponse.Status = 'Processing';
   }

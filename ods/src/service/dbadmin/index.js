@@ -1,32 +1,30 @@
 import { createHistoryTable, EnableStreaming, LinkTableToTrigger } from '.';
-import { link } from 'fs';
-var delay = require('delay');
+
+const delay = require('delay');
 
 export * from '../dbadmin/dynamo';
 export * from '../dbadmin/lambda';
 
-export const enableHistory = async (tablename, envStage="") => {
+export const enableHistory = async (tablename, envStage = '') => {
+  const retStatus = {
+    TableName: tablename,
+    IsHistoryCreated: '',
+    IsStreamEnabled: '',
+    IsTriggerLinked: '',
+  };
+  const mystage = envStage || process.env.STAGE;
 
-    let retStatus = {
-        "TableName": tablename,
-        "IsHistoryCreated" : "",
-        "IsStreamEnabled" : "",
-        "IsTriggerLinked" : ""
+  const createhistStatus = await createHistoryTable(tablename);
+  if ((createhistStatus) && (createhistStatus.TableStatus.localeCompare('UNKNOWN') !== 0)) {
+    retStatus.IsHistoryCreated = true;
+    const enableStreamStatus = await EnableStreaming(tablename);
+    if ((enableStreamStatus) && (enableStreamStatus === true)) {
+      retStatus.IsStreamEnabled = true;
+      await delay(18000);
+      const linkStatus = await LinkTableToTrigger(tablename, mystage);
+      retStatus.IsTriggerLinked = ((linkStatus) && (linkStatus === true));
     }
-    let s = "".localeCompare("", )
-    let mystage = envStage || process.env.STAGE;
+  }
 
-    let createhistStatus = await createHistoryTable(tablename);
-    if ((createhistStatus) && (createhistStatus.TableStatus.localeCompare("UNKNOWN") !== 0)){
-        retStatus.IsHistoryCreated = true;
-        let enableStreamStatus = await EnableStreaming(tablename);
-        if ((enableStreamStatus) && (enableStreamStatus == true)){
-            retStatus.IsStreamEnabled = true;
-            await delay(18000);
-            let linkStatus = await LinkTableToTrigger(tablename, mystage);
-            retStatus.IsTriggerLinked = ((linkStatus) && (linkStatus == true));
-        }
-    }
-    
-    return retStatus;
-}
+  return retStatus;
+};

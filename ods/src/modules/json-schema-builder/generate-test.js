@@ -1,4 +1,4 @@
-import jsonSchemaSaver from './generate-json-schema'
+import jsonSchemaSaver from './index';
 
 jsonSchemaSaver({
   Datafile: 's3://ods-files/persons-etl.json',
@@ -7,5 +7,5 @@ jsonSchemaSaver({
   Overwrite: 'yes',
 })
   .then(res => console.log('res', res))
-  .catch(e => console.log('error', e))
+  .catch(e => console.log('error', e));
 
