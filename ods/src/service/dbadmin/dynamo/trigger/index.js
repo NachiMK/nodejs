@@ -1,44 +1,39 @@
-"use strict";
-import moment from 'moment';
 import {
-  getDefaultODSResponse,
-  setODSResponseStatus_Error,
-  setODSResponseStatus_Success,
-  IsResponseSuccess
+  GetDefaultOdsResponse,
+  SetOdsResponseStatusToError,
+  IsResponseSuccess,
 } from '../../../../modules/ODSResponse';
 import {
-  DynamoStreamEventsToS3
+  DynamoStreamEventsToS3,
 } from '../../../../modules/dynamo-stream-to-s3';
 
 import {
   createDynamoDBToS3PipeLineTask,
-  UpdatePipeLineTaskStatus
+  UpdatePipeLineTaskStatus,
 } from '../../../../data/ODSConfig/DataPipeLineTask';
 
 import InvalidParameterError from '../../../../modules/ODSErrors/InvalidParameterError';
-import ODSError from '../../../../modules/ODSErrors/ODSError';
-
-const _ = require('lodash');
-
+// import ODSError from '../../../../modules/ODSErrors/ODSError';
 
 // dependencies
-var AWS = require("aws-sdk");
-exports.handler = async (event, context, callback) => {
+const _ = require('lodash');
+// let AWS = require('aws-sdk');
 
+exports.handler = async (event, context, callback) => {
   let RetError;
-  let S3FilePath = "";
+  const S3FilePath = '';
   let S3BucketName;
-  let RowCount = _.isArray(event.Records) ? event.Records.length : 0;
-  let AppendDateTime = true;
-  let DateTimeFormat = "YYYYMMDD_HHmmssSSS";
+  const RowCount = _.isArray(event.Records) ? event.Records.length : 0;
+  const AppendDateTime = true;
+  const DateTimeFormat = 'YYYYMMDD_HHmmssSSS';
   let FilePrefix;
-  let defaultResp = await getDefaultODSResponse();
+  const defaultResp = await GetDefaultOdsResponse();
 
   // Parse the triggering tablename (Ex: dev-table-name) from the eventSourceARN
-  let firstElement = _.head(event.Records);
-  let tableName = (typeof firstElement !== undefined) ? firstElement.eventSourceARN.split(":")[5].split("/")[1] : undefined;
+  const firstElement = _.head(event.Records);
+  const tableName = (typeof firstElement !== 'undefined') ? firstElement.eventSourceARN.split(':')[5].split('/')[1] : undefined;
 
-  let saveStatus = {
+  const saveStatus = {
     ...defaultResp,
     S3FilePath,
     S3BucketName,
@@ -50,35 +45,33 @@ exports.handler = async (event, context, callback) => {
   try {
     pipeLineTaskResp = await createDynamoDBToS3PipeLineTask(tableName, RowCount);
     FilePrefix = pipeLineTaskResp.DataFilePrefix || `dynamodb/${tableName}`;
-    S3BucketName = pipeLineTaskResp.S3DataFileFolderPath || "dev-ods-data";
-  }
-  catch(err){
+    S3BucketName = pipeLineTaskResp.S3DataFileFolderPath || 'dev-ods-data';
+  } catch (err) {
     RetError = new Error(`Error creating DatapipeLine Task for ${tableName} 
                     so data was not saved to S3 bucket.
                     error:${JSON.stringify(err, null, 2)}`);
     console.warn(`${JSON.stringify(RetError, null, 2)}`);
-    await setODSResponseStatus_Error(saveStatus, RetError);
+    await SetOdsResponseStatusToError(saveStatus, RetError);
     return saveStatus;
   }
 
-  let DynamoStreamEvent = event;
-  let StreamEventsToS3Params = {
+  const DynamoStreamEvent = event;
+  const StreamEventsToS3Params = {
     DynamoStreamEvent,
-    "KeyName" : FilePrefix,
+    KeyName: FilePrefix,
     S3BucketName,
     AppendDateTime,
     DateTimeFormat,
-    "TableName" : tableName,
+    TableName: tableName,
   };
 
   let saveStreamToS3Resp;
   try {
     saveStreamToS3Resp = await DynamoStreamEventsToS3(StreamEventsToS3Params);
     Object.assign(saveStatus, saveStreamToS3Resp);
-  }
-  catch (err) {
+  } catch (err) {
     if (err instanceof InvalidParameterError) {
-      await setODSResponseStatus_Error(saveStatus, JSON.stringify(err, null, 2));
+      await SetOdsResponseStatusToError(saveStatus, JSON.stringify(err, null, 2));
     } else {
       RetError = new Error(`Unhandled error in calling DynamoStreamEventsToS3 for ${tableName} 
                       to S3 bucket: ${S3BucketName} 
@@ -86,14 +79,15 @@ exports.handler = async (event, context, callback) => {
                       error:${JSON.stringify(err, null, 2)}`);
       console.warn(`${JSON.stringify(RetError, null, 2)}`);
     }
-    await setODSResponseStatus_Error(saveStatus, RetError);
+    await SetOdsResponseStatusToError(saveStatus, RetError);
   }
-  let updateResp = await UpdatePipeLineTaskStatus(pipeLineTaskResp.DataPipeLineTaskQueueId, saveStatus);
+  const updateResp = await UpdatePipeLineTaskStatus(pipeLineTaskResp.DataPipeLineTaskQueueId, saveStatus);
 
-  if ((updateResp) && (IsResponseSuccess(saveStatus))){
-    //let nextStepResp = createDataPipeLineTask_ProcessHistory(tableName, saveStatus);
+  if ((updateResp) && (IsResponseSuccess(saveStatus))) {
+    // let nextStepResp = createDataPipeLineTask_ProcessHistory(tableName, saveStatus);
   }
 
+  return saveStatus;
 };
 
 // async function saveRowsToS3(TableName, Rows, S3BucketName = "", ODSConfig = {}) {
