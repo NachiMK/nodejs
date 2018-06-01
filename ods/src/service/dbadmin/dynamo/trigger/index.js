@@ -15,6 +15,8 @@ import {
 import InvalidParameterError from '../../../../modules/ODSErrors/InvalidParameterError';
 // import ODSError from '../../../../modules/ODSErrors/ODSError';
 
+import ODSLogger from '../../../../modules/log/ODSLogger';
+
 // dependencies
 const _ = require('lodash');
 // let AWS = require('aws-sdk');
@@ -31,7 +33,8 @@ export const handler = async (event) => {
 
   // Parse the triggering tablename (Ex: dev-table-name) from the eventSourceARN
   const firstElement = _.head(event.Records);
-  const tableName = (typeof firstElement !== 'undefined') ? firstElement.eventSourceARN.split(':')[5].split('/')[1] : undefined;
+  let tableName = (typeof firstElement !== 'undefined') ? firstElement.eventSourceARN.split(':')[5].split('/')[1] : undefined;
+  tableName = tableName.replace('prod-', '').replace('int-', '').replace('dev-', '');
 
   const saveStatus = {
     ...defaultResp,
@@ -87,6 +90,7 @@ export const handler = async (event) => {
     // let nextStepResp = createDataPipeLineTask_ProcessHistory(tableName, saveStatus);
   }
 
+  ODSLogger.log('info', 'savestatus:%j', saveStatus);
   return saveStatus;
 };
 

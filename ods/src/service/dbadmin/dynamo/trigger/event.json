@@ -31,7 +31,7 @@
                 "SizeBytes": 112,
                 "StreamViewType": "NEW_IMAGE"
             },
-            "eventSourceARN": "arn:aws:dynamodb:us-east-1:123456789012:table/BarkTable/stream/2016-11-16T20:42:48.104"
+            "eventSourceARN": "arn:aws:dynamodb:us-east-1:123456789012:table/prod-clients/stream/2016-11-16T20:42:48.104"
         }
     ]
 }

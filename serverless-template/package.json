@@ -1,6 +1,6 @@
 {
   "name": "serverless-template",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Serverless Template",
   "author": "Hixme.com",
   "contributors": [
@@ -26,8 +26,8 @@
     "log_fetch_refresh_interval": 5000,
     "log_fetch_start_time": "2h",
     "region": "us-west-2",
-    "runtime": "nodejs6.10",
-    "stage": "int"
+    "runtime": "nodejs8.10",
+    "stage": "dev"
   },
   "scripts": {
     "build:min": "npm run build -- --compact --minified --source-maps false",
@@ -36,11 +36,11 @@
     "clean": "rimraf build coverage .webpack .serverless",
     "coverage": "npm run test -- --coverage",
     "deploy:custom": "npm run build && cross-env SLS_DEBUG=* sls deploy --aws-s3-accelerate -v -r $npm_package_config_region --stage",
-    "deploy:dev": "npm run build && cross-env STAGE=dev SLS_DEBUG=* sls deploy --aws-s3-accelerate -v --stage dev -r $npm_package_config_region",
     "deploy:function:dev": "npm run build && cross-env STAGE=dev SLS_DEBUG=* sls deploy --aws-s3-accelerate -v --stage dev -r $npm_package_config_region function -f",
     "deploy:function:int": "npm run build:min && cross-env STAGE=int SLS_DEBUG=* sls deploy --aws-s3-accelerate --stage int -r $npm_package_config_region function -f",
     "deploy:function:prod": "npm run build:min && cross-env STAGE=prod SLS_DEBUG=* sls deploy --aws-s3-accelerate --stage prod -r $npm_package_config_region function -f",
     "deploy:function": "npm run deploy:function:$npm_package_config_stage",
+    "deploy:dev": "npm run build && cross-env STAGE=dev SLS_DEBUG=* sls deploy --aws-s3-accelerate -v --stage dev -r $npm_package_config_region",
     "deploy:int": "npm run build:min && cross-env STAGE=int sls deploy --aws-s3-accelerate --stage int -r $npm_package_config_region",
     "deploy:prod": "npm run build:min && cross-env STAGE=prod sls deploy --aws-s3-accelerate --stage prod -r $npm_package_config_region",
     "deploy": "npm run deploy:$npm_package_config_stage",
@@ -67,24 +67,26 @@
     "start": "cross-env AP_PORT=\"8000\" npm run start:run",
     "tag": "git tag -am $npm_package_version $npm_package_version && git push --tags",
     "test:wip": "jest -t wip --passWithNoTests",
-    "test": "jest --passWithNoTests"
+    "test": "STAGE=$npm_package_config_stage jest --passWithNoTests"
   },
   "dependencies": {
-    "@hixme/error-middleware": "1.4.6",
-    "@hixme/error-response": "0.3.0",
+    "@hixme/before-after-middleware": "^1.1.0",
+    "@hixme/dynamo-middleware": "^1.0.0",
     "@hixme/model-middleware": "1.4.5",
-    "@hixme/moosify": "5.4.6",
-    "@hixme/stage-middleware": "5.10.0",
-    "ajv": "6.2.0",
+    "@hixme/role-authorizer-middleware": "^1.0.0",
+    "@hixme/role-policy": "5.10.0",
+    "@hixme/sanitizer-middleware": "^1.0.0",
+    "@hixme/tables": "^6.1.0",
+    "@hixme/validator-middleware": "^1.1.1",
     "aws-sdk": "2.202.0",
     "babel-runtime": "6.26.0",
     "circular-json": "0.5.1",
     "delver": "1.1.2",
-    "dynamoose": "0.8.6",
     "fortune-cookie": "0.0.1",
     "lodash": "4.17.5",
     "node-fetch": "2.0.0",
     "strip-ansi": "4.0.0",
+    "uuid": "3.2.1",
     "warewolf": "2.0.6"
   },
   "devDependencies": {
@@ -117,6 +119,7 @@
     "serverless-domain-manager": "2.3.2",
     "serverless-offline": "3.18.0",
     "serverless-plugin-webpack": "1.5.0",
+    "serverless-prune-plugin": "1.3.0",
     "source-map-loader": "0.2.3",
     "webpack": "4.0.0",
     "yargs": "11.0.0"

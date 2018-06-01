@@ -1,22 +1,61 @@
 ###################################################################
 ##   FYI  ————————————————————————————————————————————————————   ##
 ##   Usually, nothing needs to be changed in this config file.   ##
-##   Most everything you need to configure is in 'src/config/'   ##
+##   Most everything you need to configure is in 'src/config.yml'##
 ###################################################################
 
 service:                  ${file(package.json):name} # TODO: might we instead run
 # one of the js functions in ./src/utils/index.js, like `${file(env.js):getAPIBasePath}`, etc.
 frameworkVersion:         ">=1.26.0 <2.0.0"
 plugins:
-                          - 'serverless-plugin-webpack'   # must be listed FIRST
-                          - 'serverless-aws-documentation'
-                          - 'serverless-domain-manager'
-                          - 'serverless-offline'          # must be listed LAST
+    - serverless-plugin-webpack   # must be listed FIRST
+    - serverless-aws-documentation
+    - serverless-domain-manager
+    - serverless-prune-plugin
+    - serverless-offline          # must be listed LAST
 package:
   individually:           true
   excludeDevDependencies: false
   exclude:                ['node_modules/**/aws-sdk/**']
-custom:                   ${file(src/config/custom.yml)}
+
+custom:
+  service:
+    NAME:         ${file(package.json):name, 'untitled-api-service'}
+    STAGE:        ${opt:stage, env:NODE_ENV, file(package.json):config.stage, 'dev'}
+    REGION:       ${opt:region, file(package.json):config.region, 'us-west-2'}
+    RUNTIME:      ${file(package.json):config.runtime, 'nodejs6.10'}
+    VERSION:      ${file(package.json):version}
+    DESCRIPTION:  ${file(package.json):description}
+
+  documentation:
+    # authorizers:  ${file(schemas/authorizers.yml)}
+    description:  Hixme API | ${file(package.json):description}
+    models:       ${file(schemas/all.yml)}
+    summary:      ${file(package.json):description}
+    version:      ${file(package.json):version}
+
+  customDomain:
+    basePath:             ${file(env.js):getAPIBasePath}
+    certificateName:      '*.hixme.com'
+    createRoute53Record:  false # leave as-is, unless you know what you're doing
+    domainName:           ${file(env.js):getHostname}
+    stage:                ${file(env.js):getStage}
+
+  serverless-offline:
+    prefix: ${file(env.js):getAPIBasePath}
+
+  webpack:
+    series: false # Currently deploy fails when set to true
+
+  cognitoPools:
+    dev:  arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_AXPnJkIR9
+    int:  arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_aZ2JNiTZp
+    prod: arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_Guj3GDdPC # Found typo
+
+  prune: # remove old lambda versions automatically on each deploy and leave the last N
+    automatic: true
+    number: 3
+
 provider:
   name:                   aws
   memorySize:             1024
@@ -35,6 +74,33 @@ provider:
     VERSION:              ${self:custom.service.VERSION}
   # TODO: improve the (below) 'environment' function so that it exports 'stackTags'!
   environment:            ${file(env.js):getAndSetVarsFromEnvFile}
-  iamRoleStatements:      ${file(src/config/iam-role-statements.yml)}
-functions:                ${file(src/config/functions.yml)}
-resources:                ${file(src/config/resources.yml)}
+  iamRoleStatements:      ${file(src/config.yml):iamRoleStatements}
+
+functions:                ${file(src/config.yml):functions}
+
+resources:
+  Resources: 
+    # Set CORS headers on 4xx and 5xx errors
+    GatewayResponseDefault4XX:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+
+    GatewayResponseDefault5XX:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+  
+ # TODO: Support setting resources in config.yml

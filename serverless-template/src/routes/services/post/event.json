@@ -1,0 +1,15 @@
+{
+  "body": {
+    "Id": "c32b2c7a-5096-4d0d-942d-d4c2730cd87f",
+    "Domain": "Person",
+    "Name": "person-service"
+  },
+  "requestContext": {
+    "authorizer": {
+      "claims": {
+        "custom:user-role": "PlatformHixmeAdmin",
+        "cognito:username": "b657db48-e99e-4366-bcab-fa4f817b8074"
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+Any triggers such as dynamodb, s3, schedules, etc can live here.

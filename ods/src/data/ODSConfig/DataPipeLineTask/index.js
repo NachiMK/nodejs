@@ -12,8 +12,8 @@ async function createDynamoDBToS3PipeLineTask(TableName, RowCount) {
   let DataPipeLineTaskQueueId;
 
   try {
-    const sqlQuery = await getQuery(TableName, RowCount);
-    const dbName = await getDBName('ODSConfig');
+    const sqlQuery = getQuery(TableName, RowCount);
+    const dbName = getDBName('ODSConfig');
     const batchKey = 1;
     const params = {
       Query: sqlQuery,
@@ -21,6 +21,13 @@ async function createDynamoDBToS3PipeLineTask(TableName, RowCount) {
       BatchKey: batchKey,
     };
     const retRS = await executeQueryRS(params);
+    if (retRS.rows.length > 0) {
+      DataFilePrefix = retRS.rows[0].DataFilePrefix;
+      S3DataFileFolderPath = retRS.rows[0].S3DataFileFolderPath;
+      DataPipeLineTaskQueueId = retRS.rows[0].DataPipeLineTaskQueueId;
+    } else {
+      throw new Error('Error creating DataPipeLineTaskQueue, DB Call returned 0 rows.');
+    }
     console.log(`create DataPipeLinetaskQueue status: ${JSON.stringify(retRS)}`);
   } catch (err) {
     const msg = `Issue creating DataPipeLineTaskQueueId for Table: ${TableName} with Rows: ${RowCount}`;
@@ -50,10 +57,10 @@ async function UpdatePipeLineTaskStatus(DataPipeLineTaskQueueId, Status, StatusE
   }
 }
 
-async function getQuery(TableName, RowCount) {
+function getQuery(TableName, RowCount) {
   return `SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('${TableName}', ${RowCount})`;
 }
 
-async function getDBName(DBName) {
+function getDBName(DBName) {
   return ((typeof DBName === 'undefined') || (DBName.Length === 0)) ? 'ODSConfig' : DBName;
 }

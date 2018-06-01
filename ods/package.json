@@ -18,7 +18,8 @@
     "region": "us-west-2",
     "runtime": "nodejs8.10",
     "stage": "dev",
-    "log_dbname": "ODSLog"
+    "log_dbname": "ODSLog",
+    "odsloglevel": "error"
   },
   "scripts": {
     "knex:dev": "knex --env dev",
@@ -30,13 +31,13 @@
     "coverage": "npm run test -- --coverage",
     "deleteTheEntireDevService:AreYouAbsolutelySure:YES": "SLS_DEBUG=* sls remove --verbose --stage dev --region $npm_package_config_region",
     "deploy:custom": "npm run build && SLS_DEBUG=* sls deploy --verbose --region $npm_package_config_region --stage",
-    "deploy:dev": "npm run build && SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region",
-    "deploy:function:dev": "npm run build && SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region function --function",
-    "deploy:function:int": "npm run build && sls deploy --stage int --region $npm_package_config_region function --function",
-    "~deploy:function:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region function --function",
+    "deploy:dev": "npm run build && SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region --odsloglevel info",
+    "deploy:function:dev": "npm run build && SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region --odsloglevel info function --function",
+    "deploy:function:int": "npm run build && sls deploy --stage int --region $npm_package_config_region --odsloglevel info function --function",
+    "~deploy:function:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region --odsloglevel info function --function",
     "deploy:function": "npm run deploy:function:dev --",
-    "deploy:int": "npm run build && sls deploy --stage int --region $npm_package_config_region",
-    "~deploy:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region",
+    "deploy:int": "npm run build && sls deploy --stage int --region $npm_package_config_region --odsloglevel warn",
+    "~deploy:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region --odsloglevel warn",
     "deploy": "npm run deploy:dev --",
     "info:stage": "sls info --verbose --region $npm_package_config_region --stage",
     "info": "sls info --verbose --region $npm_package_config_region",
@@ -81,7 +82,8 @@
     "run-func": "^1.0.2",
     "sleep": "^5.1.1",
     "uuid": "^3.2.1",
-    "warewolf": "^2.0.6"
+    "warewolf": "^2.0.6",
+    "winston": "^3.0.0-rc6"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
@@ -156,7 +158,7 @@
       ],
       "no-use-before-define": 0,
       "no-param-reassign": 0,
-      "no-await-in-loop" : [
+      "no-await-in-loop": [
         "warn"
       ],
       "max-len": 0

@@ -1,0 +1,12 @@
+{
+    "title": "Domain",
+    "properties": {
+        "Domain": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "Domain"
+    ],
+    "type": "object"
+}

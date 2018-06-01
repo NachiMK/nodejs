@@ -56,7 +56,7 @@ INSERT INTO
     )
 SELECT   DPT."DataPipeLineTaskId"
         ,TCA."AttributeId"
-        ,'/dynamodb/' || Tbls."CleanTableName" || '/{Id}-' || Tbls."CleanTableName" || '-' || REPLACE(REPLACE(A."AttributeName", 'Prefix.', ''), 'File', '') || '-' AS "AttributeValue"
+        ,'dynamodb/' || Tbls."CleanTableName" || '/{Id}-' || Tbls."CleanTableName" || '-' || REPLACE(REPLACE(A."AttributeName", 'Prefix.', ''), 'File', '') || '-' AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
 JOIN    ods."DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'

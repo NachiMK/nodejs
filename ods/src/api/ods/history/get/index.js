@@ -10,7 +10,12 @@ export const getHistory = ware(
   // validateParams(path.join(__dirname, 'HistoryTable.json')),
   async (event) => {
     const dynamotablename = event.queryAndParams.DynamoTableName;
-    const tableHistoryRows = await dynamoservice.gethistory(dynamotablename, '', '', '');
+    const params = {
+      DynamoTableName: dynamotablename,
+      StartDate: '',
+      EndDate: '',
+    };
+    const tableHistoryRows = await dynamoservice.getHistory(params);
     event.result = tableHistoryRows;
   },
   after,
@@ -22,7 +27,11 @@ export const getHistoryv1 = ware(
   // validateParams(path.join(__dirname, 'HistoryTableV1.json')),
   async (event) => {
     const v1dynamotablename = event.queryAndParams.DynamoTableName;
-    const tableHistoryRows = await dynamoservice.gethistoryv1(v1dynamotablename, '', '');
+    const params = {
+      DynamoTableName: v1dynamotablename,
+      EventDate: '',
+    };
+    const tableHistoryRows = await dynamoservice.getHistoryv1(params);
     event.result = tableHistoryRows;
   },
   after,

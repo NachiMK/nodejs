@@ -30,8 +30,8 @@ export const executeQueryRS = async (params = {}) => {
   IsValidParams(params, true);
 
   try {
-    const localKnex = knex(DBName);
-    let logresp = await logSQLCommand(params, 'executeQueryRS');
+    const localKnex = await knex(DBName);
+    // let logresp = await logSQLCommand(params, 'executeQueryRS');
     const id = logresp.scalarValue;
     const knexResp = await localKnex.raw(Query);
     if ((knexResp) && (knexResp.rows)) {
@@ -131,7 +131,7 @@ export const logSQLCommand = async (params = {}, commandType = 'UNKNOWN') => {
   } = params;
 
   try {
-    const localKnex = knex(dbName);
+    const localKnex = await knex(dbName);
     const resp = await localKnex.raw('SELECT udf_insert_commandlog(?,?,?,?)', [BatchKey, DBName, Query, commandType]);
     if (resp) {
       if (resp.rows && (resp.rows.length > 0)) {
@@ -171,7 +171,7 @@ export const updateCommandLogEndTime = async (commandLogID) => {
 };
 
 function getConnectionString(dbName, stage) {
-  const key = `${stage.toUpperCase()}_${dbName.toUpperCase()}'_PG'`;
+  const key = `${stage}_${dbName}_PG`.toUpperCase();
   const idx = Object.keys(process.env).indexOf(key);
   let retVal;
   if (idx >= 0) {

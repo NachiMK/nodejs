@@ -34,7 +34,7 @@ export async function DynamoStreamEventsToS3(StreamEventsToS3Param = {}) {
   } = StreamEventsToS3Param;
 
   const firstElement = _.head(DynamoStreamEvent.Records);
-  const CurTableName = TableName || (typeof firstElement !== 'undefined') ? firstElement.eventSourceARN.split(':')[5].split('/')[1] : 'UNKNOWN_';
+  const CurTableName = TableName || ((typeof firstElement !== 'undefined') ? firstElement.eventSourceARN.split(':')[5].split('/')[1] : 'UNKNOWN_');
   const TableKeyName = KeyName || CurTableName;
 
   // Parse the triggering tablename (Ex: dev-table-name) from the eventSourceARN
@@ -165,6 +165,7 @@ async function getDataTimeStamp(timeformat = 'YYYYMMDD_HHmmssSSS') {
 
 export async function getJSONFileKeyName(FilePrefix, AppendDtTm = true, DateTimeFormat = 'YYYYMMDD_HHmmssSSS') {
   FilePrefix = (_.isUndefined(FilePrefix) || _.isEmpty(FilePrefix)) ? 'UNKNOWN_' : FilePrefix.replace('.json', '');
+  FilePrefix = ((FilePrefix.charAt(0) === '/') ? FilePrefix.substring(1) : FilePrefix);
   if (AppendDtTm) {
     return `${FilePrefix}_${await getDataTimeStamp(DateTimeFormat)}.json`.replace('__', '_');
   }

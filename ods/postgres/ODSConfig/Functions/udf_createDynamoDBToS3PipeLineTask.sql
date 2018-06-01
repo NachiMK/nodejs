@@ -49,11 +49,23 @@ BEGIN
     
     -- Result
     FOR retRecord in 
-            SELECT   dataFilePrefix             as "DataFilePrefix"
-                    ,S3DataFileFolderPath       as "S3DataFileFolderPath"
-                    ,DataPipeLineTaskQueueId    as "DataPipeLineTaskQueueId"
-            -- FROM    "DataPipeLineTaskQueue"
-            -- WHERE   "DataPipeLineTaskQueueId"   = DataPipeLineTaskQueueId
+            SELECT  REPLACE("Prefix.DataFile", '{Id}', CAST("DataPipeLineTaskQueueId" AS VARCHAR)) as "PrefixDataFile"
+                    ,"S3.DataFile.FolderPath" as "S3DataFileFolderPath"
+                    ,"DataPipeLineTaskQueueId" as "DataPipeLineTaskQueueId"
+            FROM    crosstab( 'SELECT  "DataPipeLineTaskQueueId"
+                                        ,A."AttributeName"
+                                        ,TA."AttributeValue"
+                                FROM    ods."TaskAttribute" AS TA
+                                INNER
+                                JOIN    ods."Attribute" AS A ON A."AttributeId" = TA."AttributeId"
+                                INNER
+                                JOIN    ods."DataPipeLineTaskQueue" AS DPL ON DPL."DataPipeLineTaskId" = TA."DataPipeLineTaskId"
+                                WHERE "DataPipeLineTaskQueueId" = ' || DataPipeLineTaskQueueId) 
+                        AS final_result( "DataPipeLineTaskQueueId" INT
+                                        ,"Dynamo.TableName"  VARCHAR
+                                        ,"S3.DataFile.FolderPath" VARCHAR
+                                        ,"Prefix.DataFile" VARCHAR
+                                        )
             LOOP
             return next retRecord;
         END LOOP;
@@ -61,5 +73,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 /*
-
+    SELECT * FROM ods.udf_createDynamoDBToS3PipeLineTask('clients', 10);
 */

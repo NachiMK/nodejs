@@ -1,0 +1,218 @@
+functions:
+  get-services-by-domain:
+    handler: build/routes/services/get/index.get
+    description: "Get Services By Domain"
+    events:
+      - http:
+          path: services
+          method: GET
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                Domain: true
+          authorizer: ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+          documentation:
+            summary: "Get Services"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseModels:
+                  "application/json" : "GetServicesResponse"
+
+  get-service:
+    handler: build/routes/services/single/get/index.get
+    description: "Get Service"
+    events:
+      - http:
+          path: services/{ServicePublicKey}
+          method: GET
+          cors: true
+          request:
+            parameters:
+              paths:
+                ServicePublicKey: true
+          authorizer: ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+          documentation:
+            summary: "Get Service"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseModels:
+                  "application/json" : "GetServiceResponse"
+
+  post-service:
+    handler: build/routes/services/post/index.post
+    description: "Post Service"
+    events:
+      - http:
+          path: service
+          method: POST
+          cors: true
+          authorizer: ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+          documentation:
+            summary: "Save Service"
+            description: "Save Service"
+            requestModels:
+              "application/json": "PostServiceRequest"
+            methodResponses:
+             -
+                statusCode: "200"
+                responseModels:
+                  "application/json" : "PostServiceResponse"
+
+  delete-service:
+    handler: build/routes/services/delete/index.deleteService
+    description: "Inactivate Service"
+    events:
+      - http:
+          path: service
+          method: DELETE
+          cors: true
+          authorizer: ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+          documentation:
+            summary: "Inactivate Service"
+            description: "Inactivate Service"
+            requestModels:
+              "application/json": "DeleteServiceRequest"
+            methodResponses:
+             -
+                statusCode: "200"
+                responseModels:
+                  "application/json" : "DeleteServiceResponse"
+  
+  get-fortune:
+    handler: build/routes/fortune/index.get
+    description: ${self:custom.documentation.summary}
+    events:
+      - http:
+          path: fortune/get
+          method: get
+          cors: true
+          authorizer: ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+          documentation:
+            summary: GET Fortune
+            description: Example of a GET fortune request/response.
+            methodResponses:
+              -
+                statusCode: "200"
+                responseModels:
+                  "application/json" : "FortuneGetResponse"
+  
+  ping:
+    description: ${self:custom.documentation.summary}
+    handler: build/routes/ping/index.ping
+    events:
+      - http:
+          path: ping
+          method: get
+          cors: true
+          documentation:
+            summary: 'Ping The Service'
+            description: Service Up? Check w/ Ping / Pong
+
+  proxy-request:
+    handler: build/routes/proxy-request/index.proxy
+    description: ${self:custom.documentation.summary}
+    events:
+      - http:
+          path: proxy/{acronym}
+          method: get
+          cors: true
+          documentation:
+            summary: Example Proxying of an Incoming Request to Another API
+            description: Example of how to proxy a request to another api and return that API's response as our own.
+
+  schedule:
+    handler: build/routes/schedule/index.schedule
+    description: ${self:custom.documentation.summary}
+    events:
+      - schedule:
+          enabled: false # The `enabled` setting is _NOT_ required!
+          # template set it to 'false' here so that it doesn't run.
+          description: Example of How to Schedule Your Functions' Execution(s)
+          rate: rate(2 minutes)
+          documentation:
+            summary: Example Scheduled Function
+            description: Example of How to Schedule Your Functions' Execution(s).
+
+
+  # The following are a few example events you can configure a given lambda
+  # function to fire upon.
+  # NOTE: Please make sure to change your handler code to work with those events
+  # Check the event documentation for details
+  # ---------------------------------------------------
+  #       - http:
+  #           path: users/create
+  #           method: get
+  #       - s3: ${env:BUCKET}
+  #       - schedule: rate(10 minutes)
+  #       - sns: greeter-topic
+  #       - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
+  #       - alexaSkill
+  #       - iot:
+  #           sql: "SELECT * FROM 'some_topic'"
+  #       - cloudwatchEvent:
+  #           event:
+  #             source:
+  #               - "aws.ec2"
+  #             detail-type:
+  #               - "EC2 Instance State-change Notification"
+  #             detail:
+  #               state:
+  #                 - pending
+  #       - cloudwatchLog: '/aws/lambda/hello'
+  #       - cognitoUserPool:
+  #           pool: MyUserPool
+  #           trigger: PreSignUp
+  #
+  #     Define function-specific environment variables here
+  #     environment:
+  #       variable2: value2
+
+iamRoleStatements:
+  # These IAM roles `Allow` and `Deny` access to resources and services for this
+  # particular ENTIRE serverless project!
+
+  - Effect: Allow
+    Action:
+      - dynamodb:DescribeTable
+      - dynamodb:Query
+      - dynamodb:Scan
+      - dynamodb:GetItem
+      - dynamodb:PutItem
+      - dynamodb:UpdateItem
+      # - dynamodb:DeleteItem
+    Resource:
+      - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-platform-configuration*
+      - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-platform-login*
+      - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-persons*
+      - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-services*
+
+  - Effect: Allow
+    Action:
+      - cognito-idp:AdminGetUser
+      - cognito-idp:AdminConfirmSignUp
+      - cognito-idp:AdminDeleteUser
+      - cognito-idp:AdminDisableUser
+      - cognito-idp:AdminEnableUser
+    Resource:
+      - ${self:custom.cognitoPools.${self:custom.service.STAGE}}
+
+  # Two more generic examples:
+
+  # - Effect: Allow
+  #   Action:
+  #     - service:action_1
+  #     - service:action_2
+  #     - service:action_3
+  #   Resource:
+  #     - arn:aws:service:region:aws_account_number:something_1
+  #     - arn:aws:service:region:aws_account_number:something_2
+  #     - arn:aws:service:region:aws_account_number:something_3
+
+  # - Effect: Deny
+  #   Action:
+  #     - service:action_name
+  #   Resource:
+  #     - '*'  # <— all resources

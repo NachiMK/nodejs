@@ -1,23 +1,39 @@
 -
   contentType: application/json
-  description: Example Request [GET]
-  name:        ExampleGetRequest
-  schema:      ${file(build/routes/examples/get/request.json)}
+  description: Get services response
+  name:        GetServicesResponse
+  schema:      ${file(build/routes/services/get/response.schema.json)}
 -
   contentType: application/json
-  description: Example Response [GET]
-  name:        ExampleGetResponse
-  schema:      ${file(build/routes/examples/get/response.json)}
+  description: Get service response
+  name:        GetServiceResponse
+  schema:      ${file(build/routes/services/single/get/response.schema.json)}
 -
   contentType: application/json
-  description: Example Request [POST]
-  name:        ExamplePostRequest
-  schema:      ${file(build/routes/examples/get/request.json)}
+  description: Save service request
+  name:        PostServiceRequest
+  schema:      ${file(build/routes/services/post/request.schema.json)}
 -
   contentType: application/json
-  description: Example Response [POST]
-  name:        ExamplePostResponse
-  schema:      ${file(build/routes/examples/get/response.json)}
+  description: Save service response
+  name:        PostServiceResponse
+  schema:      ${file(build/routes/services/post/response.schema.json)}
+-
+  contentType: application/json
+  description: Inactivate services request
+  name:        DeleteServiceRequest
+  schema:      ${file(build/routes/services/delete/request.schema.json)}
+-
+  contentType: application/json
+  description: Inactivate services response
+  name:        DeleteServiceResponse
+  schema:      ${file(build/routes/services/delete/response.schema.json)}
+
+-
+  contentType: application/json
+  description: Fortune Response [GET]
+  name:        FortuneGetResponse
+  schema:      ${file(build/routes/fortune/response.schema.json)}
 -
   contentType: application/json
   description: Standard Error Response Object

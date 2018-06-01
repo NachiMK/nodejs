@@ -21,7 +21,7 @@ export async function SetOdsResponseStatusToSuccess(ODSResponse) {
   return ODSResponse;
 }
 
-export async function IsResponseSuccess(ODSResponse) {
+export function IsResponseSuccess(ODSResponse) {
   if ((!_.isUndefined(ODSResponse)) && (!_.isUndefined(ODSResponse.Status))) {
     if (ODSResponse.Status === 'Success') {
       return true;
