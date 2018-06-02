@@ -30,15 +30,17 @@ export const executeQueryRS = async (params = {}) => {
   IsValidParams(params, true);
 
   try {
-    const localKnex = await knex(DBName);
-    // let logresp = await logSQLCommand(params, 'executeQueryRS');
+    const localKnex = knex(DBName);
+    let logresp = await logSQLCommand(params, 'executeQueryRS');
     const id = logresp.scalarValue;
-    const knexResp = await localKnex.raw(Query);
-    if ((knexResp) && (knexResp.rows)) {
-      ret.rows = knexResp.rows;
-      ret.completed = true;
-      ret.rowCount = knexResp.rowCount;
-    }
+    await localKnex.raw(Query)
+      .then((knexResp) => {
+        if ((knexResp) && (knexResp.rows)) {
+          ret.rows = knexResp.rows;
+          ret.completed = true;
+          ret.rowCount = knexResp.rowCount;
+        }
+      });
     logresp = await updateCommandLogEndTime(await getCommandLogID(id));
   } catch (err) {
     ret.rows = [];
@@ -61,8 +63,6 @@ export const executeScalar = async (params = {}) => {
     DBName,
   } = params;
 
-  let ret;
-
   // may throw an error
   IsValidParams(params, true);
 
@@ -70,21 +70,21 @@ export const executeScalar = async (params = {}) => {
     let logresp = await logSQLCommand(params, 'executeScalar');
     const id = logresp.scalarValue;
     const localKnex = knex(DBName);
-    ret = await localKnex.raw(Query);
-    if (ret) {
-      if (ret.rows && (ret.rows.length > 0)) {
-        const value = Object.values(ret.rows[0])[0];
-        retSingleValue.scalarValue = value;
-        retSingleValue.completed = true;
-      }
-      logresp = await updateCommandLogEndTime(await getCommandLogID(id));
-    }
+    await localKnex.raw(Query)
+      .then((resExeScalar) => {
+        if (resExeScalar) {
+          if (resExeScalar.rows && (resExeScalar.rows.length > 0)) {
+            const value = Object.values(resExeScalar.rows[0])[0];
+            retSingleValue.scalarValue = value;
+            retSingleValue.completed = true;
+          }
+        }
+      });
+    logresp = await updateCommandLogEndTime(await getCommandLogID(id));
   } catch (err) {
-    ret = {
-      scalarValue: undefined,
-      error: err,
-      completed: false,
-    };
+    retSingleValue.scalarValue = undefined;
+    retSingleValue.completed = false;
+    retSingleValue.error = err;
   }
   return retSingleValue;
 };
@@ -106,8 +106,10 @@ export const executeCommand = async (params = {}) => {
     logresp = await logSQLCommand(params, 'executeCommand');
     const id = logresp.scalarValue;
     const localKnex = knex(DBName);
-    await localKnex.raw(Query);
-    ret.completed = true;
+    await localKnex.raw(Query)
+      .then((res) => {
+        ret.completed = (true && (res));
+      });
     logresp = await updateCommandLogEndTime(await getCommandLogID(id));
   } catch (err) {
     ret.error = err;
@@ -131,15 +133,17 @@ export const logSQLCommand = async (params = {}, commandType = 'UNKNOWN') => {
   } = params;
 
   try {
-    const localKnex = await knex(dbName);
-    const resp = await localKnex.raw('SELECT udf_insert_commandlog(?,?,?,?)', [BatchKey, DBName, Query, commandType]);
-    if (resp) {
-      if (resp.rows && (resp.rows.length > 0)) {
-        const value = Object.values(resp.rows[0])[0];
-        retSingleValue.scalarValue = value;
-        retSingleValue.completed = true;
-      }
-    }
+    const localKnex = knex(dbName);
+    await localKnex.raw('SELECT udf_insert_commandlog(?,?,?,?)', [BatchKey, DBName, Query, commandType])
+      .then((resp1) => {
+        if (resp1) {
+          if (resp1.rows && (resp1.rows.length > 0)) {
+            const value = Object.values(resp1.rows[0])[0];
+            retSingleValue.scalarValue = value;
+            retSingleValue.completed = true;
+          }
+        }
+      });
   } catch (err) {
     retSingleValue.error = err;
     retSingleValue.completed = false;
@@ -161,8 +165,10 @@ export const updateCommandLogEndTime = async (commandLogID) => {
   const dbName = process.env.log_dbname || 'ODSLog';
   try {
     const localKnex = knex(dbName);
-    const resp = await localKnex.raw('SELECT udf_update_commandlog_endtime(?)', commandLogID);
-    ret.completed = (true && resp);
+    await localKnex.raw('SELECT udf_update_commandlog_endtime(?)', commandLogID)
+      .then((resp) => {
+        ret.completed = (true && (resp));
+      });
   } catch (err) {
     ret.error = err;
     ret.completed = false;
@@ -258,3 +264,19 @@ function getCommandLogID(commandLogID) {
   }
   return intLogID;
 }
+
+// function getTestDataPipeLineRetVal() {
+//   const ret = {
+//     rows: [
+//       {
+//         DataFilePrefix: 'dynamodb/clients/1-clients-test-Data-',
+//         S3DataFileFolderPath: 'dev-ods-data',
+//         DataPipeLineTaskQueueId: 1,
+//       },
+//     ],
+//     rowCount: 1,
+//     error: '',
+//     completed: true,
+//   };
+//   return ret;
+// }
