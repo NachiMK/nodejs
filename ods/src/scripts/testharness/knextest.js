@@ -16,24 +16,40 @@ const test = async () => {
       client: 'pg',
       connection: cs,
       debug: true,
+      pool: { min: 0, max: 1 },
     });
     knexPgClient.client = knexDialect;
     const localKnex = knexPgClient;
     console.log('Calling knex');
-    await localKnex.raw('SELECT CURRENT_TIMESTAMP as CT;')
-      .then((resp1) => {
-        if (resp1) {
-          if (resp1.rows && (resp1.rows.length > 0)) {
-            const value = Object.values(resp1.rows[0])[0];
-            retSingleValue.scalarValue = value;
-            retSingleValue.completed = true;
-          }
-        }
-      })
-      .catch((cresp) => {
-        console.log(`Inside catch:${JSON.stringify(cresp, null, 2)}`);
-      });
-    console.log('Done with knex and then');
+    const retVal = await localKnex.raw('SELECT 1/0.0 as CT;');
+    if (retVal) {
+      if (retVal.rows && (retVal.rows.length > 0)) {
+        const value = Object.values(retVal.rows[0])[0];
+        retSingleValue.scalarValue = value;
+        retSingleValue.completed = true;
+      }
+    }
+    console.log('Inside then part - Done with then part');
+    localKnex.destroy();
+    // .then((resp1) => {
+    //   if (resp1) {
+    //     if (resp1.rows && (resp1.rows.length > 0)) {
+    //       const value = Object.values(resp1.rows[0])[0];
+    //       retSingleValue.scalarValue = value;
+    //       retSingleValue.completed = true;
+    //     }
+    //   }
+    //   console.log('Inside then part - Done with then part');
+    //   localKnex.destroy();
+    //   return false;
+    // })
+    // .catch((cresp) => {
+    //   console.log(`Inside catch:${JSON.stringify(cresp, null, 2)}`);
+    //   localKnex.destroy();
+    //   return true;
+    // });
+    // console.log(`ret value:${JSON.stringify(retVal, null, 2)}`);
+    // console.log('Done with knex and then');
   } catch (err) {
     console.log(`knex error:${JSON.stringify(err, null, 2)}`);
     retSingleValue.scalarValue = undefined;

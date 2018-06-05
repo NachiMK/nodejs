@@ -47,9 +47,11 @@ async function createDynamoDBToS3PipeLineTask(TableName, RowCount) {
 async function UpdatePipeLineTaskStatus(DataPipeLineTaskQueueId, Status, StatusError = {}) {
   try {
     const params = {
-      DataPipeLineTaskQueueId,
       Status,
       StatusError,
+      Query: '',
+      DBName: '',
+      BatchKey: DataPipeLineTaskQueueId,
     };
     await executeCommand(params);
   } catch (err) {

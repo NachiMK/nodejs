@@ -10,5 +10,6 @@ handler(eventjson, null)
 
 const processHandlerResp = async (res) => {
   await ODSLogger.log('info', 'res in processHandlerResp %j', res);
-  console.log('test:');
 };
+
+// npm run build && odsloglevel=info STAGE=DEV log_dbname=ODSLog node lib/service/dbadmin/dynamo/trigger/generate-test.js
