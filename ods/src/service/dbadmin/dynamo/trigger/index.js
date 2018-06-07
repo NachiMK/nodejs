@@ -46,6 +46,7 @@ export const handler = async (event) => {
 
   let pipeLineTaskResp;
   try {
+    ODSLogger.log('info', `Capturing data for Table:${tableName}, Row Count:${RowCount}`);
     pipeLineTaskResp = await createDynamoDBToS3PipeLineTask(tableName, RowCount);
     FilePrefix = pipeLineTaskResp.DataFilePrefix || `dynamodb/${tableName}`;
     S3BucketName = pipeLineTaskResp.S3DataFileFolderPath || 'dev-ods-data';
@@ -53,7 +54,7 @@ export const handler = async (event) => {
     RetError = new Error(`Error creating DatapipeLine Task for ${tableName} 
                     so data was not saved to S3 bucket.
                     error:${JSON.stringify(err, null, 2)}`);
-    console.warn(`${JSON.stringify(RetError, null, 2)}`);
+    ODSLogger.log('error', 'Error creating DatapipeLine: %j', RetError);
     await SetOdsResponseStatusToError(saveStatus, RetError);
     return saveStatus;
   }
@@ -70,6 +71,7 @@ export const handler = async (event) => {
 
   let saveStreamToS3Resp;
   try {
+    ODSLogger.log('info', `About to Save to S3 TableName: ${tableName}, FilePrefix: ${FilePrefix}, S3BucketName: ${S3BucketName}`);
     saveStreamToS3Resp = await DynamoStreamEventsToS3(StreamEventsToS3Params);
     Object.assign(saveStatus, saveStreamToS3Resp);
   } catch (err) {
@@ -80,17 +82,19 @@ export const handler = async (event) => {
                       to S3 bucket: ${S3BucketName} 
                       with FilePrefix:${FilePrefix}
                       error:${JSON.stringify(err, null, 2)}`);
-      console.warn(`${JSON.stringify(RetError, null, 2)}`);
+      ODSLogger.log('error', 'Unhandled error in calling DynamoStreamEventsToS3 %j', RetError);
     }
     await SetOdsResponseStatusToError(saveStatus, RetError);
   }
   const updateResp = await UpdatePipeLineTaskStatus(pipeLineTaskResp.DataPipeLineTaskQueueId, saveStatus);
+  ODSLogger.log('info', 'Updated DB Status %j', pipeLineTaskResp);
 
   if ((updateResp) && (IsResponseSuccess(saveStatus))) {
     // let nextStepResp = createDataPipeLineTask_ProcessHistory(tableName, saveStatus);
+    ODSLogger.log('info', 'Create queue entries');
   }
 
-  ODSLogger.log('info', 'savestatus:%j', saveStatus);
+  ODSLogger.log('info', 'Completed Saving to S3, savestatus:%j', saveStatus);
   return saveStatus;
 };
 

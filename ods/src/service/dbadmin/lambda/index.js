@@ -7,7 +7,7 @@ const lambda = new AWS.Lambda({ region: 'us-west-2' });
 export const LinkTableToTrigger = async (tablename, envStage = '') => {
   let streamARN = '';
   const stagename = envStage || process.env.STAGE;
-  const functionName = `ods-service-${stagename}-record-dynamo-table-history-v2`;
+  const functionName = `ods-service-${stagename}-dynamodb-to-s3`;
   const tblInfo = await getTableInfo(tablename);
 
   if (tblInfo) {

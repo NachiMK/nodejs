@@ -1,7 +1,10 @@
 import pg from 'pg';
+import crypto from 'crypto';
+import moment from 'moment';
 // the import order matters, we need pg types set first.
 import Knex from 'knex';
 import knexDialect from 'knex/lib/dialects/postgres';
+import ODSLogger from '../../modules/log/ODSLogger';
 
 require('dotenv').config();
 
@@ -13,7 +16,7 @@ const {
 } = process.env;
 
 export const executeQueryRS = async (params = {}) => {
-  console.warn('Executing query..');
+  ODSLogger.log('debug', 'Executing query RS..');
   const ret = {
     rows: [],
     rowCount: -1,
@@ -31,6 +34,7 @@ export const executeQueryRS = async (params = {}) => {
   const localKnex = knex(DBName);
   try {
     let logresp = await logSQLCommand(params, 'executeQueryRS');
+    ODSLogger.log('debug', 'About to run query:%j', params);
     const id = logresp.scalarValue;
     const knexResp = await localKnex.raw(Query);
     if ((knexResp) && (knexResp.rows)) {
@@ -38,12 +42,14 @@ export const executeQueryRS = async (params = {}) => {
       ret.completed = true;
       ret.rowCount = knexResp.rowCount;
     }
+    ODSLogger.log('debug', 'Completed running query:', params);
     logresp = await updateCommandLogEndTime(await getCommandLogID(id));
   } catch (err) {
     ret.rows = [];
     ret.completed = false;
     ret.rowCount = -1;
     ret.error = err;
+    ODSLogger.log('warn', 'Error running ExecuteQueryRS:%j', err);
   }
   localKnex.destroy();
   return ret;
@@ -67,6 +73,7 @@ export const executeScalar = async (params = {}) => {
   try {
     let logresp = await logSQLCommand(params, 'executeScalar');
     const id = logresp.scalarValue;
+    ODSLogger.log('debug', 'About to run scalar query:%j', params);
     const resExeScalar = await localKnex.raw(Query);
     if (resExeScalar) {
       if (resExeScalar.rows && (resExeScalar.rows.length > 0)) {
@@ -80,6 +87,7 @@ export const executeScalar = async (params = {}) => {
     retSingleValue.scalarValue = undefined;
     retSingleValue.completed = false;
     retSingleValue.error = err;
+    ODSLogger.log('warn', 'Error running ExecuteScalar:%j', err);
   }
   localKnex.destroy();
   return retSingleValue;
@@ -102,12 +110,14 @@ export const executeCommand = async (params = {}) => {
   try {
     logresp = await logSQLCommand(params, 'executeCommand');
     const id = logresp.scalarValue;
+    ODSLogger.log('debug', 'About to run Execute command:%j', params);
     logresp = await localKnex.raw(Query);
     ret.completed = (true && (logresp));
     logresp = await updateCommandLogEndTime(await getCommandLogID(id));
   } catch (err) {
     ret.error = err;
     ret.completed = false;
+    ODSLogger.log('warn', 'Error running ExecuteCommand:%j', err);
   }
   localKnex.destroy();
   return ret;
@@ -124,11 +134,12 @@ export const logSQLCommand = async (params = {}, commandType = 'UNKNOWN') => {
   const {
     Query,
     DBName,
-    BatchKey,
   } = params;
+  const BatchKey = params.BatchKey || getDefaultBatchKey(Query);
 
   const localKnex = knex(odsLogDbName);
   try {
+    ODSLogger.log('debug', 'About to Log Query details: %j', Query);
     const resp1 = await localKnex.raw('SELECT udf_insert_commandlog(?,?,?,?)',
       [BatchKey, DBName, Query, commandType]);
     if (resp1) {
@@ -141,6 +152,7 @@ export const logSQLCommand = async (params = {}, commandType = 'UNKNOWN') => {
   } catch (err) {
     retSingleValue.error = err;
     retSingleValue.completed = false;
+    ODSLogger.log('warn', 'Error logging Query details: %j', err);
   }
   localKnex.destroy();
   return retSingleValue;
@@ -165,6 +177,7 @@ export const updateCommandLogEndTime = async (commandLogID) => {
   } catch (err) {
     ret.error = err;
     ret.completed = false;
+    ODSLogger.log('warn', 'Error updating end time query:%j', err);
   }
   localKnex.destroy();
   return ret;
@@ -177,7 +190,7 @@ function getConnectionString(dbName, stage) {
   if (idx >= 0) {
     retVal = process.env[key];
   } else {
-    console.warn(`Invalid DB Name passed. DBName: ${dbName}, Key: ${key}, Stage: ${stage}`);
+    ODSLogger('error', `Invalid DB Name passed. DBName: ${dbName}, Key: ${key}, Stage: ${stage}`);
     throw new RangeError(`Connection string for database: ${dbName} is not found in environment variables or .env file.`);
   }
   return retVal;
@@ -205,12 +218,12 @@ function IsValidQuery(query) {
   return false;
 }
 
-function IsValidBatchKeyName(batchName) {
-  if (batchName) {
-    return true;
-  }
-  return false;
-}
+// function IsValidBatchKeyName(batchName) {
+//   if (batchName) {
+//     return true;
+//   }
+//   return false;
+// }
 
 function IsValidDBName(dbName) {
   if (dbName) {
@@ -232,10 +245,10 @@ function IsValidParams(params = {}, ThrowErrorIfInvalid = true) {
     HasErrors = true;
   }
 
-  if (!IsValidBatchKeyName(BatchKey)) {
-    ErrorMsg = `${ErrorMsg} Invalid BatchKey, It cannot be null or empty.`;
-    HasErrors = true;
-  }
+  // if (!IsValidBatchKeyName(BatchKey)) {
+  //   ErrorMsg = `${ErrorMsg} Invalid BatchKey, It cannot be null or empty.`;
+  //   HasErrors = true;
+  // }
 
   if (!IsValidDBName(DBName)) {
     ErrorMsg = `${ErrorMsg} DBName cannot be null or empty`;
@@ -258,6 +271,11 @@ function getCommandLogID(commandLogID) {
     }
   }
   return intLogID;
+}
+
+function getDefaultBatchKey(Query) {
+  const hash = crypto.createHash('md5').update(Query).digest('hex');
+  return `${hash}_${moment().format('YYMMDD_HHmmssSSS')}`;
 }
 
 // function getTestDataPipeLineRetVal() {

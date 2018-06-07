@@ -1,5 +1,7 @@
+import moment from 'moment';
 import { executeQueryRS, executeCommand } from '../../psql/index';
 import { CreatingDataPipeLineTaskError } from '../../../modules/ODSErrors/DataPipeLineTaskQueueError';
+import ODSLogger from '../../../modules/log/ODSLogger';
 
 export {
   createDynamoDBToS3PipeLineTask,
@@ -14,7 +16,7 @@ async function createDynamoDBToS3PipeLineTask(TableName, RowCount) {
   try {
     const sqlQuery = getQuery(TableName, RowCount);
     const dbName = getDBName('ODSConfig');
-    const batchKey = 1;
+    const batchKey = `${TableName}_${RowCount}_${moment().format('YYYYMMDD_HHmmssSSS')}`;
     const params = {
       Query: sqlQuery,
       DBName: dbName,
@@ -28,7 +30,7 @@ async function createDynamoDBToS3PipeLineTask(TableName, RowCount) {
     } else {
       throw new Error('Error creating DataPipeLineTaskQueue, DB Call returned 0 rows.');
     }
-    console.log(`create DataPipeLinetaskQueue status: ${JSON.stringify(retRS)}`);
+    ODSLogger.log('info', 'create DataPipeLinetaskQueue status: %j', retRS);
   } catch (err) {
     const msg = `Issue creating DataPipeLineTaskQueueId for Table: ${TableName} with Rows: ${RowCount}`;
     const er = new CreatingDataPipeLineTaskError(msg, err);
@@ -44,19 +46,19 @@ async function createDynamoDBToS3PipeLineTask(TableName, RowCount) {
   return RetResp;
 }
 
-async function UpdatePipeLineTaskStatus(DataPipeLineTaskQueueId, Status, StatusError = {}) {
+async function UpdatePipeLineTaskStatus(DataPipeLineTaskQueueId, SaveStatus = {}) {
   try {
     const params = {
-      Status,
-      StatusError,
-      Query: '',
-      DBName: '',
+      Query: getUpdateQuery(DataPipeLineTaskQueueId, SaveStatus),
+      DBName: getDBName('ODSConfig'),
       BatchKey: DataPipeLineTaskQueueId,
     };
     await executeCommand(params);
+    return true;
   } catch (err) {
-    console.log(`Error Updating Task Status: ${JSON.stringify(err, null, 2)}`);
+    ODSLogger.log('warn', 'Error updating DataPipeLinetaskQueue status: %j', err);
   }
+  return false;
 }
 
 function getQuery(TableName, RowCount) {
@@ -65,4 +67,10 @@ function getQuery(TableName, RowCount) {
 
 function getDBName(DBName) {
   return ((typeof DBName === 'undefined') || (DBName.Length === 0)) ? 'ODSConfig' : DBName;
+}
+
+function getUpdateQuery(Id, SaveStatus) {
+  const status = SaveStatus.Status || 'Unknown';
+  const statusError = SaveStatus.Error || {};
+  return `SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(${Id}, '${status}', '${JSON.stringify(statusError, null, 2)}')"`;
 }

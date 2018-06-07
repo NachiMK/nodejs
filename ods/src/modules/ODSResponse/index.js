@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 export async function GetDefaultOdsResponse() {
   return {
-    Status: 'Started',
+    Status: 'Ready',
     Error: {},
     StartTime: moment().format('MM/DD/YYYY HH:mm:ss.SSS'),
     EndTime: undefined,
@@ -15,7 +15,7 @@ export async function GetDefaultOdsResponse() {
 
 export async function SetOdsResponseStatusToSuccess(ODSResponse) {
   if (ODSResponse) {
-    ODSResponse.Status = 'Success';
+    ODSResponse.Status = 'Completed';
     ODSResponse.EndTime = moment().format('MM/DD/YYYY HH:mm:ss.SSS');
   }
   return ODSResponse;
@@ -23,7 +23,7 @@ export async function SetOdsResponseStatusToSuccess(ODSResponse) {
 
 export function IsResponseSuccess(ODSResponse) {
   if ((!_.isUndefined(ODSResponse)) && (!_.isUndefined(ODSResponse.Status))) {
-    if (ODSResponse.Status === 'Success') {
+    if (ODSResponse.Status === 'Completed') {
       return true;
     }
   }

@@ -28,3 +28,22 @@ export const enableHistory = async (tablename, envStage = '') => {
 
   return retStatus;
 };
+
+export const enableStreamingAndLinkTrigger = async (tablename, envStage = '') => {
+  const retStatus = {
+    TableName: tablename,
+    IsHistoryCreated: '',
+    IsStreamEnabled: '',
+    IsTriggerLinked: '',
+  };
+  const mystage = envStage || process.env.STAGE;
+
+  const enableStreamStatus = await EnableStreaming(tablename);
+  if ((enableStreamStatus) && (enableStreamStatus === true)) {
+    retStatus.IsStreamEnabled = true;
+    await delay(18000);
+    const linkStatus = await LinkTableToTrigger(tablename, mystage);
+    retStatus.IsTriggerLinked = ((linkStatus) && (linkStatus === true));
+  }
+  return retStatus;
+};
