@@ -56,7 +56,7 @@ provider:
       Action:
         - s3:*Object
       Resource:
-        - arn:aws:s3:::${self:custom.service.STAGE}-ods-data
+        - arn:aws:s3:::${self:custom.service.STAGE}-ods-data/*
     - Effect: Allow
       Action:
         - dynamodb:Scan

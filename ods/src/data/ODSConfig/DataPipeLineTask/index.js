@@ -72,5 +72,5 @@ function getDBName(DBName) {
 function getUpdateQuery(Id, SaveStatus) {
   const status = SaveStatus.Status || 'Unknown';
   const statusError = SaveStatus.Error || {};
-  return `SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(${Id}, '${status}', '${JSON.stringify(statusError, null, 2)}')"`;
+  return `SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(${Id}, '${status}', '${JSON.stringify(statusError, null, 2)}')`;
 }

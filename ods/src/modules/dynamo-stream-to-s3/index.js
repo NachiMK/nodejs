@@ -9,6 +9,7 @@ import {
   SetOdsResponseStatusToSuccess,
   SetOdsResponseStatusToError,
 } from '../ODSResponse';
+import odsLogger from '../log/ODSLogger';
 
 const _ = require('lodash');
 const uuidv4 = require('uuid/v4');
@@ -87,6 +88,7 @@ export async function DynamoStreamEventsToS3(StreamEventsToS3Param = {}) {
     return saveStatus;
   }
   // if no errors so far then save to s3. they could be errors in saving to s3 which is different.
+  odsLogger.log('info', 'About to put file to s3');
   const saveToS3Status = await SaveDynamoRowsToS3(changedRecords, TableKeyName, S3BucketName, AppendDateTime, DateTimeFormat);
   Object.assign(saveStatus, saveToS3Status);
 
@@ -107,7 +109,7 @@ export async function SaveDynamoRowsToS3(Rows, KeyName, S3BucketName, AppendDate
     KeyName,
     RowCount,
   };
-
+  odsLogger.log('info', `Saving File:${JSON.stringify(saveStatus, null, 2)}`);
   try {
     uploadFileToS3({
       Bucket: S3BucketName,
@@ -124,6 +126,7 @@ export async function SaveDynamoRowsToS3(Rows, KeyName, S3BucketName, AppendDate
     console.warn(`${JSON.stringify(RetError, null, 2)}`);
     await SetOdsResponseStatusToError(saveStatus, RetError);
   }
+  odsLogger.log('info', 'Done Saving File to S3');
   return saveStatus;
 }
 

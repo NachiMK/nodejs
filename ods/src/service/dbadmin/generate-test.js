@@ -1,7 +1,7 @@
 import { enableStreamingAndLinkTrigger } from './index';
 import ODSLogger from '../../modules/log/ODSLogger';
 
-enableStreamingAndLinkTrigger('clients', 'dev')
+enableStreamingAndLinkTrigger('ods-persons', 'dev')
   .then(res => processHandlerResp(res))
   .catch(e => console.log('error', e));
 
