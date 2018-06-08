@@ -15,6 +15,17 @@ module.exports.default = () => new Promise((resolve, reject) => {
   fs.readFile(PATH.join(__dirname, '.env'), (err, data) => {
     if (err) return reject(err);
     const envVars = dotenv.parse(data);
+
+    // remove vars not related to the current STAGE.
+    // the expectation is all env variables
+    // begins with the stage name if not this will
+    // delete all env variables !!!! CAUTION 
+    Object.keys(envVars).forEach((key) => {
+      if (!key.toUpperCase().startsWith(`${stage.toUpperCase()}_`)) {
+        delete envVars[key];
+      }
+    });
+
     return resolve(Object.assign({}, envVars, { STAGE: stage }));
   });
 });

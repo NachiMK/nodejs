@@ -44,7 +44,19 @@ provider:
   #stackTags: ${self:custom.environment}
   environment: ${self:custom.environment}
 
+  vpc:
+    securityGroupIds:
+      - sg-0c3aa668
+    subnetIds:
+      - subnet-df4b3da8
+      - subnet-37b2e252
+
   iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*Object
+      Resource:
+        - arn:aws:s3:::${self:custom.service.STAGE}-ods-data
     - Effect: Allow
       Action:
         - dynamodb:Scan
@@ -52,7 +64,6 @@ provider:
         - dynamodb:GetItem
         - dynamodb:PutItem
       Resource:
-        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-*history*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}*
     # - Effect: Allow
     #   Action:
@@ -64,7 +75,7 @@ provider:
       Action:
         - lambda:InvokeFunction
       Resource:
-        - arn:aws:lambda:us-west-2:409076796536:function:*record-dynamo-table-expanded-history-v2*
+        - arn:aws:lambda:us-west-2:409076796536:function:*dynamodb-to-s3*
     - Effect: Allow
       Action:
         - lambda:CreateEventSourceMapping
@@ -161,3 +172,10 @@ resources:
         RestApiId:
           Ref: 'ApiGatewayRestApi'
         StatusCode: '401'
+
+package:
+  # packages each lambda function by itself and have webpack do the tree-shaking
+  individually: true,
+  excludeDevDependencies: false
+  exclude:
+    - 'node_modules/**/aws-sdk/**'

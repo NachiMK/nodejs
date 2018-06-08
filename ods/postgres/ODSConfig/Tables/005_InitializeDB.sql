@@ -15,3 +15,5 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 SET search_path = public, pg_catalog;
 SET default_tablespace = '';
 SET default_with_oids = false;
+
+CREATE SCHEMA IF NOT EXISTS ods;
