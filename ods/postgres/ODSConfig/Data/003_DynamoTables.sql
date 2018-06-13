@@ -93,6 +93,7 @@ INSERT INTO ods."DynamoTablesHelper" ("DynamoTableName", "Stage")
         ,('dev-prospects', 'dev')
         ,('dev-tags', 'dev')
         ,('dev-tobacco-factors-range', 'dev')
+        ,('dev-ods-persons', 'dev')
 ;
 
 UPDATE  ods."DynamoTablesHelper"

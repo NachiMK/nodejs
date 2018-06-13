@@ -53,12 +53,13 @@
     "test": "jest",
     "qtest": "npm run build && jest --",
     "watch": "npm run build:watch --",
-    "release:dev:enablehistory": "run-func /lib/scripts/deploy/index.js deploy_enableHistory_ontables dev",
-    "release:int:enablehistory": "run-func /lib/scripts/deploy/index.js deploy_enableHistory_ontables int",
-    "release:prod:enablehistory": "run-func /lib/scripts/deploy/index.js deploy_enableHistory_ontables prod",
-    "release:dev:migratehistory": "run-func /lib/scripts/deploy/index.js deploy_migrate_history_allTables dev",
-    "release:int:migratehistory": "run-func /lib/scripts/deploy/index.js deploy_migrate_history_allTables int",
-    "release:prod:migratehistory": "run-func /lib/scripts/deploy/index.js deploy_migrate_history_allTables prod"
+    "release:dev:enablehistory": "run-func /lib/scripts/deploy/index.js DeployEnableHistoryOnTables dev",
+    "release:int:enablehistory": "run-func /lib/scripts/deploy/index.js DeployEnableHistoryOnTables int",
+    "release:prod:enablehistory": "run-func /lib/scripts/deploy/index.js DeployEnableHistoryOnTables prod",
+    "release:dev:migratehistory": "run-func /lib/scripts/deploy/index.js DeployMigrateHistoryAllTables dev",
+    "release:int:migratehistory": "run-func /lib/scripts/deploy/index.js DeployMigrateHistoryAllTables int",
+    "release:prod:migratehistory": "run-func /lib/scripts/deploy/index.js DeployMigrateHistoryAllTables prod",
+    "release:dev:linktrigger": "run-func /lib/scripts/deploy/trigger.js DeployLinkTriggerOnTables dev"
   },
   "dependencies": {
     "@hixme/aws-utils": "^1.1.0",

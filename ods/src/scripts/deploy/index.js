@@ -40,7 +40,7 @@ const asyncForEach = async (array, callback) => {
   }
 };
 
-function getTablesToDeploy(envStage) {
+export function getTablesToDeploy(envStage) {
   let retArray;
   if (envStage) {
     if (envStage === 'prod') {
@@ -78,9 +78,38 @@ function getTablesToDeploy(envStage) {
       ];
     } else {
       retArray = [
-        'dev-cart',
-        'dev-models',
+        'dev-bundle-event-offers-log',
+        'dev-carrier-messages',
+        'dev-client-contributions',
+        'dev-enrollment-responses',
+        'dev-notes',
+        'dev-payroll-deductions',
+        'dev-persons-attributes',
+        'dev-prospect-census-models',
+        'dev-tobacco-factors-range',
       ];
+      // retArray = [
+      //   'dev-benefit-change-events',
+      //   'dev-benefits',
+      //   'dev-bundle-event-offers-log',
+      //   'dev-carrier-messages',
+      //   'dev-client-benefits',
+      //   'dev-client-census',
+      //   'dev-client-contributions',
+      //   'dev-clients',
+      //   'dev-doctors',
+      //   'dev-enrollment-responses',
+      //   'dev-enrollments',
+      //   'dev-locations',
+      //   'dev-notes',
+      //   'dev-payroll-deductions',
+      //   'dev-persons',
+      //   'dev-persons-attributes',
+      //   'dev-prospect-census-models',
+      //   'dev-prospect-census-profiles',
+      //   'dev-prospects',
+      //   'dev-tobacco-factors-range',
+      // ];
     }
   }
   return retArray;

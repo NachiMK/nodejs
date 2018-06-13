@@ -4,10 +4,10 @@ const AWS = require('aws-sdk');
 
 const lambda = new AWS.Lambda({ region: 'us-west-2' });
 
-export const LinkTableToTrigger = async (tablename, envStage = '') => {
+export const LinkTableToTrigger = async (tablename, envStage = '', functionToLink = '') => {
   let streamARN = '';
   const stagename = envStage || process.env.STAGE;
-  const functionName = `ods-service-${stagename}-dynamodb-to-s3`;
+  const functionName = `ods-service-${stagename}-dynamodb-to-s3` || functionToLink;
   const tblInfo = await getTableInfo(tablename);
 
   if (tblInfo) {
