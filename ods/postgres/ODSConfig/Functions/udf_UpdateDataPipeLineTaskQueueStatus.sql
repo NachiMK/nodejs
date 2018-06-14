@@ -1,7 +1,9 @@
 DROP FUNCTION IF EXISTS ods."udf_UpdateDataPipeLineTaskQueueStatus"(int, character varying, text);
+DROP FUNCTION IF EXISTS ods."udf_UpdateDataPipeLineTaskQueueStatus"(int, character varying, text, jsonb);
 CREATE OR REPLACE FUNCTION ods."udf_UpdateDataPipeLineTaskQueueStatus"(DataPipeLineTaskQueueId INT
                                                                     , TaskStatus VARCHAR(40)
-                                                                    , TaskError TEXT default NULL) 
+                                                                    , TaskError TEXT default NULL
+                                                                    , SaveStatus jsonb default NULL) 
 RETURNS 
     SETOF ods."DataPipeLineTaskQueue" AS $$
 DECLARE
@@ -26,6 +28,17 @@ BEGIN
                 ,"Error"        = ErrorJson
                 ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
         WHERE   DQ."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId;
+    END IF;
+
+    IF SaveStatus IS NOT NULL THEN
+        INSERT INTO ods."TaskQueueAttributeLog"
+                (
+                     "DataPipeLineTaskQueueId"
+                    ,"AttributeName"
+                    ,"AttributeValue"
+                )
+        SELECT  DataPipeLineTaskQueueId, "key" as "AttributeName", "value" as "AttributeValue"
+        FROM    jsonb_each(SaveStatus::jsonb);
     END IF;
 
     -- Result

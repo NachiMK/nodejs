@@ -1,0 +1,2 @@
+-- DROP SCHEMA log CASCADE;
+DROP TABLE IF EXISTS log."ApiLog";

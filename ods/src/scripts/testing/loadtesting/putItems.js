@@ -39,34 +39,6 @@ function getArrayOfPersons(len, batchid) {
   return retArray;
 }
 
-function getArrayOfPersonsForLoop(len, batchid) {
-  const emptyArray = [...Array(len).keys()];
-  console.log('lenght', emptyArray.length);
-  const retArray = asyncForEach(emptyArray, batchid);
-  // emptyArray.forEach((idx) => {
-  //   const addBenefit = ((idx % 3) === 0);
-  //   // const p = getPerson(getUniqueId() + idx, idx, addBenefit);
-  //   // console.log(`${idx} of ${len} is : ${JSON.stringify(p, null, 2)}`);
-  //   console.log(`for each idx:${idx}`);
-  //   retArray.push(getPerson(getUniqueId(idx), idx, addBenefit));
-  // });
-  console.log('Array', JSON.stringify(retArray, null, 2));
-  return retArray;
-}
-
-const asyncForEach = async (array, batchid) => {
-  const retArray = [];
-  console.log('array lenght', array.length);
-  for (let index = 0; index < array.length;) {
-    console.log(`for each idx:${index}`);
-    const addBenefit = ((index % 3) === 0);
-    const resp = await getPerson(getUniqueId(index), index, addBenefit, batchid);
-    retArray.push(resp);
-    index += 1;
-  }
-  return retArray;
-};
-
 function getUniqueId(idx) {
   let retVal = parseInt((moment().format('x')), 10);
   retVal += idx;
