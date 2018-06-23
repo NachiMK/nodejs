@@ -5,23 +5,40 @@ CREATE OR REPLACE FUNCTION udf_get_AxeneOutput(batchid VARCHAR(255)) RETURNS SET
 
     TRUNCATE TABLE public."TempAVReport";
 
+    WITH CTEAxeneOutput
+    AS
+    (
+        SELECT   AO."ID"
+                ,"FileName" as "fileName"
+                ,AO."ModeledMetalTier"
+                ,AO."PlanID"
+                ,AO."ActuarialValue"
+                ,'HixmeValuePlus' || REPLACE(REPLACE(REPLACE(RIGHT("FileName", LENGTH("FileName")-(LENGTH("BatchID")+1)), AO."PlanID", ''), AO."ModeledMetalTier", ''), '_', '') as "HixmePlusColName"
+                ,CAST(REPLACE(REPLACE(REPLACE(RIGHT("FileName", LENGTH("FileName")-(LENGTH("BatchID")+1)), AO."PlanID", ''), AO."ModeledMetalTier", ''), '_', '') AS NUMERIC) as "HixmePlusAddOnValue"
+                ,AO."HixmeValue"
+                ,CAST(NULL AS INT) AS "OriginalID"
+                ,"BatchID"
+                ,ROW_NUMBER() OVER (PARTITION BY "FileName" ORDER BY "ID" DESC) as LatestRowNbr
+        FROM    "AxeneOutputValues" AS AO
+        WHERE   1 = 1
+        AND     AO."BatchID" = $1
+    )
     INSERT INTO
             public."TempAVReport" 
-    SELECT   AO."ID"
-            ,"FileName" as "fileName"
-            ,AO."ModeledMetalTier"
-            ,AO."PlanID"
-            ,AO."ActuarialValue"
-            ,'HixmeValuePlus' || REPLACE(REPLACE(REPLACE(RIGHT("FileName", LENGTH("FileName")-(LENGTH("BatchID")+1)), AO."PlanID", ''), AO."ModeledMetalTier", ''), '_', '') as "HixmePlusColName"
-            ,CAST(REPLACE(REPLACE(REPLACE(RIGHT("FileName", LENGTH("FileName")-(LENGTH("BatchID")+1)), AO."PlanID", ''), AO."ModeledMetalTier", ''), '_', '') AS NUMERIC) as "HixmePlusAddOnValue"
-            ,AO."HixmeValue"
-            ,CAST(NULL AS INT) AS "OriginalID"
+    SELECT   "ID"
+            ,"fileName"
+            ,"ModeledMetalTier"
+            ,"PlanID"
+            ,"ActuarialValue"
+            ,"HixmePlusColName"
+            ,"HixmePlusAddOnValue"
+            ,"HixmeValue"
+            ,"OriginalID"
             ,"BatchID"
-    FROM    "AxeneOutputValues" AS AO
-    WHERE   1 = 1
-    AND     AO."BatchID" = $1
+    FROM    CTEAxeneOutput
+    WHERE   LatestRowNbr = 1 
     ORDER   BY
-            AO."PlanID", AO."ModeledMetalTier";
+            "PlanID", "ModeledMetalTier";
 
     WITH CTEUpdate
     AS

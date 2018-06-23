@@ -1,4 +1,4 @@
---DROP VIEW IF EXISTS public.vw_AxeneOutputFormat
+-- DROP VIEW IF EXISTS public.vw_AxeneOutputFormat;
 CREATE VIEW public.vw_AxeneOutputFormat 
 AS    
 SELECT 
@@ -16,7 +16,7 @@ SELECT
         ,CAST(p."IsForSale" as VARCHAR(5)) AS "IsForSale"
         ,CAST(p."IsApproved" as VARCHAR(5)) AS "IsApproved"
         ,CAST(p."UseForModeling" as VARCHAR(5)) AS "UseForModeling"
-        ,CAST(p."PlanID" AS VARCHAR) AS "PlanID"
+        ,p."PlanID" AS "PlanID"
         ,p."GroupID"
         ,p."ActuarialValue"	
         ,p."HixmeValuePlus0"
