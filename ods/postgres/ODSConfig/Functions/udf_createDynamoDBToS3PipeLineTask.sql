@@ -1,6 +1,6 @@
 DROP FUNCTION IF EXISTS ods."udf_createDynamoDBToS3PipeLineTask"(varchar(255), INT);
 DROP TYPE IF EXISTS ods.DynamoDBtoS3ReturnType;
-CREATE TYPE ods.DynamoDBtoS3ReturnType as ("DataFilePrefix" VARCHAR(500), "S3DataFileBucketName" VARCHAR(500), "DataPipeLineTaskQueueId" INT);
+CREATE TYPE ods.DynamoDBtoS3ReturnType as ("DataPipeLineTaskQueueId" INT, "DataFilePrefix" VARCHAR(500), "S3DataFileBucketName" VARCHAR(500));
 
 CREATE OR REPLACE FUNCTION ods."udf_createDynamoDBToS3PipeLineTask"(TableName VARCHAR(255), RowCnt INT) 
 RETURNS 
@@ -40,7 +40,7 @@ BEGIN
     INNER
     JOIN    ods."Attribute"             A   ON  A."AttributeId"         = TA."AttributeId"
     WHERE   A."AttributeName"       = 'Dynamo.TableName'
-    AND     DPL."TaskName"          LIKE TableName || '%DynamoDB to S3'
+    AND     DPL."SourceEntity"      = TableName
     AND     TA."AttributeValue"     LIKE '%' || TableName || '%'
     RETURNING "DataPipeLineTaskQueueId"
     INTO    DataPipeLineTaskQueueId;
@@ -71,13 +71,14 @@ BEGIN
     -- Result
     FOR retRecord in 
             SELECT   "DataPipeLineTaskQueueId" as "DataPipeLineTaskQueueId"
-                    ,"Prefix.DataFile" as "PrefixDataFile"
+                    ,"Prefix.DataFile" as "DataFilePrefix"
                     ,"S3DataFileBucketName" as "S3DataFileBucketName"
             FROM    crosstab( 'SELECT    TAL."DataPipeLineTaskQueueId"
                                         ,TAL."AttributeName"
                                         ,TAL."AttributeValue"
                                 FROM    ods."TaskQueueAttributeLog" AS TAL
-                                WHERE   TAL."DataPipeLineTaskQueueId" = ' || DataPipeLineTaskQueueId) 
+                                WHERE   TAL."DataPipeLineTaskQueueId" = ' || DataPipeLineTaskQueueId ||
+                                ' ORDER BY TAL."AttributeName"') 
                         AS final_result( "DataPipeLineTaskQueueId" INT
                                         ,"Dynamo.TableName"  VARCHAR
                                         ,"Prefix.DataFile" VARCHAR
@@ -90,5 +91,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 /*
-    SELECT * FROM ods.udf_createDynamoDBToS3PipeLineTask('clients', 10);
+    SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('clients', 10);
 */

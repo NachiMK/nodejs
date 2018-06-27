@@ -140,7 +140,7 @@ SELECT * FROM ods."vwTaskAttribute" WHERE "DataPipeLineTaskId" IN (820);
 
 SELECT * FROM ods."vwTaskAttribute" WHERE "DataPipeLineTaskId" IN (1019);
 
-SELECT * FROM ods."TaskQueueAttributeLog" WHERE "DataPipeLineTaskQueueId" = 12;
+SELECT * FROM ods."TaskQueueAttributeLog" WHERE "DataPipeLineTaskQueueId" >= 114;
     
 SELECT * FROM ods."TaskConfigAttribute"
 -- given a table name I want to find?
@@ -150,4 +150,39 @@ SELECT * FROM ods."vwDataPipeLineTask" WHERE "SourceEntity" = 'clients';
 SELECT * FROM ods."vwDataPipeLineTaskAttribute" WHERE "SourceEntity" = 'clients';
 -- latest run/attribute log values
 
-SELECT * FROM "CommandLog"
+SELECT * FROM "CommandLog";
+
+-- If I am a Parent and I have Children, then copy my previous steps parameters that my child are interested to me
+-- so that my child can refer to those.
+
+SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('clients', 10);
+SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(114, 'Completed', null, '{"EndTime":"06/27/2018 21:01:14.998",
+"KeyName":"dynamodb/clients/1-clients-Data-_20180627_210114920.json",
+"RowCount":"1",
+"StartTime":"06/27/2018 21:01:14.919",
+"tableName":"clients",
+"S3DataFile":"https://s3-us-west-2.amazonaws.com/dev-ods-data/dynamodb/clients/1-clients-Data-_20180627_210114920.json",
+"S3BucketName":"dev-ods-data"}');
+SELECT * FROM ods."udf_createDataPipeLine_ProcessHistory"('clients', 114);
+
+SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('persons', 55)
+
+
+    SELECT   DPL."DataPipeLineTaskId"
+            ,NULL               AS "ParentTaskId"
+            ,DPL."RunSequence"
+            ,(SELECT "TaskStatusId" FROM ods."TaskStatus" WHERE "TaskStatusDesc" = 'Ready') as "TaskStatusId"
+            ,CURRENT_TIMESTAMP  AS "StartDtTm"
+            ,CURRENT_TIMESTAMP  AS "CreatedDtTm"
+    FROM    ods."DataPipeLineTask"  DPL
+    INNER
+    JOIN    ods."DataPipeLineTaskConfig"   DPC ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
+    INNER
+    JOIN    ods."TaskAttribute"         TA  ON  TA."DataPipeLineTaskId" = DPL."DataPipeLineTaskId"
+    INNER
+    JOIN    ods."Attribute"             A   ON  A."AttributeId"         = TA."AttributeId"
+    WHERE   A."AttributeName"       = 'Dynamo.TableName'
+    AND     DPL."SourceEntity" LIKE 'persons'
+    AND     TA."AttributeValue" LIKE '%persons%'
+    
+    SELECT * FROM ods."DataPipeLineTask" WHERE "TaskName" like '%persons - DynamoDB to S3'

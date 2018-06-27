@@ -88,7 +88,7 @@ export const handler = async (event) => {
   ODSLogger.log('info', 'Updated DB Status %j', pipeLineTaskResp);
 
   if ((updateResp) && (IsResponseSuccess(saveStatus))) {
-    const nextStepResp = createDataPipeLineTaskProcessHistory(tableName, pipeLineTaskResp.DataPipeLineTaskQueueId);
+    const nextStepResp = await createDataPipeLineTaskProcessHistory(tableName, pipeLineTaskResp.DataPipeLineTaskQueueId);
     ODSLogger.log('info', 'Create queue entries', nextStepResp);
   }
 

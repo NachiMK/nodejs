@@ -56,7 +56,14 @@ $$ LANGUAGE plpgsql;
     -- Code to test and verify
     SELECT * FROM ods."DataPipeLineTaskQueue" WHERE "DataPipeLineTaskQueueId" = 1;
 
-    SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'Completed', '{"S3DataFile":"dev-ods-data/clients/1-data-clients.csv"}');
+    SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(36, 'Completed', null, '{"EndTime":"06/27/2018 21:01:14.998",
+"KeyName":"dynamodb/clients/1-clients-Data-_20180627_210114920.json",
+"RowCount":"1",
+"StartTime":"06/27/2018 21:01:14.919",
+"tableName":"clients",
+"S3DataFile":"https://s3-us-west-2.amazonaws.com/dev-ods-data/dynamodb/clients/1-clients-Data-_20180627_210114920.json",
+"S3BucketName":"dev-ods-data"}');
+
     SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'Error', '{"test":"value"}');
     SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'unkn', '{"test":"value"}');
     SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'History Captured', null);

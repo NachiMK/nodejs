@@ -20,7 +20,7 @@ BEGIN
     JOIN    ods."vwDataPipeLineTask" as V ON V."DataPipeLineTaskId" = DPL."DataPipeLineTaskId"
     WHERE   "DataPipeLineTaskQueueId" = S3DataPipeLineTaskQueueId;
 
-    -- Insert a Row
+    -- Insert a Task for me
     INSERT INTO "ods"."DataPipeLineTaskQueue" 
     (
          "DataPipeLineTaskId"
@@ -45,16 +45,43 @@ BEGIN
     INTO    DataPipeLineTaskQueueId;
 
     -- preserve previous ID just in case for debugging
+    -- Copy my Previous Tasks Parameters to me
+    -- IF my children are interesetd.
+    WITH TaskAttributes
+    AS
+    (
+            SELECT  DataPipeLineTaskQueueId as "DataPipeLineTaskQueueId"
+                    ,'PreviousTaskId'   as "AttributeName"
+                    ,CAST(S3DataPipeLineTaskQueueId as VARCHAR) as "AttributeValue"
+
+            UNION ALL
+
+            SELECT  DISTINCT Q."DataPipeLineTaskQueueId", L."AttributeName", L."AttributeValue"
+            FROM    ods."DataPipeLineTaskQueue"     AS Q
+            INNER
+            JOIN    ods."DataPipeLineTask"          AS PT   ON  PT."ParentTaskId" = Q."DataPipeLineTaskId"
+            INNER
+            JOIN    ods."TaskConfigAttribute"       AS  TA  ON  TA."DataPipeLineTaskConfigId" = PT."DataPipeLineTaskConfigId"
+            INNER
+            JOIN    ods."Attribute"                 AS  A   ON  A."AttributeId" = TA."AttributeId"
+            INNER
+            JOIN    ods."TaskQueueAttributeLog"     AS  L   ON  L."DataPipeLineTaskQueueId" = S3DataPipeLineTaskQueueId
+                                                            AND L."AttributeName"   =   A."AttributeName"
+            WHERE   Q."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId
+            AND     PT."DeletedFlag" = false
+    )
     INSERT  INTO ods."TaskQueueAttributeLog"
     (
          "DataPipeLineTaskQueueId"
         ,"AttributeName"
         ,"AttributeValue"
     )
-    SELECT  DataPipeLineTaskQueueId, 'PreviousTaskId ', S3DataPipeLineTaskQueueId;
+    SELECT  DISTINCT "DataPipeLineTaskQueueId", "AttributeName", "AttributeValue"
+    FROM    TaskAttributes;
 
     RAISE NOTICE 'Queue Entry to capture data for TableName: --> % was created. ID: %', TableName, DataPipeLineTaskQueueId;
 
+    -- Create my Child Tasks
     INSERT INTO ods."DataPipeLineTaskQueue" 
     (
         "DataPipeLineTaskId"
@@ -76,7 +103,8 @@ BEGIN
     AND     Child."DeletedFlag" = false
     ORDER  BY
             Child."RunSequence";
-
+    
+    -- Set the Previous Task ID
     INSERT  INTO ods."TaskQueueAttributeLog"
     (
             "DataPipeLineTaskQueueId"
@@ -99,61 +127,12 @@ BEGIN
             Q."DataPipeLineTaskQueueId";
 
     -- Create Attributes
-    INSERT  INTO ods."TaskQueueAttributeLog"
-    (
-        "DataPipeLineTaskQueueId"
-        ,"AttributeName"
-        ,"AttributeValue"
-    )
-    SELECT   Q."DataPipeLineTaskQueueId"
-            ,A."AttributeName"
-            ,CASE WHEN TA."AttributeValue" LIKE '%{Id}%' 
-                THEN REPLACE(TA."AttributeValue"
-                            ,'{Id}'
-                            ,(
-                                CAST(S3DataPipeLineTaskQueueId AS VARCHAR(10)) || '-' ||
-                                CAST(DataPipeLineTaskQueueId AS VARCHAR(10)) || '-' || 
-                                CAST("DataPipeLineTaskQueueId" AS VARCHAR)
-                             )
-                            )
-                ELSE TA."AttributeValue"
-            END AS "AttributeValue"
-    FROM    ods."DataPipeLineTaskQueue" AS Q
-    INNER
-    JOIN    ods."DataPipeLineTask"      AS DPL  ON  DPL."DataPipeLineTaskId" = Q."DataPipeLineTaskId"
-    INNER
-    JOIN    ods."TaskAttribute"         AS TA   ON  TA."DataPipeLineTaskId" = DPL."DataPipeLineTaskId"
-    INNER
-    JOIN    ods."Attribute"             AS  A   ON  A."AttributeId" = TA."AttributeId"
-    WHERE   (Q."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId OR Q."ParentTaskId" = DataPipeLineTaskQueueId)
-    ORDER BY
-            Q."DataPipeLineTaskQueueId";
-    
-    INSERT  INTO ods."TaskQueueAttributeLog"
-    (
-            "DataPipeLineTaskQueueId"
-            ,"AttributeName"
-            ,"AttributeValue"
-    )
-    SELECT   Q."DataPipeLineTaskQueueId"
-            ,A."AttributeName"
-            ,L."AttributeValue"
-    FROM    ods."DataPipeLineTaskQueue"     AS Q
-    INNER
-    JOIN    ods."DataPipeLineTask"          AS DPL  ON  DPL."DataPipeLineTaskId" = Q."DataPipeLineTaskId"
-    INNER
-    JOIN    ods."DataPipeLineTaskConfig"    AS DPC  ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
-    INNER
-    JOIN    ods."TaskConfigAttribute"       AS  TA  ON  TA."DataPipeLineTaskConfigId" = DPC."DataPipeLineTaskConfigId"
-    INNER
-    JOIN    ods."Attribute"                 AS  A   ON  A."AttributeId" = TA."AttributeId"
-    INNER
-    JOIN    ods."TaskQueueAttributeLog"     AS  L   ON  L."DataPipeLineTaskQueueId" = S3DataPipeLineTaskQueueId
-                                                    AND L."AttributeName"   =   A."AttributeName"
-    WHERE   (Q."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId OR Q."ParentTaskId" = DataPipeLineTaskQueueId)
-    ON  CONFLICT ON CONSTRAINT UNQ_TaskQueueAttributeLog
-    DO  UPDATE
-        SET "AttributeValue" = EXCLUDED."AttributeValue";
+    PERFORM  1
+    FROM    ods."DataPipeLineTaskQueue" AS Q,
+    LATERAL ods."udf_SetTaskQueueAttributeLog"(Q."DataPipeLineTaskQueueId", null)  t
+    WHERE   Q."ParentTaskId" = DataPipeLineTaskQueueId;
+
+    -- Mark the Parent as ready for Processing.
 
     -- Result
     FOR retRecord in 
@@ -168,6 +147,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 /*
+    -- SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('clients', 10);
     SELECT * FROM ods."udf_createDataPipeLine_ProcessHistory"('clients', 4);
     SELECT * FROM ods."udf_createDataPipeLine_ProcessHistory"('ods-persons', 4);
 */
