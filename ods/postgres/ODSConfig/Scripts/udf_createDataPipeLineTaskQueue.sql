@@ -5,7 +5,7 @@ RETURNS
 DECLARE
     retRecord DynamoDBtoS3ReturnType%rowtype;
     dataFilePrefix VARCHAR(200);
-    S3DataFileFolderPath VARCHAR(600);
+    S3DataFileBucketName VARCHAR(600);
 INSERT INTO "public"."DataPipeLineTaskQueue" 
 (
      "DataPipeLineTaskId"

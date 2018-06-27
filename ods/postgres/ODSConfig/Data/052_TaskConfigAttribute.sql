@@ -11,25 +11,25 @@ INSERT INTO
     TCAttributeTemp
     ("TaskName", "ParentTaskName", "AttributeName")
 VALUES
-     ('DynamoDB to S3', '', 'S3.DataFile.FolderPath')
+     ('DynamoDB to S3', '', 'S3DataFileBucketName')
     ,('DynamoDB to S3', '', 'Prefix.DataFile')
     ,('DynamoDB to S3', '', 'Dynamo.TableName')
 
-    ,('JSON History Data to JSON Schema', 'Process JSON to Postgres', 'S3.DataFile')
-    ,('JSON History Data to JSON Schema', 'Process JSON to Postgres', 'S3.SchemaFile.FolderPath')
+    ,('JSON History Data to JSON Schema', 'Process JSON to Postgres', 'S3DataFile')
+    ,('JSON History Data to JSON Schema', 'Process JSON to Postgres', 'S3SchemaFileBucketName')
     ,('JSON History Data to JSON Schema', 'Process JSON to Postgres', 'Prefix.SchemaFile')
 
-    ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3.UniformJSON.FolderPath')
+    ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3UniformJSONBucketName')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'Prefix.UniformJSONFile')
-    ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3.DataFile')
-    ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3.SchemaFile')
+    ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3DataFile')
+    ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3SchemaFile')
 
-    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3.SchemaFile')
-    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3.UniformJSONFile')
-    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3.CSVFiles.FolderPath')
+    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3SchemaFile')
+    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3UniformJSONFile')
+    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3CSVFilesBucketName')
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'Prefix.CSVFile')
 
-    ,('CSV to Pre-stage', 'Process JSON to Postgres', 'S3.CSVFile.#')
+    ,('CSV to Pre-stage', 'Process JSON to Postgres', 'S3CSVFile#')
     ,('CSV to Pre-stage', 'Process JSON to Postgres', 'psql.PreStageTable.Prefix')
 
     ,('Pre-Stage to RAW', 'Process JSON to Postgres', 'psql.TableName.PreStage')

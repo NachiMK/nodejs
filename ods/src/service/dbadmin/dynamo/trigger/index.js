@@ -10,6 +10,7 @@ import {
 import {
   createDynamoDBToS3PipeLineTask,
   UpdatePipeLineTaskStatus,
+  createDataPipeLineTaskProcessHistory,
 } from '../../../../data/ODSConfig/DataPipeLineTask';
 
 import InvalidParameterError from '../../../../modules/ODSErrors/InvalidParameterError';
@@ -23,7 +24,6 @@ const _ = require('lodash');
 
 export const handler = async (event) => {
   let RetError;
-  const S3FilePath = '';
   let S3BucketName;
   const RowCount = _.isArray(event.Records) ? event.Records.length : 0;
   const AppendDateTime = true;
@@ -38,7 +38,6 @@ export const handler = async (event) => {
 
   const saveStatus = {
     ...defaultResp,
-    S3FilePath,
     S3BucketName,
     tableName,
     RowCount,
@@ -49,7 +48,7 @@ export const handler = async (event) => {
     ODSLogger.log('info', `Capturing data for Table:${tableName}, Row Count:${RowCount}`);
     pipeLineTaskResp = await createDynamoDBToS3PipeLineTask(tableName, RowCount);
     FilePrefix = pipeLineTaskResp.DataFilePrefix || `dynamodb/${tableName}`;
-    S3BucketName = pipeLineTaskResp.S3DataFileFolderPath || 'dev-ods-data';
+    S3BucketName = pipeLineTaskResp.S3DataFileBucketName || 'dev-ods-data';
   } catch (err) {
     RetError = new Error(`Error creating DatapipeLine Task for ${tableName} 
                     so data was not saved to S3 bucket.
@@ -59,9 +58,8 @@ export const handler = async (event) => {
     return saveStatus;
   }
 
-  const DynamoStreamEvent = event;
   const StreamEventsToS3Params = {
-    DynamoStreamEvent,
+    DynamoStreamEvent: event,
     KeyName: FilePrefix,
     S3BucketName,
     AppendDateTime,
@@ -90,8 +88,8 @@ export const handler = async (event) => {
   ODSLogger.log('info', 'Updated DB Status %j', pipeLineTaskResp);
 
   if ((updateResp) && (IsResponseSuccess(saveStatus))) {
-    // let nextStepResp = createDataPipeLineTask_ProcessHistory(tableName, saveStatus);
-    ODSLogger.log('info', 'Create queue entries');
+    const nextStepResp = createDataPipeLineTaskProcessHistory(tableName, pipeLineTaskResp.DataPipeLineTaskQueueId);
+    ODSLogger.log('info', 'Create queue entries', nextStepResp);
   }
 
   ODSLogger.log('info', 'Completed Saving to S3, savestatus:%j', saveStatus);

@@ -11,14 +11,14 @@ else
 fi
 echo "Params:"
 echo "First Param: stage (can be dev, int, or prod):"${stage}
-echo "Second Param: Set to ResetDB:TRUE if you want to drop all tables and recreate it:"${reset}
+echo "Second Param: Set to ResetData:TRUE if you want to drop all tables and recreate it:"${reset}
 echo "Thid Param: Set to CreateDB:TRUE if you want to drop existing DB and recreate it:"${createdb}
 echo "Fourth Param: Set to rds if you want to deploy to auror instance or else localhost or empty string:"${hosttodeploy}
 
 if [ -z "${reset}" ]; then 
-    resetdb='no'
+    resetdata='no'
 else 
-    resetdb=${reset}
+    resetdata=${reset}
 fi
 
 if [ -z "${createdb}" ]; then 
@@ -42,7 +42,7 @@ else
     dbhostname='-h localhost -p 5432'
 fi
 echo "Stage:"$stage
-echo "Reset:"$resetdb
+echo "Reset:"$resetdata
 echo "Create:"$create
 echo "HostName: (Type rds if deploying to Aurora)"$dbhostname
 
@@ -51,29 +51,37 @@ if [ "${create}" = "CreateDB:TRUE" ]; then
     echo "Create:"$create
     psql ${dbhostname} -d postgres -c "DROP DATABASE IF EXISTS odsconfig_${stagename};"
     psql ${dbhostname} -d postgres -c "CREATE DATABASE odsconfig_${stagename} WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';"
+    psql ${dbhostname} -d odsconfig_${stagename} -c "CREATE SCHEMA IF NOT EXISTS ods;"
+    psql ${dbhostname} -d odsconfig_${stagename} -c "CREATE EXTENSION tablefunc;"
+
+    for filename in Tables/*.sql; do
+        [ -e "$filename" ] || continue
+        echo "Deploying Table:" $filename
+        psql ${dbhostname} -d odsconfig_${stagename} -f "$filename"
+    done
 else
     echo "Not Creating DB. To Create send param CreateDB:TRUE"
 fi
 
-if [ "${resetdb}" = "ResetDB:TRUE" ]; then 
-    for filename in Tables/*.sql; do
+if [ "${resetdata}" = "ResetData:TRUE" ]; then 
+    for filename in Data/*.sql; do
         [ -e "$filename" ] || continue
-        echo "Deploying File:" $filename
+        echo "Deploying Data:" $filename
         psql ${dbhostname} -d odsconfig_${stagename} -f "$filename"
     done
 else
-    echo "Not Resetting DB. To Reset send param ResetDB:TRUE"
+    echo "Not Resetting Data. To Reset send param ResetData:TRUE"
 fi
-
-for filename in Data/*.sql; do
-    [ -e "$filename" ] || continue
-    echo "Deploying File:" $filename
-    psql ${dbhostname} -d odsconfig_${stagename} -f "$filename"
-done
 
 for filename in Functions/*.sql; do
     [ -e "$filename" ] || continue
-    echo "Deploying File:" $filename
+    echo "Deploying Function:" $filename
+    psql ${dbhostname} -d odsconfig_${stagename} -f "$filename"
+done
+
+for filename in Views/*.sql; do
+    [ -e "$filename" ] || continue
+    echo "Deploying View:" $filename
     psql ${dbhostname} -d odsconfig_${stagename} -f "$filename"
 done
 

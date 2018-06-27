@@ -37,7 +37,7 @@ BEGIN
                     ,"AttributeName"
                     ,"AttributeValue"
                 )
-        SELECT  DataPipeLineTaskQueueId, "key" as "AttributeName", "value" as "AttributeValue"
+        SELECT  DataPipeLineTaskQueueId, "key" as "AttributeName", REPLACE(CAST("value" AS VARCHAR(500)), '"', '') as "AttributeValue"
         FROM    jsonb_each(SaveStatus::jsonb);
     END IF;
 
@@ -56,7 +56,7 @@ $$ LANGUAGE plpgsql;
     -- Code to test and verify
     SELECT * FROM ods."DataPipeLineTaskQueue" WHERE "DataPipeLineTaskQueueId" = 1;
 
-    SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'Completed', '{"test":"value"}');
+    SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'Completed', '{"S3DataFile":"dev-ods-data/clients/1-data-clients.csv"}');
     SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'Error', '{"test":"value"}');
     SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'unkn', '{"test":"value"}');
     SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'History Captured', null);

@@ -113,5 +113,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 /*
-    SELECT * FROM log."udf_InsertApiLog"('"SourceURL":"http://url.com"');
+    SELECT * FROM log."udf_InsertApiLog"('{"SourceURL":"http://url.com","LoggedInUser":"Nachi"
+    ,"APIStatus":"Start","LambdaName":"lll"
+    ,"Request":"{\"Param\":\"Value\",\"Param2\":\"Value2\"}"
+    ,"Error":"{\"err\":\"msg\"}"}'::jsonb);
 */

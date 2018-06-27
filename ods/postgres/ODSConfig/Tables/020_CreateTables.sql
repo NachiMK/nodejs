@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS ods."TaskConfigAttribute"
 CREATE TABLE IF NOT EXISTS ods."DataPipeLineTask"(
      "DataPipeLineTaskId"       SERIAL NOT NULL PRIMARY KEY
     ,"TaskName"                 VARCHAR(200) NOT NULL
+    ,"SourceEntity"             VARCHAR(100) NOT NULL
     ,"DataPipeLineTaskConfigId" INT NULL REFERENCES ods."DataPipeLineTaskConfig" ("DataPipeLineTaskConfigId")
     ,"DataPipeLineMappingId"    INT NULL REFERENCES ods."DataPipeLineMapping" ("DataPipeLineMappingId")
     ,"TaskTypeId"               INT NOT NULL REFERENCES ods."TaskType" ("TaskTypeId")
@@ -107,7 +108,7 @@ CREATE TABLE IF NOT EXISTS ods."DataPipeLineTask"(
     ,"DeletedFlag"              BOOLEAN NOT NULL DEFAULT false
     ,"CreatedDtTm"              timestamp not null DEFAULT CURRENT_TIMESTAMP
     ,"UpdatedDtTm"              timestamp not null DEFAULT CURRENT_TIMESTAMP
-    ,CONSTRAINT UNQ_DataPiplelineTask UNIQUE("DataPipeLineTaskConfigId", "DataPipeLineMappingId", "TaskName", "ParentTaskId")
+    ,CONSTRAINT UNQ_DataPiplelineTask UNIQUE("DataPipeLineTaskConfigId", "DataPipeLineMappingId", "SourceEntity", "ParentTaskId")
     ,CONSTRAINT UNQ_DataPiplelineTask_RunSequence UNIQUE("DataPipeLineTaskConfigId", "DataPipeLineMappingId", "RunSequence", "ParentTaskId")
     ,CONSTRAINT CHCK_DataPipeLineTask_RunSeq    CHECK ("RunSequence" > 0)
 );
@@ -174,6 +175,7 @@ CREATE TABLE IF NOT EXISTS ods."TaskQueueAttributeLog"
     ,"AttributeValue"           VARCHAR(500) NOT NULL
     ,"CreatedDtTm"              timestamp not null  default CURRENT_TIMESTAMP
     ,"UpdatedDtTm"              timestamp not null  default CURRENT_TIMESTAMP
+    ,CONSTRAINT UNQ_TaskQueueAttributeLog UNIQUE("DataPipeLineTaskQueueId", "AttributeName")
 );
 
 /*

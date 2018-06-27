@@ -44,7 +44,7 @@ INNER
 JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
-WHERE   A."AttributeName" LIKE 'S3.%.FolderPath'
+WHERE   A."AttributeName" LIKE 'S3%BucketName'
 AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
 
 INSERT INTO

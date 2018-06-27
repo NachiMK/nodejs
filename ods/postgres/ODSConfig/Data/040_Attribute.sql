@@ -5,21 +5,21 @@ INSERT INTO
     )
 SELECT "AttributeName"
 FROM    (
-                    SELECT 'S3.DataFile.FolderPath' as "AttributeName"
+                    SELECT 'S3DataFileBucketName' as "AttributeName"
             UNION   SELECT 'Prefix.DataFile' as "AttributeName"
-            UNION   SELECT 'S3.DataFile' as "AttributeName" -- Output/Input
+            UNION   SELECT 'S3DataFile' as "AttributeName" -- Output/Input
 
-            UNION   SELECT 'S3.SchemaFile.FolderPath' as "AttributeName"
+            UNION   SELECT 'S3SchemaFileBucketName' as "AttributeName"
             UNION   SELECT 'Prefix.SchemaFile' as "AttributeName"
-            UNION   SELECT 'S3.SchemaFile' as "AttributeName" -- Output/Input
+            UNION   SELECT 'S3SchemaFile' as "AttributeName" -- Output/Input
 
-            UNION   SELECT 'S3.UniformJSON.FolderPath' as "AttributeName"
+            UNION   SELECT 'S3UniformJSONBucketName' as "AttributeName"
             UNION   SELECT 'Prefix.UniformJSONFile' as "AttributeName"
-            UNION   SELECT 'S3.UniformJSONFile' as "AttributeName" --Output/Input
+            UNION   SELECT 'S3UniformJSONFile' as "AttributeName" --Output/Input
 
-            UNION   SELECT 'S3.CSVFiles.FolderPath' as "AttributeName"
+            UNION   SELECT 'S3CSVFiles.BucketName' as "AttributeName"
             UNION   SELECT 'Prefix.CSVFile' as "AttributeName"
-            UNION   SELECT 'S3.CSVFile.#' as "AttributeName" --Output/Input
+            UNION   SELECT 'S3CSVFile#' as "AttributeName" --Output/Input
             
             UNION   SELECT 'psql.PreStageTable.Prefix' as "AttributeName"
             UNION   SELECT 'psql.TableName.PreStage' as "AttributeName"

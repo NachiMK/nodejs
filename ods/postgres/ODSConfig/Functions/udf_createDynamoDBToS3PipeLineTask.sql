@@ -1,6 +1,6 @@
 DROP FUNCTION IF EXISTS ods."udf_createDynamoDBToS3PipeLineTask"(varchar(255), INT);
 DROP TYPE IF EXISTS ods.DynamoDBtoS3ReturnType;
-CREATE TYPE ods.DynamoDBtoS3ReturnType as ("DataFilePrefix" VARCHAR(500), "S3DataFileFolderPath" VARCHAR(500), "DataPipeLineTaskQueueId" INT);
+CREATE TYPE ods.DynamoDBtoS3ReturnType as ("DataFilePrefix" VARCHAR(500), "S3DataFileBucketName" VARCHAR(500), "DataPipeLineTaskQueueId" INT);
 
 CREATE OR REPLACE FUNCTION ods."udf_createDynamoDBToS3PipeLineTask"(TableName VARCHAR(255), RowCnt INT) 
 RETURNS 
@@ -8,7 +8,7 @@ RETURNS
 DECLARE
     retRecord ods.DynamoDBtoS3ReturnType%rowtype;
     dataFilePrefix VARCHAR(200);
-    S3DataFileFolderPath VARCHAR(600);
+    S3DataFileBucketName VARCHAR(600);
     DataPipeLineTaskQueueId INT;
 BEGIN
     IF length(TableName) = 0 THEN
@@ -46,25 +46,42 @@ BEGIN
     INTO    DataPipeLineTaskQueueId;
 
     RAISE NOTICE 'Queue Entry to capture data for TableName: --> % was created. ID: %', TableName, DataPipeLineTaskQueueId;
-    
+
+    INSERT INTO
+        ods."TaskQueueAttributeLog"
+        (
+             "DataPipeLineTaskQueueId"
+            ,"AttributeName"
+            ,"AttributeValue"
+        )
+    SELECT
+         DPL."DataPipeLineTaskQueueId"
+        ,A."AttributeName" as "AttributeName"
+        ,CASE WHEN TA."AttributeValue" LIKE '%{Id}%' 
+              THEN REPLACE(TA."AttributeValue", '{Id}', CAST("DataPipeLineTaskQueueId" AS VARCHAR))
+              ELSE TA."AttributeValue" 
+         END as "AttributeValue"
+    FROM    ods."TaskAttribute" AS TA
+    INNER
+    JOIN    ods."Attribute" AS A ON A."AttributeId" = TA."AttributeId"
+    INNER
+    JOIN    ods."DataPipeLineTaskQueue" AS DPL ON DPL."DataPipeLineTaskId" = TA."DataPipeLineTaskId"
+    WHERE   "DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId;
+
     -- Result
     FOR retRecord in 
-            SELECT  REPLACE("Prefix.DataFile", '{Id}', CAST("DataPipeLineTaskQueueId" AS VARCHAR)) as "PrefixDataFile"
-                    ,"S3.DataFile.FolderPath" as "S3DataFileFolderPath"
-                    ,"DataPipeLineTaskQueueId" as "DataPipeLineTaskQueueId"
-            FROM    crosstab( 'SELECT  "DataPipeLineTaskQueueId"
-                                        ,A."AttributeName"
-                                        ,TA."AttributeValue"
-                                FROM    ods."TaskAttribute" AS TA
-                                INNER
-                                JOIN    ods."Attribute" AS A ON A."AttributeId" = TA."AttributeId"
-                                INNER
-                                JOIN    ods."DataPipeLineTaskQueue" AS DPL ON DPL."DataPipeLineTaskId" = TA."DataPipeLineTaskId"
-                                WHERE "DataPipeLineTaskQueueId" = ' || DataPipeLineTaskQueueId) 
+            SELECT   "DataPipeLineTaskQueueId" as "DataPipeLineTaskQueueId"
+                    ,"Prefix.DataFile" as "PrefixDataFile"
+                    ,"S3DataFileBucketName" as "S3DataFileBucketName"
+            FROM    crosstab( 'SELECT    TAL."DataPipeLineTaskQueueId"
+                                        ,TAL."AttributeName"
+                                        ,TAL."AttributeValue"
+                                FROM    ods."TaskQueueAttributeLog" AS TAL
+                                WHERE   TAL."DataPipeLineTaskQueueId" = ' || DataPipeLineTaskQueueId) 
                         AS final_result( "DataPipeLineTaskQueueId" INT
                                         ,"Dynamo.TableName"  VARCHAR
-                                        ,"S3.DataFile.FolderPath" VARCHAR
                                         ,"Prefix.DataFile" VARCHAR
+                                        ,"S3DataFileBucketName" VARCHAR
                                         )
             LOOP
             return next retRecord;

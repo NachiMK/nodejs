@@ -22,8 +22,9 @@ AND     "ParentId" IS NULL;
 
 INSERT INTO
         ods."DataPipeLineTask"
-        ("TaskName", "DataPipeLineTaskConfigId", "DataPipeLineMappingId", "TaskTypeId", "ParentTaskId", "RunSequence")
+        ("TaskName", "SourceEntity", "DataPipeLineTaskConfigId", "DataPipeLineMappingId", "TaskTypeId", "ParentTaskId", "RunSequence")
 SELECT   Tbls."CleanTableName" || ' - ' || "TaskName"  as "TaskName"
+        ,Tbls."CleanTableName" as "SourceEntity"
         ,TT."DataPipeLineTaskConfigId"
         ,TT."DataPipeLineMappingId"
         ,TT."TaskTypeId"
@@ -44,8 +45,9 @@ ORDER BY
 
 INSERT INTO
         ods."DataPipeLineTask"
-        ("TaskName", "DataPipeLineTaskConfigId", "DataPipeLineMappingId", "TaskTypeId", "ParentTaskId", "RunSequence")
+        ("TaskName", "SourceEntity", "DataPipeLineTaskConfigId", "DataPipeLineMappingId", "TaskTypeId", "ParentTaskId", "RunSequence")
 SELECT   REPLACE(DPL."TaskName", P."TaskName", C."TaskName") as "TaskName"
+        ,DPL."SourceEntity"
         ,C."DataPipeLineTaskConfigId"
         ,C."DataPipeLineMappingId"
         ,C."TaskTypeId"
@@ -60,7 +62,7 @@ WHERE   ((P."TaskName" LIKE '%DynamoDB to S3%') OR (P."TaskName" LIKE  '%Process
 AND     C."ParentId" IS NOT NULL
 AND     NOT EXISTS (
                   SELECT 1 FROM ods."DataPipeLineTask" TGT
-                  WHERE TGT."TaskName" = REPLACE(DPL."TaskName", P."TaskName", C."TaskName")
+                  WHERE TGT."SourceEntity" = DPL."SourceEntity"
                   AND   TGT."DataPipeLineMappingId" = C."DataPipeLineMappingId"
                   AND   TGT."DataPipeLineTaskConfigId" = C."DataPipeLineTaskConfigId"
                   AND   TGT."ParentTaskId" = DPL."DataPipeLineTaskId"

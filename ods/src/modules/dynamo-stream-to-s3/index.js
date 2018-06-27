@@ -97,14 +97,14 @@ export async function DynamoStreamEventsToS3(StreamEventsToS3Param = {}) {
 
 export async function SaveDynamoRowsToS3(Rows, KeyName, S3BucketName, AppendDateTime = true, DateTimeFormat = 'YYYYMMDD_HHmmssSSS') {
   let RetError;
-  const S3FilePath = '';
+  const S3DataFile = '';
   const RowCount = _.isArray(Rows) ? Rows.length : 0;
   const defaultResp = await GetDefaultOdsResponse();
 
   KeyName = await getJSONFileKeyName(KeyName, AppendDateTime, DateTimeFormat);
   const saveStatus = {
     ...defaultResp,
-    S3FilePath,
+    S3DataFile,
     S3BucketName,
     KeyName,
     RowCount,
@@ -116,7 +116,7 @@ export async function SaveDynamoRowsToS3(Rows, KeyName, S3BucketName, AppendDate
       Key: KeyName,
       Body: (RowCount === 0) ? JSON.stringify({}, null, 2) : JSON.stringify(Rows, null, 2),
     });
-    saveStatus.S3FilePath = `s3://us-west-2.amazonaws.com/${S3BucketName}/${KeyName}`;
+    saveStatus.S3DataFile = `https://s3-us-west-2.amazonaws.com/${S3BucketName}/${KeyName}`;
     await SetOdsResponseStatusToSuccess(saveStatus);
   } catch (err) {
     RetError = new Error(`Error saving Changes for Key ${KeyName} 

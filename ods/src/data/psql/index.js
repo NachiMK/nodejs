@@ -283,7 +283,7 @@ function getDefaultBatchKey(Query) {
 //     rows: [
 //       {
 //         DataFilePrefix: 'dynamodb/clients/1-clients-test-Data-',
-//         S3DataFileFolderPath: 'dev-ods-data',
+//         S3DataFileBucketName: 'dev-ods-data',
 //         DataPipeLineTaskQueueId: 1,
 //       },
 //     ],
