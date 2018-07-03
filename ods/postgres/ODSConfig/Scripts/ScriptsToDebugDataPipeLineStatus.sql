@@ -186,3 +186,53 @@ SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('persons', 55)
     AND     TA."AttributeValue" LIKE '%persons%'
     
     SELECT * FROM ods."DataPipeLineTask" WHERE "TaskName" like '%persons - DynamoDB to S3'
+
+SELECT  DPL."DataPipeLineTaskId", DPC."TaskName", DPL."RunSequence", DPL."ParentTaskId"
+FROM    ods."DataPipeLineTask"  AS DPL
+INNER
+JOIN    ods."DataPipeLineTaskConfig"   DPC ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
+WHERE   "SourceEntity" = 'clients'
+AND     DPC."TaskName" = 'Process JSON to Postgres'
+
+UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 20 WHERE "DataPipeLineTaskQueueId" IN (35, 2)
+
+SELECT  *
+FROM    ods."DataPipeLineTaskQueue" AS Q
+INNER
+JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
+WHERE   "DataPipeLineTaskId" = 20
+AND     "TaskStatusDesc" IN ('Processing');
+
+SELECT  MIN("DataPipeLineTaskQueueId") AS "ParentTaskId"
+FROM    ods."DataPipeLineTaskQueue" AS Q
+INNER
+JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
+WHERE   "DataPipeLineTaskId" = 20
+AND     "TaskStatusDesc" IN ('Ready')
+AND     NOT EXISTS 
+        (
+            SELECT  *
+            FROM    ods."DataPipeLineTaskQueue" AS Q
+            INNER
+            JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
+            WHERE   "DataPipeLineTaskId" = 20
+            AND     "TaskStatusDesc" IN ('Processing', 'Error')
+        );
+
+SELECT   Q."DataPipeLineTaskQueueId"
+        ,T."TaskStatusDesc" AS "Status"
+        ,Q."RunSequence"
+        ,DPC."TaskName"
+FROM    ods."DataPipeLineTaskQueue"     AS Q
+INNER
+JOIN    ods."TaskStatus"                AS T    ON T."TaskStatusId" = Q."TaskStatusId"
+INNER
+JOIN    ods."DataPipeLineTask"          AS DPL  ON  DPL."DataPipeLineTaskId" = Q."DataPipeLineTaskId"
+INNER
+JOIN    ods."DataPipeLineTaskConfig"    AS DPC  ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
+WHERE   ((Q."DataPipeLineTaskQueueId" = 2) OR (Q."ParentTaskId" = 2))
+AND     T."TaskStatusDesc" IN ('Ready', 'On Hold')
+;
+
+SELECT * FROM ods."udf_GetPendingPipeLineTasks"('clients', null);
+

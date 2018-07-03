@@ -22,12 +22,50 @@ BEGIN
     ErrorJson := CAST(TaskError as jsonb);
 
     IF taskStatusId IS NOT NULL THEN
+        -- UPDATE Parent AS WELL
+        -- If a Child Process Errors or is in Processing then make sure parent is also in same status
+        UPDATE  ods."DataPipeLineTaskQueue" AS DQ
+        SET     "TaskStatusId"  = taskStatusId
+                ,"EndDtTm"      = endTime
+                ,"Error"        = ErrorJson
+                ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
+        FROM    ods."DataPipeLineTaskQueue" AS  Parent
+        INNER
+        JOIN    ods."TaskStatus"            AS  TS      ON  TS."TaskStatusId" = taskStatusId
+        WHERE   DQ."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId
+        AND     Parent."DataPipeLineTaskQueueId" = DQ."ParentTaskId"
+        AND     TS."TaskStatusDesc" IN ('Error');
+
         UPDATE  ods."DataPipeLineTaskQueue" AS DQ
         SET     "TaskStatusId"  = taskStatusId
                 ,"EndDtTm"      = endTime
                 ,"Error"        = ErrorJson
                 ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
         WHERE   DQ."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId;
+
+        -- IF Child is complete
+        -- and if this is the last child
+        -- then mark the parent as complete
+        -- as well.
+        UPDATE  ods."DataPipeLineTaskQueue" AS DQ
+        SET     "TaskStatusId"  = taskStatusId
+                ,"EndDtTm"      = endTime
+                ,"Error"        = ErrorJson
+                ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
+        FROM    ods."DataPipeLineTaskQueue" AS  Parent
+        INNER
+        JOIN    ods."TaskStatus"            AS  TS      ON  TS."TaskStatusId" = taskStatusId
+        WHERE   DQ."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId
+        AND     Parent."DataPipeLineTaskQueueId" = DQ."ParentTaskId"
+        AND     TS."TaskStatusDesc" IN ('Completed')
+        AND     NOT EXISTS 
+                (
+                    SELECT 1
+                    FROM    ods."DataPipeLineTaskQueue" as OC
+                    WHERE   ods."ParentTaskId"  = Q."ParentTaskId"
+                    AND     ods."RunSequence"   > Q."RunSequence"
+                )
+        ;
     END IF;
 
     IF SaveStatus IS NOT NULL THEN
