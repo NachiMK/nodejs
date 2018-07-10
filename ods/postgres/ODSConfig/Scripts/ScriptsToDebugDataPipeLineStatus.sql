@@ -223,6 +223,7 @@ SELECT   Q."DataPipeLineTaskQueueId"
         ,T."TaskStatusDesc" AS "Status"
         ,Q."RunSequence"
         ,DPC."TaskName"
+        ,*
 FROM    ods."DataPipeLineTaskQueue"     AS Q
 INNER
 JOIN    ods."TaskStatus"                AS T    ON T."TaskStatusId" = Q."TaskStatusId"
@@ -231,8 +232,16 @@ JOIN    ods."DataPipeLineTask"          AS DPL  ON  DPL."DataPipeLineTaskId" = Q
 INNER
 JOIN    ods."DataPipeLineTaskConfig"    AS DPC  ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
 WHERE   ((Q."DataPipeLineTaskQueueId" = 2) OR (Q."ParentTaskId" = 2))
-AND     T."TaskStatusDesc" IN ('Ready', 'On Hold')
+--AND     T."TaskStatusDesc" IN ('Ready', 'On Hold')
 ;
 
 SELECT * FROM ods."udf_GetPendingPipeLineTasks"('clients', null);
+SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(3, 'Processing');
+SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(3, 'Error');
+SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(8, 'Completed');
+
+SELECT * FROM ods."TaskStatus" Order by "TaskStatusId"
+
+UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 10 WHERE "DataPipeLineTaskQueueId" = 3;
+UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 20 WHERE "DataPipeLineTaskQueueId" = 2;
 

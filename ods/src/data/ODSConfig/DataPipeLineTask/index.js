@@ -93,10 +93,10 @@ async function createDataPipeLineTaskProcessHistory(TableName, S3DataPipeLineTas
   return RetResp;
 }
 
-export async function getPendingTask(TableName) {
+export async function GetPendingPipeLineTask(TableName) {
   let pendingTasks;
   try {
-    const sqlQuery = getPendingTaskQuery(TableName, undefined);
+    const sqlQuery = getPendingTaskQuery(TableName);
     const dbName = getDBName();
     const batchKey = `${TableName}_${moment().format('YYYYMMDD_HHmmssSSS')}`;
     const params = {
@@ -106,7 +106,7 @@ export async function getPendingTask(TableName) {
     };
     const retRS = await executeQueryRS(params);
     if (retRS.rows.length > 0) {
-      pendingTasks = retRS.rows.map(async (dataRow) => {
+      pendingTasks = await Promise.all(retRS.rows.map(async (dataRow) => {
         const retVal = {
           DataPipeLineTaskQueueId: dataRow.DataPipeLineTaskQueueId,
           Status: dataRow.Status,
@@ -114,16 +114,16 @@ export async function getPendingTask(TableName) {
           TaskConfigName: dataRow.TaskConfigName,
         };
         return retVal;
-      });
+      }));
     } else {
-      ODSLogger.warn(`There are NO Pending DataPipeLineTask for Table:${TableName}, DB Call returned 0 rows.`);
+      ODSLogger.log('warn', `There are NO Pending DataPipeLineTask for Table:${TableName}, DB Call returned 0 rows.`);
     }
     ODSLogger.log('info', `No Of Pendings Tasks ${pendingTasks.length} for Table: ${TableName}`);
     ODSLogger.log('debug', `Pendings Tasks ${JSON.stringify(pendingTasks, null, 2)} for Table: ${TableName}`);
   } catch (err) {
     pendingTasks = [];
     const msg = `Table: ${TableName}`;
-    ODSLogger.warn(err.message);
+    ODSLogger.log('warn', err.message);
     const er = new GettingPendingTaskError(msg, err);
     throw er;
   }
@@ -157,8 +157,8 @@ function getProcessHistoryQuery(TableName, Id) {
   return `SELECT * FROM ods."udf_createDataPipeLine_ProcessHistory"('${TableName}', ${Id})`;
 }
 
-function getPendingTaskQuery(TableName, ParentId) {
-  return `SELECT * FROM ods."udf_getPendingTasks"('${TableName}', ${ParentId})`;
+function getPendingTaskQuery(TableName) {
+  return `SELECT * FROM ods."udf_GetPendingPipeLineTasks"('${TableName}')`;
 }
 
 function compareTask(TaskA, TaskB) {

@@ -6,7 +6,7 @@ export async function JsonToJsonNormalize(event = {}) {
     TableName,
   } = event;
   try {
-    odsLogger.log(`Processing JsonToJsonNormalize for Table: ${TableName}`);
+    odsLogger.log('info', `Processing JsonToJsonNormalize for Table: ${TableName}`);
   } catch (err) {
     odsLogger.log('error', `Error Processing JsonToJsonNormalize for Table: ${TableName}`, err.message);
   }

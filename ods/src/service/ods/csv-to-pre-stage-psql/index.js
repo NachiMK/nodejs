@@ -6,7 +6,7 @@ export async function CsvToPreStage(event = {}) {
     TableName,
   } = event;
   try {
-    odsLogger.log(`Processing CsvToPreStage for Table: ${TableName}`);
+    odsLogger.log('info', `Processing CsvToPreStage for Table: ${TableName}`);
   } catch (err) {
     odsLogger.log('error', `Error Processing CsvToPreStage for Table: ${TableName}`, err.message);
   }

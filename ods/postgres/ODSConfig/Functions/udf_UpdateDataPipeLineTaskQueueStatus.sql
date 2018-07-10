@@ -24,17 +24,16 @@ BEGIN
     IF taskStatusId IS NOT NULL THEN
         -- UPDATE Parent AS WELL
         -- If a Child Process Errors or is in Processing then make sure parent is also in same status
-        UPDATE  ods."DataPipeLineTaskQueue" AS DQ
+        UPDATE  ods."DataPipeLineTaskQueue" AS Parent
         SET     "TaskStatusId"  = taskStatusId
-                ,"EndDtTm"      = endTime
-                ,"Error"        = ErrorJson
                 ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
-        FROM    ods."DataPipeLineTaskQueue" AS  Parent
+        FROM    ods."DataPipeLineTaskQueue" AS  DQ
         INNER
         JOIN    ods."TaskStatus"            AS  TS      ON  TS."TaskStatusId" = taskStatusId
         WHERE   DQ."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId
         AND     Parent."DataPipeLineTaskQueueId" = DQ."ParentTaskId"
-        AND     TS."TaskStatusDesc" IN ('Error');
+        AND     TS."TaskStatusDesc" IN ('Error')
+        AND     TS."TaskStatusId" != Parent."TaskStatusId";
 
         UPDATE  ods."DataPipeLineTaskQueue" AS DQ
         SET     "TaskStatusId"  = taskStatusId
@@ -47,12 +46,11 @@ BEGIN
         -- and if this is the last child
         -- then mark the parent as complete
         -- as well.
-        UPDATE  ods."DataPipeLineTaskQueue" AS DQ
+        UPDATE  ods."DataPipeLineTaskQueue" AS Parent
         SET     "TaskStatusId"  = taskStatusId
                 ,"EndDtTm"      = endTime
-                ,"Error"        = ErrorJson
                 ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
-        FROM    ods."DataPipeLineTaskQueue" AS  Parent
+        FROM    ods."DataPipeLineTaskQueue" AS  DQ
         INNER
         JOIN    ods."TaskStatus"            AS  TS      ON  TS."TaskStatusId" = taskStatusId
         WHERE   DQ."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId
@@ -62,10 +60,9 @@ BEGIN
                 (
                     SELECT 1
                     FROM    ods."DataPipeLineTaskQueue" as OC
-                    WHERE   ods."ParentTaskId"  = Q."ParentTaskId"
-                    AND     ods."RunSequence"   > Q."RunSequence"
-                )
-        ;
+                    WHERE   OC."ParentTaskId"  = DQ."ParentTaskId"
+                    AND     OC."RunSequence"   > DQ."RunSequence"
+                );
     END IF;
 
     IF SaveStatus IS NOT NULL THEN
@@ -105,6 +102,10 @@ $$ LANGUAGE plpgsql;
     SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'Error', '{"test":"value"}');
     SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'unkn', '{"test":"value"}');
     SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(1, 'History Captured', null);
+
+    SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(3, 'Processing');
+    SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(3, 'Error');
+    SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(8, 'Completed');
 
     SELECT * FROM ods."DataPipeLineTaskQueue" WHERE "DataPipeLineTaskQueueId" = 1;
 

@@ -6,7 +6,7 @@ export async function JsonToJsonSchema(event = {}) {
     TableName,
   } = event;
   try {
-    odsLogger.log(`Processing JsonToJsonSchema for Table: ${TableName}`);
+    odsLogger.log('info', `Processing JsonToJsonSchema for Table: ${TableName}`);
   } catch (err) {
     odsLogger.log('error', `Error Processing JsonToJsonSchema for Table: ${TableName}`, err.message);
   }

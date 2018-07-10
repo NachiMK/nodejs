@@ -6,7 +6,7 @@ export async function JsonToCSV(event = {}) {
     TableName,
   } = event;
   try {
-    odsLogger.log(`Processing JsonToCSV for Table: ${TableName}`);
+    odsLogger.log('info', `Processing JsonToCSV for Table: ${TableName}`);
   } catch (err) {
     odsLogger.log('error', `Error Processing JsonToCSV for Table: ${TableName}`, err.message);
   }

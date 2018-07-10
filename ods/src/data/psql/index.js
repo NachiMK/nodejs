@@ -190,7 +190,7 @@ function getConnectionString(dbName, stage) {
   if (idx >= 0) {
     retVal = process.env[key];
   } else {
-    ODSLogger('error', `Invalid DB Name passed. DBName: ${dbName}, Key: ${key}, Stage: ${stage}`);
+    ODSLogger.log('error', `Invalid DB Name passed. DBName: ${dbName}, Key: ${key}, Stage: ${stage}`);
     throw new RangeError(`Connection string for database: ${dbName} is not found in environment variables or .env file.`);
   }
   return retVal;

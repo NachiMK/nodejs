@@ -18,24 +18,31 @@
  * 
  */
 import odsLogger from '../../../modules/log/ODSLogger';
+import { GetPendingPipeLineTask as DataGetPendingPipeLineTask } from '../../../data/ODSConfig/DataPipeLineTask/index';
+import { DataPipeLineTaskConfigNameEnum as TaskConfigEnum } from '../../../modules/ODSConstants/index';
+import { JsonToJsonSchema } from '../json-to-json-schema';
+import { JsonToJsonNormalize } from '../json-to-json-normalize';
+import { JsonToCSV } from '../json-to-csv';
+import { PreStagetoRAW } from '../csv-to-pre-stage-psql';
 
 export async function JsonToPSQL(event = {}) {
-  ValidateParameter();
+  ValidateParameter(event);
   const {
     TableName,
   } = event;
   try {
-    odsLogger.log(`Processing JsonToPSQL for Table: ${TableName}`);
+    odsLogger.log('info', `Processing JsonToPSQL for Table: ${TableName}`);
     const PendingTasks = await GetPendingPipeLineTasks({ TableName });
     if (PendingTasks) {
-      while (PendingTasks) {
-        await ProcessPipeLineTask(PendingTasks.shift());
+      while (PendingTasks.length > 0) {
+        const task = PendingTasks.shift();
+        await ProcessPipeLineTask(task);
       }
     } else {
-      odsLogger.warn(`No Pending Steps for Table: ${TableName}, Resp:${PendingTasks}`);
+      odsLogger.log('warn', `No Pending Steps for Table: ${TableName}, Resp:${PendingTasks}`);
     }
   } catch (err) {
-    odsLogger.log('error', `Error Processing JSONToPSQL for Table: ${TableName}`, err.message);
+    odsLogger.log('error', `Error Processing JSONToPSQL for Table: ${TableName} Error Message:${err.message}`);
   }
 }
 
@@ -53,26 +60,52 @@ async function GetPendingPipeLineTasks(request) {
   const {
     TableName,
   } = request;
-  const tasks = [
-    {
-      DataPipeLineTaskQueueId: 12312,
-      Name: 'JSON History Data to JSON Schema',
-      RunSequence: 2010,
-      Status: 'Ready',
-    },
-  ];
+  let tasks;
 
   if (TableName) {
     // do something
+    tasks = await DataGetPendingPipeLineTask(TableName);
   }
   return tasks;
 }
 
 async function ProcessPipeLineTask(Task) {
   if (Task) {
-    // do something
+    odsLogger.log('info', `Processing Task: ${JSON.stringify(Task, null, 2)}`);
     // get step name
     // switch or call appropriate lambda/function for next step.
+    const taskConfigName = Task.TaskConfigName;
+    const taskParent = getTaskConfigParent(Task.TaskConfigName);
+    if (taskParent.localeCompare(TaskConfigEnum.ProcessJSONToPostgres.name)) {
+      try {
+        switch (taskConfigName) {
+          case TaskConfigEnum.JSONHistoryDataToJSONSchema.name:
+            await JsonToJsonSchema(Task);
+            break;
+          case TaskConfigEnum.JSONHistoryToFlatJSON.name:
+            await JsonToJsonNormalize(Task);
+            break;
+          case TaskConfigEnum.JsonToCSV.name:
+            await JsonToCSV(Task);
+            break;
+          case TaskConfigEnum.CSVToPrestage.name:
+            await JsonToCSV(Task);
+            break;
+          case TaskConfigEnum.PreStagetoRAW.name:
+            await PreStagetoRAW(Task);
+            break;
+          // case TaskConfigEnum.RAWToClean:
+          //   await RAWToClean(Task);
+          //   break;
+          default:
+            throw new Error(`Unknown Task to process, Task:${Task}`);
+        }
+        // mark parent as complete if everything went fine
+      } catch (err) {
+        odsLogger.log('error', err.message);
+        // update parent status
+      }
+    }
   } else {
     throw new Error('Parameter Task is null.');
   }

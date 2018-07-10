@@ -18,8 +18,8 @@
     "region": "us-west-2",
     "runtime": "nodejs8.10",
     "stage": "dev",
-    "log_dbname": "ODSLog",
-    "odsloglevel": "error"
+    "log_dbname": "ODSLog_dev",
+    "odsloglevel": "info"
   },
   "scripts": {
     "knex:dev": "knex --env dev",
