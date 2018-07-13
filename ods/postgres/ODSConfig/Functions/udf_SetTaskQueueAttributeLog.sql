@@ -30,6 +30,9 @@ BEGIN
     FROM    ods."DataPipeLineTaskQueue"
     WHERE   "DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId;
 
+    RAISE NOTICE ' udf_setTaskQueueAttributeLog, TaskId: %, Prev. Task Id: %, Parent: %'
+    , DataPipeLineTaskQueueId, PrevTaskId, ParentTaskId;
+
     WITH MyAttributes
     AS
     (
@@ -77,7 +80,7 @@ BEGIN
                                                         AND L."AttributeName"   =   A."AttributeName"
         WHERE   (Q."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId) --  OR Q."ParentTaskId" = DataPipeLineTaskQueueId
     )
-    INSERT  INTO ods."TaskQueueAttributeLog"
+    INSERT  INTO ods."TaskQueueAttributeLog" AS A
     (
         "DataPipeLineTaskQueueId"
         ,"AttributeName"
@@ -90,7 +93,9 @@ BEGIN
     FROM    MyAttributes
     ON  CONFLICT ON CONSTRAINT UNQ_TaskQueueAttributeLog
     DO  UPDATE
-        SET "AttributeValue" = EXCLUDED."AttributeValue";
+        SET "AttributeValue" = EXCLUDED."AttributeValue"
+            ,"UpdatedDtTm" = CURRENT_TIMESTAMP
+        WHERE A."AttributeValue" != EXCLUDED."AttributeValue";
 
 END;
 $$ LANGUAGE plpgsql;

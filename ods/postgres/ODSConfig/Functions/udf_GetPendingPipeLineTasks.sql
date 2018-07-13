@@ -8,6 +8,7 @@ DECLARE
     retRecord ods.PendingPipeLineTasks%rowtype;
     DataPipeLineTaskId INT;
     ParentQueueID   INT;
+    AlternateParentQueueID   INT;
     TaskConfigName VARCHAR(100);
 
 BEGIN
@@ -34,8 +35,8 @@ BEGIN
     FROM    ods."DataPipeLineTaskQueue" AS Q
     INNER
     JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
-    WHERE   "DataPipeLineTaskId" = DataPipeLineTaskId
-    AND     "TaskStatusDesc" IN ('Ready')
+    WHERE   Q."DataPipeLineTaskId" = DataPipeLineTaskId
+    AND     T."TaskStatusDesc" IN ('Ready')
     AND     NOT EXISTS 
             (
                 SELECT  *
@@ -47,6 +48,33 @@ BEGIN
             );
 
     RAISE NOTICE 'GetPendingTasks ParentQueueID: --> %', ParentQueueID;
+
+    -- are there any task that is been stuck?
+    -- if so Parent can be in Processing and Child can be in On Hold.
+    IF ParentQueueID IS NULL THEN
+        SELECT  MIN("DataPipeLineTaskQueueId")
+        INTO    AlternateParentQueueID
+        FROM    ods."DataPipeLineTaskQueue" AS Q
+        INNER
+        JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
+        WHERE   Q."DataPipeLineTaskId" = DataPipeLineTaskId
+        AND     T."TaskStatusDesc" IN ('Processing');
+
+        -- Use the alternate ID only if child is stuck in processing
+        SELECT  "DataPipeLineTaskQueueId"
+        INTO    ParentQueueID
+        FROM    ods."DataPipeLineTaskQueue" AS PQ
+        WHERE   PQ."DataPipeLineTaskQueueId" = AlternateParentQueueID
+        AND     NOT EXISTS
+                (
+                    SELECT  1
+                    FROM    ods."DataPipeLineTaskQueue" AS CQ
+                    INNER
+                    JOIN    ods."TaskStatus"    AS  CT  ON  CT."TaskStatusId" = CQ."TaskStatusId"
+                    WHERE   CT."TaskStatusDesc" IN ('Processing', 'Error')
+                    AND     CQ."ParentTaskId"   = AlternateParentQueueID
+                );
+    END IF;
 
     IF ParentQueueID IS NULL THEN
         ParentQueueID := -1;

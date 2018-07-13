@@ -1,23 +1,131 @@
 import odsLogger from '../../../modules/log/ODSLogger';
+import JsonSchemaSaver from '../../../modules/json-schema-builder/index';
+import { DataPipeLineTaskQueue } from '../../../modules/ODSConfig/DataPipeLineTaskQueue';
+import { TaskStatusEnum } from '../../../modules/ODSConstants';
 
-export async function JsonToJsonSchema(event = {}) {
-  ValidateParameter();
-  const {
-    TableName,
-  } = event;
+/**
+ * Pick Up Task 
+ *    Get my Current Status:
+ *      If Ready => Proceed
+ *      If On Hold, Processing, or Error => Just return. NO ERRORS.
+ *        The parent or caller should do whatever is necessary. It is just this 
+ *        task cannot proceed.
+ *    Get Task Values (Id)
+ *    Update Status as Processing
+ *    Get Task Attributes
+ * Do the requested Task 
+ *    Analyze Response
+ *    Update Status (with attribute outcome)
+ * Prepare return values
+ */
+export async function JsonToJsonSchema(task) {
+  odsLogger.log('debug', 'Parameter: JsonToJsonSchema:', task);
+  const dataPipeLineTaskQueue = task;
+  const resp = {
+    Status: 'Unknown',
+    error: {},
+  };
   try {
-    odsLogger.log('info', `Processing JsonToJsonSchema for Table: ${TableName}`);
+    // Valid parameter
+    ValidateParameter(dataPipeLineTaskQueue);
+    // Pickup Task
+    const processStatusResp = await dataPipeLineTaskQueue.PickUpTask(true);
+    odsLogger.log('debug', `Value after Picking Task: ${JSON.stringify(dataPipeLineTaskQueue, null, 2)}`);
+
+    if (processStatusResp && processStatusResp.Picked) {
+      const SaveSchemaResp = await DoTaskSaveJsonSchema(dataPipeLineTaskQueue);
+      odsLogger.log('info', 'saveSchema response and Task details:', SaveSchemaResp, dataPipeLineTaskQueue);
+
+      if (SaveSchemaResp && (SaveSchemaResp.Status !== TaskStatusEnum.Processing.name)) {
+        // save status
+        await dataPipeLineTaskQueue.updateTaskStatus(SaveSchemaResp.Status, SaveSchemaResp.error, dataPipeLineTaskQueue.TaskQueueAttributes);
+        resp.Status = 'success';
+        resp.error = undefined;
+      } else {
+        resp.Status = SaveSchemaResp.Status || 'Error';
+        resp.error = SaveSchemaResp.error || new Error('Saving Schema didnt complete nor did it throw an Error.');
+      }
+    } else {
+      resp.Status = (processStatusResp && processStatusResp.ExistingStatus) ? processStatusResp.ExistingStatus : 'UNKNOWN.2';
+      resp.error = undefined;
+    }
   } catch (err) {
-    odsLogger.log('error', `Error Processing JsonToJsonSchema for Table: ${TableName}`, err.message);
+    resp.Status = 'Error';
+    resp.error = err;
+    odsLogger.log('error', `Error Processing JsonToJsonSchema for Task: ${task}, messages: ${err.message}`, err);
+  }
+  return resp;
+}
+
+function ValidateParameter(task) {
+  if (task && task instanceof DataPipeLineTaskQueue) {
+    if (!task.TableName) {
+      throw new Error('Table Name is invalid.');
+    }
+    if (!task.DataPipeLineTaskQueueId) {
+      throw new Error('DataPipeLineTaskQueueId is invalid.');
+    }
+  } else {
+    throw new Error('Task should be of Type DataPipeLineTaskQueue.');
   }
 }
 
-function ValidateParameter(event) {
-  if (event) {
-    if (!event.TableName) {
-      throw new Error('Table Name is invalid.');
-    }
-  } else {
-    throw new Error('Event details cannot be empty.');
+async function DoTaskSaveJsonSchema(dataPipeLineTaskQueue) {
+  const taskResp = {};
+  let input;
+
+  try {
+    const s3KeySchemaFile = dataPipeLineTaskQueue.getTaskAttributeValue('Prefix.SchemaFile');
+    const indexOfPrefix = s3KeySchemaFile.lastIndexOf('/');
+    const schemaFilePrefix = s3KeySchemaFile.substr(indexOfPrefix + 1, s3KeySchemaFile.length - indexOfPrefix);
+
+    input = {
+      Datafile: dataPipeLineTaskQueue.getTaskAttributeValue('S3DataFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
+      FilePrefix: schemaFilePrefix,
+      Output: `s3://${dataPipeLineTaskQueue.getTaskAttributeValue('S3SchemaFileBucketName')}/${s3KeySchemaFile.replace(schemaFilePrefix, '')}`,
+      Overwrite: 'yes',
+    };
+  } catch (err) {
+    taskResp.Status = TaskStatusEnum.Error.name;
+    taskResp.error = new Error(`Paramter required to complete task is missing/not formated properly. ${err.message}`);
   }
+
+  try {
+    odsLogger.log('info', 'About to build Schema File for:', input);
+    const resp = await JsonSchemaSaver(input);
+    odsLogger.log('info', 'Response for saving schema file:', resp);
+    if (IsStatusSuccess(resp)) {
+      // completed successfully
+      // get file as well
+      if (resp.file) {
+        // save file
+        taskResp.Status = TaskStatusEnum.Completed.name;
+        taskResp.error = undefined;
+        dataPipeLineTaskQueue.TaskQueueAttributes.S3SchemaFile = resp.file;
+      } else {
+        taskResp.Status = TaskStatusEnum.Error.name;
+        taskResp.error = new Error('Json Schema Save returned Success, but S3SchemaFile Name is missing.');
+      }
+    } else {
+      // throw an error
+      taskResp.Status = TaskStatusEnum.Error.name;
+      taskResp.error = new Error(`Saving Schema Failed. Retry Process. Error: ${resp.error}`);
+    }
+  } catch (err) {
+    taskResp.Status = TaskStatusEnum.Error.name;
+    taskResp.error = new Error(`Unknown Error calling module to do task. Retry Process. Error: ${err.message}`);
+  }
+
+  return taskResp;
+}
+
+function getStatusMessage(resp) {
+  if (resp && resp.status && resp.status.message) {
+    return resp.status.message.toUpperCase();
+  }
+  return '';
+}
+
+function IsStatusSuccess(resp) {
+  return getStatusMessage(resp) === 'SUCCESS';
 }

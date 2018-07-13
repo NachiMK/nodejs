@@ -75,6 +75,7 @@ export const executeScalar = async (params = {}) => {
     const id = logresp.scalarValue;
     ODSLogger.log('debug', 'About to run scalar query:%j', params);
     const resExeScalar = await localKnex.raw(Query);
+    ODSLogger.log('debug', 'scalar query Response:%j', resExeScalar);
     if (resExeScalar) {
       if (resExeScalar.rows && (resExeScalar.rows.length > 0)) {
         const value = Object.values(resExeScalar.rows[0])[0];

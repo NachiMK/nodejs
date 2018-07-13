@@ -13,3 +13,10 @@ export class GettingPendingTaskError extends ODSError {
     super('Error getting Pending DataPipeLineTaskQueue Entry in database.' || message, 'Error');
   }
 }
+
+export class GetTaskAttributeError extends ODSError {
+  constructor(message) {
+    // Providing default message and overriding status code.
+    super('Error getting DataPipeLineTaskQueue Attributes from database.' || message, 'Error');
+  }
+}

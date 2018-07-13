@@ -170,7 +170,7 @@ export async function getJSONFileKeyName(FilePrefix, AppendDtTm = true, DateTime
   FilePrefix = (_.isUndefined(FilePrefix) || _.isEmpty(FilePrefix)) ? 'UNKNOWN_' : FilePrefix.replace('.json', '');
   FilePrefix = ((FilePrefix.charAt(0) === '/') ? FilePrefix.substring(1) : FilePrefix);
   if (AppendDtTm) {
-    return `${FilePrefix}_${await getDataTimeStamp(DateTimeFormat)}.json`.replace('__', '_');
+    return `${FilePrefix}_${await getDataTimeStamp(DateTimeFormat)}.json`.replace('__', '_').replace('-_', '-');
   }
 
   return `${FilePrefix}.json`;

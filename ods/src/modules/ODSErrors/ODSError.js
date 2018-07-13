@@ -14,3 +14,9 @@ export default class ODSError extends Error {
   }
 }
 
+export class DataBaseError extends ODSError {
+  constructor(message) {
+    // Providing default message and overriding status code.
+    super('Error working with database.' || message, 'Error');
+  }
+}

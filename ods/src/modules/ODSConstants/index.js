@@ -14,11 +14,11 @@ export function getTaskConfigParent(TaskConfigName) {
   try {
     if (TaskConfigName) {
       // do something
-      Object.keys(DataPipeLineTaskConfigNameEnum).find((item) => {
-        return DataPipeLineTaskConfigNameEnum[item].name === TaskConfigName;
-      });
+      const task = Object.keys(DataPipeLineTaskConfigNameEnum).find(item => DataPipeLineTaskConfigNameEnum[item].name === TaskConfigName);
+      retVal = DataPipeLineTaskConfigNameEnum[task].ParentName;
     }
   } catch (err) {
+    retVal = '';
     console.error('Error finding parent', TaskConfigName);
   }
   return retVal;

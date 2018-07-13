@@ -136,9 +136,8 @@ SELECT * FROM ods."DataPipeLineTaskQueue" LIMIT 10;
 SELECT * FROM ods."vwDataPipeLineTask" WHERE "DataPipeLineTaskId" = 19
 SELECT * FROM ods."vwDataPipeLineTask" WHERE "DataPipeLineTaskId" = 20 OR "ParentTaskId" = 20
 
-SELECT * FROM ods."vwTaskAttribute" WHERE "DataPipeLineTaskId" IN (820);
-
-SELECT * FROM ods."vwTaskAttribute" WHERE "DataPipeLineTaskId" IN (1019);
+SELECT * FROM ods."vwTaskAttribute" WHERE "DataPipeLineTaskId" IN (19);
+SELECT * FROM ods."vwTaskAttribute" WHERE "DataPipeLineTaskId" IN (20, 105, 106, 107, 108, 109, 110);
 
 SELECT * FROM ods."TaskQueueAttributeLog" WHERE "DataPipeLineTaskQueueId" >= 114;
     
@@ -237,7 +236,7 @@ WHERE   ((Q."DataPipeLineTaskQueueId" = 2) OR (Q."ParentTaskId" = 2))
 
 SELECT * FROM ods."udf_GetPendingPipeLineTasks"('clients', null);
 SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(3, 'Processing');
-SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(3, 'Error');
+SELECT * FROM ods."udf_UpdateDataPipeLineTa˙skQueueStatus"(3, 'Error');
 SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(8, 'Completed');
 
 SELECT * FROM ods."TaskStatus" Order by "TaskStatusId"
@@ -245,3 +244,30 @@ SELECT * FROM ods."TaskStatus" Order by "TaskStatusId"
 UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 10 WHERE "DataPipeLineTaskQueueId" = 3;
 UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 20 WHERE "DataPipeLineTaskQueueId" = 2;
 
+DELETE
+FROM    ods."TaskQueueAttributeLog"
+WHERE   "DataPipeLineTaskQueueId" IN (3, 4)
+AND     "AttributeName" = 'S3SchemaFile';
+
+SELECT * FROM "CommandLog"
+
+SELECT    TAL."DataPipeLineTaskQueueId"
+        ,TAL."AttributeName"
+        ,TAL."AttributeValue"
+FROM    ods."TaskQueueAttributeLog" AS TAL
+WHERE   "DataPipeLineTaskQueueId" >= 3;
+
+SELECT  TAL.*
+FROM    ods."TaskQueueAttributeLog" AS TAL
+WHERE   "DataPipeLineTaskQueueId" IN (3, 4);
+
+SELECT * FROM ods."udf_GetPipeLineTaskQueueAttribute"(3);
+SELECT * FROM ods."udf_GetPipeLineTaskQueueAttribute"(4);
+SELECT * FROM ods."udf_GetPipeLineTaskQueueAttribute"(4, true);
+
+
+SELECT  T."TaskStatusDesc" AS "TaskStatus"
+FROM    ods."DataPipeLineTaskQueue"     AS Q
+INNER
+JOIN    ods."TaskStatus"                AS T    ON T."TaskStatusId" = Q."TaskStatusId"
+WHERE   Q."DataPipeLineTaskQueueId" = 3;

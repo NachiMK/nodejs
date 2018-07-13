@@ -1,4 +1,3 @@
-DROP FUNCTION IF EXISTS ods."udf_UpdateDataPipeLineTaskQueueStatus"(int, character varying, text);
 DROP FUNCTION IF EXISTS ods."udf_UpdateDataPipeLineTaskQueueStatus"(int, character varying, text, jsonb);
 CREATE OR REPLACE FUNCTION ods."udf_UpdateDataPipeLineTaskQueueStatus"(DataPipeLineTaskQueueId INT
                                                                     , TaskStatus VARCHAR(40)
@@ -10,12 +9,15 @@ DECLARE
     taskStatusId INT;
     ErrorJson jsonb;
     endTime TIMESTAMP;
+    startTime TIMESTAMP;
     retRecord ods."DataPipeLineTaskQueue"%rowtype;
 BEGIN
     SELECT   "TaskStatusId"
             ,CASE WHEN TaskStatus IN ('History Captured', 'Completed', 'Error') 
                   THEN CURRENT_TIMESTAMP ELSE NULL END as "endTime"
-    INTO    taskStatusId, endTime
+            ,CASE WHEN TaskStatus IN ('Processing', 'Re-Process') 
+                  THEN CURRENT_TIMESTAMP ELSE NULL END as "startTime"
+    INTO    taskStatusId, endTime, startTime
     FROM   ods."TaskStatus" 
     WHERE  "TaskStatusDesc" = TaskStatus;
 
@@ -23,7 +25,7 @@ BEGIN
 
     IF taskStatusId IS NOT NULL THEN
         -- UPDATE Parent AS WELL
-        -- If a Child Process Errors or is in Processing then make sure parent is also in same status
+        -- If a Child Process Errors then make sure parent is also in same status
         UPDATE  ods."DataPipeLineTaskQueue" AS Parent
         SET     "TaskStatusId"  = taskStatusId
                 ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
@@ -37,10 +39,14 @@ BEGIN
 
         UPDATE  ods."DataPipeLineTaskQueue" AS DQ
         SET     "TaskStatusId"  = taskStatusId
+                ,"StartDtTm"    = CASE WHEN TS."TaskStatusDesc" NOT IN ('Processing', 'Re-Process') 
+                                       THEN startTime ELSE DQ."StartDtTm" END
                 ,"EndDtTm"      = endTime
                 ,"Error"        = ErrorJson
                 ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
-        WHERE   DQ."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId;
+        FROM    ods."TaskStatus"    AS  TS
+        WHERE   DQ."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId
+        AND     TS."TaskStatusId" = DQ."TaskStatusId";
 
         -- IF Child is complete
         -- and if this is the last child
@@ -73,7 +79,9 @@ BEGIN
                     ,"AttributeValue"
                 )
         SELECT  DataPipeLineTaskQueueId, "key" as "AttributeName", REPLACE(CAST("value" AS VARCHAR(500)), '"', '') as "AttributeValue"
-        FROM    jsonb_each(SaveStatus::jsonb);
+        FROM    jsonb_each(SaveStatus::jsonb)
+        ON  CONFLICT ON CONSTRAINT UNQ_TaskQueueAttributeLog
+        DO  NOTHING;
     END IF;
 
     -- Result

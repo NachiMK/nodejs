@@ -138,8 +138,9 @@ export default async ({
 
     // Set up save file parameters
     const saveFileParams = s3FileParser(Output);
-    const filename = `${saveFileParams.Key}${FilePrefix && FilePrefix.length ?
-      FilePrefix.concat('-') : ''}${moment().format('YYYYMMDDhhmmss')}-schema.json`;
+    let filename = `${saveFileParams.Key}${FilePrefix && FilePrefix.length ?
+      FilePrefix.concat('-') : ''}${moment().format('YYYYMMDD_HHmmssSSS')}-schema.json`;
+    filename = filename.replace('--', '-').replace('-_', '-');
 
     // Handle blocking overwrite if Overwrite is 'No'
     if (Overwrite.toLowerCase() === 'no') {

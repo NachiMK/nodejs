@@ -8,4 +8,3 @@ jsonSchemaSaver({
 })
   .then(res => console.log('res', res))
   .catch(e => console.log('error', e));
-

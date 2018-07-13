@@ -1,8 +1,9 @@
 import moment from 'moment';
 import _ from 'lodash';
-import { executeQueryRS, executeCommand } from '../../psql/index';
-import { CreatingDataPipeLineTaskError, GettingPendingTaskError } from '../../../modules/ODSErrors/DataPipeLineTaskQueueError';
+import { executeQueryRS, executeCommand, executeScalar } from '../../psql/index';
+import { CreatingDataPipeLineTaskError, GettingPendingTaskError, GetTaskAttributeError } from '../../../modules/ODSErrors/DataPipeLineTaskQueueError';
 import ODSLogger from '../../../modules/log/ODSLogger';
+import { DataBaseError } from '../../../modules/ODSErrors/ODSError';
 
 export {
   createDynamoDBToS3PipeLineTask,
@@ -59,8 +60,8 @@ async function UpdatePipeLineTaskStatus(DataPipeLineTaskQueueId, SaveStatus = {}
     return true;
   } catch (err) {
     ODSLogger.log('warn', 'Error updating DataPipeLinetaskQueue status: %j', err);
+    throw new DataBaseError(`Error updating DataPipeLinetaskQueue status: ${err.message}`);
   }
-  return false;
 }
 
 async function createDataPipeLineTaskProcessHistory(TableName, S3DataPipeLineTaskQueueId) {
@@ -134,6 +135,70 @@ export async function GetPendingPipeLineTask(TableName) {
   return pendingTasks;
 }
 
+export async function GetPipeLineTaskQueueAttribute(taskId) {
+  let taskAttributes;
+  try {
+    const sqlQuery = getAttributeQuery(taskId);
+    const dbName = getDBName();
+    const batchKey = `${taskId}_${moment().format('YYYYMMDD_HHmmssSSS')}`;
+    const params = {
+      Query: sqlQuery,
+      DBName: dbName,
+      BatchKey: batchKey,
+    };
+    const retRS = await executeQueryRS(params);
+    if (retRS.rows.length > 0) {
+      taskAttributes = await Promise.all(retRS.rows.map(async (dataRow) => {
+        const retVal = {
+          AttributeName: dataRow.AttributeName,
+          AttributeValue: dataRow.AttributeValue,
+        };
+        return retVal;
+      }));
+    } else {
+      ODSLogger.log('warn', `There are NO Attributes for DataPipeLineTask :${taskId}, DB Call returned 0 rows.`);
+    }
+    ODSLogger.log('info', `No Of Task Attributs ${taskAttributes.length} for Task Id: ${taskId}`);
+    ODSLogger.log('debug', `Task Attributes ${JSON.stringify(taskAttributes, null, 2)} for Task Id: ${taskId}`);
+  } catch (err) {
+    taskAttributes = [];
+    const msg = `TaskId: ${taskId}`;
+    ODSLogger.log('warn', err.message);
+    const er = new GetTaskAttributeError(msg, err);
+    throw er;
+  }
+  return taskAttributes;
+}
+
+export async function GetPipeLineTaskStatus(taskId) {
+  let statusResp = 'Unknown';
+  try {
+    const sqlQuery = getCheckTaskStatusQuery(taskId);
+    const dbName = getDBName();
+    const batchKey = `${taskId}_${moment().format('YYYYMMDD_HHmmssSSS')}`;
+    const params = {
+      Query: sqlQuery,
+      DBName: dbName,
+      BatchKey: batchKey,
+    };
+    const retRS = await executeScalar(params);
+    ODSLogger.log('debug', `Status Response ${JSON.stringify(retRS, null, 2)} for Task Id: ${taskId}`);
+    if (retRS && retRS.completed) {
+      statusResp = retRS.scalarValue;
+    } else {
+      throw new Error(`Status for DataPipeLineTask :${taskId} couldnt be found. Response:${retRS}`);
+    }
+  } catch (err) {
+    statusResp = 'Unknown';
+    ODSLogger.log('warn', `Error getting Task Status: ${err.message}`);
+    throw err;
+  }
+  return statusResp;
+}
+
+function getCheckTaskStatusQuery(taskId) {
+  return `SELECT ods."udf_GetDataPipeLineTaskQueueStatus"('${taskId}') as "TaskStatus"`;
+}
 
 function getQuery(TableName, RowCount) {
   return `SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('${TableName}', ${RowCount})`;
@@ -145,12 +210,21 @@ function getDBName(DBName = '') {
 
 function getUpdateQuery(Id, SaveStatus) {
   const status = SaveStatus.Status || 'Unknown';
-  const statusError = SaveStatus.Error || {};
+  const statusError = {};
+  if (SaveStatus.Error) {
+    statusError.message = SaveStatus.Error.message;
+    statusError.stack = SaveStatus.Error.stack;
+  }
   // _.pick(SaveStatus, ['KeyName', 'S3BucketName', 'AppendDateTime', 'DateTimeFormat', 'S3DataFile', 'RowCount']);
   const attributes = _.omit(SaveStatus, ['Error', 'Status', 'Input']);
   return `SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(${Id}, '${status}'
   , '${JSON.stringify(statusError, null, 2)}'
   , '${JSON.stringify(attributes, null, 2)}')`;
+}
+
+function getAttributeQuery(taskId, updateAttribute = true) {
+  const update = (updateAttribute === true);
+  return `SELECT * FROM ods."udf_GetPipeLineTaskQueueAttribute"(${taskId}, ${update})`;
 }
 
 function getProcessHistoryQuery(TableName, Id) {
