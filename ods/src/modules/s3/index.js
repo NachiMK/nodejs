@@ -47,7 +47,7 @@ export const getS3JSON = async ({
   } catch (e) {
     throw e;
   }
-};
+};  
 
 export const s3FileExists = async ({
   Bucket,

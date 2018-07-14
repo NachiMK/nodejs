@@ -1,4 +1,4 @@
-import { parseSchemaJSON } from './index';
+import { parseSchemaJSON } from '.';
 
 const testJSON = {
   $schema: 'http://json-schema.org/draft-04/schema#',

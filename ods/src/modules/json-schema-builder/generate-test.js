@@ -1,4 +1,4 @@
-import jsonSchemaSaver from './index';
+import jsonSchemaSaver from '.';
 
 jsonSchemaSaver({
   Datafile: 's3://ods-files/persons-etl.json',

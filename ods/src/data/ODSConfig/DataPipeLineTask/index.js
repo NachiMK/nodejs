@@ -1,6 +1,6 @@
 import moment from 'moment';
-import _ from 'lodash';
-import { executeQueryRS, executeCommand, executeScalar } from '../../psql/index';
+import _ from '../../../../../../../../Library/Caches/typescript/2.9/node_modules/@types/lodash';
+import { executeQueryRS, executeCommand, executeScalar } from '../../psql';
 import { CreatingDataPipeLineTaskError, GettingPendingTaskError, GetTaskAttributeError } from '../../../modules/ODSErrors/DataPipeLineTaskQueueError';
 import ODSLogger from '../../../modules/log/ODSLogger';
 import { DataBaseError } from '../../../modules/ODSErrors/ODSError';
@@ -56,8 +56,11 @@ async function UpdatePipeLineTaskStatus(DataPipeLineTaskQueueId, SaveStatus = {}
       DBName: getDBName(),
       BatchKey: DataPipeLineTaskQueueId,
     };
-    await executeCommand(params);
-    return true;
+    const executeResp = await executeCommand(params);
+    if (executeResp && executeResp.error) {
+      throw new Error(executeResp.error.message);
+    }
+    return executeResp.completed;
   } catch (err) {
     ODSLogger.log('warn', 'Error updating DataPipeLinetaskQueue status: %j', err);
     throw new DataBaseError(`Error updating DataPipeLinetaskQueue status: ${err.message}`);
@@ -196,6 +199,41 @@ export async function GetPipeLineTaskStatus(taskId) {
   return statusResp;
 }
 
+export async function SetPipeLineTaskQueueAttribute(taskId) {
+  let taskAttributes;
+  try {
+    const sqlQuery = getSetAttributeQuery(taskId);
+    const dbName = getDBName();
+    const batchKey = `${taskId}_${moment().format('YYYYMMDD_HHmmssSSS')}`;
+    const params = {
+      Query: sqlQuery,
+      DBName: dbName,
+      BatchKey: batchKey,
+    };
+    const retRS = await executeQueryRS(params);
+    if (retRS.rows.length > 0) {
+      taskAttributes = await Promise.all(retRS.rows.map(async (dataRow) => {
+        const retVal = {
+          AttributeName: dataRow.AttributeName,
+          AttributeValue: dataRow.AttributeValue,
+        };
+        return retVal;
+      }));
+    } else {
+      ODSLogger.log('warn', `There are NO Attributes for DataPipeLineTask :${taskId}, DB Call returned 0 rows.`);
+    }
+    ODSLogger.log('info', `No Of Task Attributs ${taskAttributes.length} for Task Id: ${taskId}`);
+    ODSLogger.log('debug', `Task Attributes ${JSON.stringify(taskAttributes, null, 2)} for Task Id: ${taskId}`);
+  } catch (err) {
+    taskAttributes = [];
+    const msg = `TaskId: ${taskId}`;
+    ODSLogger.log('warn', err.message);
+    const er = new GetTaskAttributeError(msg, err);
+    throw er;
+  }
+  return taskAttributes;
+}
+
 function getCheckTaskStatusQuery(taskId) {
   return `SELECT ods."udf_GetDataPipeLineTaskQueueStatus"('${taskId}') as "TaskStatus"`;
 }
@@ -220,6 +258,10 @@ function getUpdateQuery(Id, SaveStatus) {
   return `SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(${Id}, '${status}'
   , '${JSON.stringify(statusError, null, 2)}'
   , '${JSON.stringify(attributes, null, 2)}')`;
+}
+
+function getSetAttributeQuery(taskId) {
+  return `SELECT * FROM ods."udf_SetTaskQueueAttributeLog"(${taskId})`;
 }
 
 function getAttributeQuery(taskId, updateAttribute = true) {

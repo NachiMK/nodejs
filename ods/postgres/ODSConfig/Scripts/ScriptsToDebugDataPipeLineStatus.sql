@@ -257,6 +257,12 @@ SELECT    TAL."DataPipeLineTaskQueueId"
 FROM    ods."TaskQueueAttributeLog" AS TAL
 WHERE   "DataPipeLineTaskQueueId" >= 3;
 
+UPDATE  ods."TaskQueueAttributeLog" 
+SET     "AttributeValue" = 'https://s3-us-west-2.amazonaws.com/dev-ods-data/dynamodb/clients/42-clients-Data-_20180709_163312129.json'
+WHERE   "AttributeName" = 'S3DataFile'
+AND     "AttributeValue" = 'https://s3-us-west-2.amazonaws.com/dev-ods-data/dynamodb/clients/1-clients-Data-_20180627_134532023.json'
+AND     "DataPipeLineTaskQueueId" >= 3;
+
 SELECT  TAL.*
 FROM    ods."TaskQueueAttributeLog" AS TAL
 WHERE   "DataPipeLineTaskQueueId" IN (3, 4);
@@ -266,8 +272,17 @@ SELECT * FROM ods."udf_GetPipeLineTaskQueueAttribute"(4);
 SELECT * FROM ods."udf_GetPipeLineTaskQueueAttribute"(4, true);
 
 
-SELECT  T."TaskStatusDesc" AS "TaskStatus"
-FROM    ods."DataPipeLineTaskQueue"     AS Q
-INNER
-JOIN    ods."TaskStatus"                AS T    ON T."TaskStatusId" = Q."TaskStatusId"
-WHERE   Q."DataPipeLineTaskQueueId" = 3;
+SELECT ods."udf_GetDataPipeLineTaskQueueStatus"(3) as "TaskStatus";
+
+begin;
+SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(3, 'Error'
+  , '{
+  "message": "Saving Schema Failed. Retry Process. Error: The operation is not valid for the object''s storage class", "stack": "Error: Saving Schema Failed. Retry Process. Error: The operation is not valid for the object''s storage class\n    at extractStatusAndAttributes (/Users/Nachi/Documents/work/git/operational-data-store-service/lib/service/ods/json-to-json-schema/index.js:131:26)\n    at DoTaskSaveJsonSchema (/Users/Nachi/Documents/work/git/operational-data-store-service/lib/service/ods/json-to-json-schema/index.js:106:7)\n    at <anonymous>\n    at process._tickCallback (internal/process/next_tick.js:160:7)"
+}'
+  , '{
+  "Prefix.SchemaFile": "dynamodb/clients/2-3-3-clients-Schema-",
+  "PreviousTaskId": "2",
+  "S3DataFile": "https://s3-us-west-2.amazonaws.com/dev-ods-data/dynamodb/clients/1-clients-Data-_20180627_134532023.json",
+  "S3SchemaFileBucketName": "dev-ods-data"
+}')
+rollback;

@@ -1,7 +1,7 @@
 import { UpdatePipeLineTaskStatus as dataUpdatePipeLineTaskStatus,
   GetPipeLineTaskQueueAttribute as dataGetTaskQueueAttribute,
-  GetPipeLineTaskStatus as dataGetTaskStatus } from '../../../data/ODSConfig/DataPipeLineTask/index';
-import { TaskStatusEnum } from '../../ODSConstants/index';
+  GetPipeLineTaskStatus as dataGetTaskStatus } from '../../../data/ODSConfig/DataPipeLineTask';
+import { TaskStatusEnum } from '../../ODSConstants';
 
 export class DataPipeLineTaskQueue {
   constructor(task = {}) {

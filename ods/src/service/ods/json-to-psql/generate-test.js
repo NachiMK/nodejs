@@ -1,4 +1,4 @@
-import { JsonToPSQL } from './index';
+import { JsonToPSQL } from '.';
 
 const event = require('./event.json');
 

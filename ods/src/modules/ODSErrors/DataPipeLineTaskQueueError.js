@@ -1,4 +1,4 @@
-import ODSError from '../ODSErrors/ODSError';
+import ODSError from './ODSError';
 
 export class CreatingDataPipeLineTaskError extends ODSError {
   constructor(message) {

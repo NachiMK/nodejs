@@ -1,5 +1,5 @@
 import odsLogger from '../../../modules/log/ODSLogger';
-import JsonSchemaSaver from '../../../modules/json-schema-builder/index';
+import JsonSchemaSaver from '../../../modules/json-schema-builder';
 import { DataPipeLineTaskQueue } from '../../../modules/ODSConfig/DataPipeLineTaskQueue';
 import { TaskStatusEnum } from '../../../modules/ODSConstants';
 
@@ -38,7 +38,11 @@ export async function JsonToJsonSchema(task) {
 
       if (SaveSchemaResp && (SaveSchemaResp.Status !== TaskStatusEnum.Processing.name)) {
         // save status
-        await dataPipeLineTaskQueue.updateTaskStatus(SaveSchemaResp.Status, SaveSchemaResp.error, dataPipeLineTaskQueue.TaskQueueAttributes);
+        await dataPipeLineTaskQueue.updateTaskStatus(SaveSchemaResp.Status, SaveSchemaResp.error
+          , dataPipeLineTaskQueue.TaskQueueAttributes);
+      }
+
+      if (SaveSchemaResp.Status === TaskStatusEnum.Completed.name) {
         resp.Status = 'success';
         resp.error = undefined;
       } else {
@@ -75,48 +79,60 @@ async function DoTaskSaveJsonSchema(dataPipeLineTaskQueue) {
   let input;
 
   try {
-    const s3KeySchemaFile = dataPipeLineTaskQueue.getTaskAttributeValue('Prefix.SchemaFile');
-    const indexOfPrefix = s3KeySchemaFile.lastIndexOf('/');
-    const schemaFilePrefix = s3KeySchemaFile.substr(indexOfPrefix + 1, s3KeySchemaFile.length - indexOfPrefix);
-
-    input = {
-      Datafile: dataPipeLineTaskQueue.getTaskAttributeValue('S3DataFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
-      FilePrefix: schemaFilePrefix,
-      Output: `s3://${dataPipeLineTaskQueue.getTaskAttributeValue('S3SchemaFileBucketName')}/${s3KeySchemaFile.replace(schemaFilePrefix, '')}`,
-      Overwrite: 'yes',
-    };
+    input = getInput(dataPipeLineTaskQueue);
   } catch (err) {
     taskResp.Status = TaskStatusEnum.Error.name;
     taskResp.error = new Error(`Paramter required to complete task is missing/not formated properly. ${err.message}`);
   }
 
-  try {
-    odsLogger.log('info', 'About to build Schema File for:', input);
-    const resp = await JsonSchemaSaver(input);
-    odsLogger.log('info', 'Response for saving schema file:', resp);
-    if (IsStatusSuccess(resp)) {
-      // completed successfully
-      // get file as well
-      if (resp.file) {
-        // save file
-        taskResp.Status = TaskStatusEnum.Completed.name;
-        taskResp.error = undefined;
-        dataPipeLineTaskQueue.TaskQueueAttributes.S3SchemaFile = resp.file;
-      } else {
-        taskResp.Status = TaskStatusEnum.Error.name;
-        taskResp.error = new Error('Json Schema Save returned Success, but S3SchemaFile Name is missing.');
-      }
-    } else {
-      // throw an error
-      taskResp.Status = TaskStatusEnum.Error.name;
-      taskResp.error = new Error(`Saving Schema Failed. Retry Process. Error: ${resp.error}`);
-    }
-  } catch (err) {
-    taskResp.Status = TaskStatusEnum.Error.name;
-    taskResp.error = new Error(`Unknown Error calling module to do task. Retry Process. Error: ${err.message}`);
-  }
+  if (input) {
+    try {
+      odsLogger.log('info', 'About to build Schema File for:', input);
+      const resp = await JsonSchemaSaver(input);
 
+      odsLogger.log('info', 'Response for saving schema file:', resp);
+      extractStatusAndAttributes(resp, dataPipeLineTaskQueue, taskResp);
+    } catch (err) {
+      taskResp.Status = TaskStatusEnum.Error.name;
+      taskResp.error = new Error(`Unknown Error calling module to do task. Retry Process. Error: ${err.message}`);
+    }
+  }
   return taskResp;
+}
+
+function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
+  if (IsStatusSuccess(moduleResponse)) {
+    // completed successfully
+    // get file as well
+    if (moduleResponse.file) {
+      // save file
+      taskResponse.Status = TaskStatusEnum.Completed.name;
+      taskResponse.error = undefined;
+      task.TaskQueueAttributes.S3SchemaFile = moduleResponse.file;
+    } else {
+      taskResponse.Status = TaskStatusEnum.Error.name;
+      taskResponse.error = new Error('Json Schema Save returned Success, but S3SchemaFile Name is missing.');
+    }
+  } else {
+    // throw an error
+    taskResponse.Status = TaskStatusEnum.Error.name;
+    taskResponse.error = new Error(`Saving Schema Failed. Retry Process. Error: ${moduleResponse.error}`);
+  }
+}
+
+function getInput(task) {
+  const s3KeySchemaFile = task.getTaskAttributeValue('Prefix.SchemaFile');
+  const indexOfPrefix = s3KeySchemaFile.lastIndexOf('/');
+  const schemaFilePrefix = s3KeySchemaFile.substr(indexOfPrefix + 1, s3KeySchemaFile.length - indexOfPrefix);
+
+  const input = {
+    Datafile: task.getTaskAttributeValue('S3DataFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
+    FilePrefix: schemaFilePrefix,
+    Output: `s3://${task.getTaskAttributeValue('S3SchemaFileBucketName')}/${s3KeySchemaFile.replace(schemaFilePrefix, '')}`,
+    Overwrite: 'yes',
+  };
+
+  return input;
 }
 
 function getStatusMessage(resp) {

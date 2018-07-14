@@ -10,7 +10,9 @@ import {
   SetOdsResponseStatusToError,
 } from '../ODSResponse';
 import odsLogger from '../log/ODSLogger';
+import { unmarshalItem } from 'dynamodb-marshaler';
 
+const awsSDK = require('aws-sdk');
 const _ = require('lodash');
 const uuidv4 = require('uuid/v4');
 
@@ -47,33 +49,17 @@ export async function DynamoStreamEventsToS3(StreamEventsToS3Param = {}) {
         if (item) {
           const itemParams = {
             Item: {
-              HistoryId: {
-                S: record.eventID,
-              },
-              HistoryAction: {
-                S: record.eventName,
-              },
-              HistoryDate: {
-                S: eventReceivedDtTm.slice(0, 10).replace(/-/g, ''),
-              },
-              HistoryCreated: {
-                S: eventReceivedDtTm,
-              },
-              Rowkey: {
-                S: getRowKey(item),
-              },
-              SourceTable: {
-                S: TableName,
-              },
-              RecordSeqNumber: {
-                S: record.dynamodb.SequenceNumber,
-              },
-              ApproximateCreationDateTime: {
-                S: (new Date(record.dynamodb.ApproximateCreationDateTime * 1000)).toISOString(),
-              },
+              HistoryId: record.eventID,
+              HistoryAction: record.eventName,
+              HistoryDate: eventReceivedDtTm.slice(0, 10).replace(/-/g, ''),
+              HistoryCreated: eventReceivedDtTm,
+              Rowkey: getRowKey(item),
+              SourceTable: TableName,
+              RecordSeqNumber: record.dynamodb.SequenceNumber,
+              ApproximateCreationDateTime: (new Date(record.dynamodb.ApproximateCreationDateTime * 1000)).toISOString(),
             },
           };
-          Object.assign(itemParams.Item, item);
+          Object.assign(itemParams.Item, UnmarshallDynamodb(item));
           return itemParams;
         }
         return undefined;
@@ -111,7 +97,7 @@ export async function SaveDynamoRowsToS3(Rows, KeyName, S3BucketName, AppendDate
   };
   odsLogger.log('info', `Saving File:${JSON.stringify(saveStatus, null, 2)}`);
   try {
-    uploadFileToS3({
+    await uploadFileToS3({
       Bucket: S3BucketName,
       Key: KeyName,
       Body: (RowCount === 0) ? JSON.stringify({}, null, 2) : JSON.stringify(Rows, null, 2),
@@ -142,6 +128,40 @@ async function ValidateParams(StreamEventsToS3Param = {}) {
   if (hasErrors === true) {
     throw new InvalidParameterError(`${errorMessage}, Error List: ${errorList}`, 'Error');
   }
+}
+
+export function UnmarshallStreamImage(newImage) {
+  // implemented with help of blog
+  // https://read.acloud.guru/using-the-dynamodb-document-client-with-dynamodb-streams-from-aws-lambda-6957b6c81112
+
+  // if AWS changes there SDK this portion is going to fail.
+  // to protect we could include our version of SDK that we want to
+  // use but for now I don't know how to do.
+
+  // Another option is to use npm module call dynamodb-unmarshaler.
+  // https://www.npmjs.com/package/dynamodb-marshaler
+  if (newImage) {
+    try {
+      const docClient = new awsSDK.DynamoDB.DocumentClient();
+      // Create a Translator object, which comes from the DocumentClient
+      const dynamodbTranslator = docClient.getTranslator();
+
+      // It needs a SDK 'shape'. The individual Items in the Stream record
+      // are themselves the same Item shape as we see in a getItem response
+      const ItemShape = docClient.service.api.operations.getItem.output.members.Item;
+
+      // Let's just replace, in-place each Item with a 'translated' version
+      return dynamodbTranslator.translateOutput(newImage, ItemShape);
+    } catch (err) {
+      return UnmarshallByAlternateLibrary(newImage);
+    }
+  }
+}
+
+export function UnmarshallByAlternateLibrary(newImage) {
+  // If above function UnmarshallDynamodb doesnt work
+  // with SDK then we will use the npm
+  return unmarshalItem(newImage);
 }
 
 async function getRowKey(item) {

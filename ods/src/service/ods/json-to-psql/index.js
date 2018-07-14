@@ -22,8 +22,8 @@ import { DataPipeLineTaskQueue } from '../../../modules/ODSConfig/DataPipeLineTa
  * 
  */
 import odsLogger from '../../../modules/log/ODSLogger';
-import { GetPendingPipeLineTask as DataGetPendingPipeLineTask } from '../../../data/ODSConfig/DataPipeLineTask/index';
-import { DataPipeLineTaskConfigNameEnum as TaskConfigEnum, TaskStatusEnum } from '../../../modules/ODSConstants/index';
+import { GetPendingPipeLineTask as DataGetPendingPipeLineTask } from '../../../data/ODSConfig/DataPipeLineTask';
+import { DataPipeLineTaskConfigNameEnum as TaskConfigEnum, TaskStatusEnum } from '../../../modules/ODSConstants';
 import { JsonToJsonSchema } from '../json-to-json-schema';
 import { JsonToJsonNormalize } from '../json-to-json-normalize';
 import { JsonToCSV } from '../json-to-csv';

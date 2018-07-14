@@ -1,10 +1,10 @@
 import odsLogger from '../../../modules/log/ODSLogger';
 
-export async function JsonToJsonNormalize(event = {}) {
-  ValidateParameter();
+export async function JsonToJsonNormalize(task = {}) {
+  ValidateParameter(task);
   const {
     TableName,
-  } = event;
+  } = task;
   try {
     odsLogger.log('info', `Processing JsonToJsonNormalize for Table: ${TableName}`);
   } catch (err) {
@@ -12,9 +12,9 @@ export async function JsonToJsonNormalize(event = {}) {
   }
 }
 
-function ValidateParameter(event) {
-  if (event) {
-    if (!event.TableName) {
+function ValidateParameter(task) {
+  if (task) {
+    if (!task.TableName) {
       throw new Error('Table Name is invalid.');
     }
   } else {

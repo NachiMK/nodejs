@@ -65,6 +65,7 @@
     "@hixme/aws-utils": "^1.1.0",
     "@hixme/before-after-middleware": "^1.1.0",
     "@hixme/error-middleware": "^1.4.6",
+    "@hixme/generate-schema": "^1.1.2",
     "@hixme/role-authorizer-middleware": "^1.1.0",
     "@hixme/role-policy": "^5.10.0",
     "@hixme/sanitizer-middleware": "^1.0.0",
@@ -75,6 +76,7 @@
     "babel-runtime": "^6.23.0",
     "delay": "^2.0.0",
     "dotenv": "^4.0.0",
+    "dynamodb-marshaler": "^2.0.0",
     "knex": "^0.14.4",
     "lodash": "^4.17.4",
     "moment": "^2.22.1",
@@ -116,6 +118,9 @@
     "webpack": "^3.5.5",
     "webpack-node-externals": "^1.6.0",
     "yargs": "^8.0.2"
+  },
+  "resolutions": {
+    "eslint-scope": "3.7.1"
   },
   "jest": {
     "testEnvironment": "node",

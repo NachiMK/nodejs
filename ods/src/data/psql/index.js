@@ -1,12 +1,12 @@
-import pg from 'pg';
+import pg from '../../../../../../../Library/Caches/typescript/2.9/node_modules/@types/pg';
 import crypto from 'crypto';
 import moment from 'moment';
 // the import order matters, we need pg types set first.
-import Knex from 'knex';
+import Knex from '../../../../../../../Library/Caches/typescript/2.9/node_modules/@types/knex';
 import knexDialect from 'knex/lib/dialects/postgres';
 import ODSLogger from '../../modules/log/ODSLogger';
 
-require('dotenv').config();
+require('../../../../../../../Library/Caches/typescript/2.9/node_modules/@types/dotenv').config();
 
 pg.types.setTypeParser(20, 'text', parseInt);
 pg.types.setTypeParser(1700, parseFloat);
@@ -25,7 +25,7 @@ export const executeQueryRS = async (params = {}) => {
   };
 
   const {
-    Query,
+    Query = QuoteSQL(Query),
     DBName,
   } = params;
 
@@ -63,7 +63,7 @@ export const executeScalar = async (params = {}) => {
   };
 
   const {
-    Query,
+    Query = QuoteSQL(Query),
     DBName,
   } = params;
 
@@ -101,7 +101,7 @@ export const executeCommand = async (params = {}) => {
   };
 
   const {
-    Query,
+    Query = QuoteSQL(Query),
     DBName,
   } = params;
   // may throw an error
@@ -133,7 +133,7 @@ export const logSQLCommand = async (params = {}, commandType = 'UNKNOWN') => {
 
   const odsLogDbName = process.env.log_dbname || 'ODSLog';
   const {
-    Query,
+    Query = QuoteSQL(Query),
     DBName,
   } = params;
   const BatchKey = params.BatchKey || getDefaultBatchKey(Query);
@@ -277,6 +277,13 @@ function getCommandLogID(commandLogID) {
 function getDefaultBatchKey(Query) {
   const hash = crypto.createHash('md5').update(Query).digest('hex');
   return `${hash}_${moment().format('YYMMDD_HHmmssSSS')}`;
+}
+
+function QuoteSQL(Query) {
+  if (Query && Query instanceof String) {
+    return Query.replace('\'', '\'\'');
+  }
+  return Query;
 }
 
 // function getTestDataPipeLineRetVal() {
