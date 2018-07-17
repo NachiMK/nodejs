@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { unmarshalItem } from 'dynamodb-marshaler';
 import {
   uploadFileToS3,
 } from '../s3';
@@ -10,7 +11,6 @@ import {
   SetOdsResponseStatusToError,
 } from '../ODSResponse';
 import odsLogger from '../log/ODSLogger';
-import { unmarshalItem } from 'dynamodb-marshaler';
 
 const awsSDK = require('aws-sdk');
 const _ = require('lodash');
@@ -59,7 +59,7 @@ export async function DynamoStreamEventsToS3(StreamEventsToS3Param = {}) {
               ApproximateCreationDateTime: (new Date(record.dynamodb.ApproximateCreationDateTime * 1000)).toISOString(),
             },
           };
-          Object.assign(itemParams.Item, UnmarshallDynamodb(item));
+          Object.assign(itemParams.Item, UnmarshallStreamImage(item));
           return itemParams;
         }
         return undefined;
@@ -164,10 +164,16 @@ export function UnmarshallByAlternateLibrary(newImage) {
   return unmarshalItem(newImage);
 }
 
-async function getRowKey(item) {
+function getRowKey(item) {
   let retVal;
   try {
-    if ((!_.isUndefined(item)) && (!_.isUndefined(item.Id))) { retVal = item.Id[Object.keys(item.Id)[0]].toString(); } else { retVal = uuidv4(); }
+    if ((!_.isUndefined(item)) && (!_.isUndefined(item.Id))) {
+      retVal = item.Id[Object.keys(item.Id)[0]].toString();
+      console.log('id from object', JSON.stringify(retVal));
+    } else {
+      retVal = uuidv4();
+      console.log('uuid', JSON.stringify(retVal));
+    }
   } catch (err) {
     console.log(`Error in Finding "Id" column for Object:.${JSON.stringify(item, null, 2)}`);
   }

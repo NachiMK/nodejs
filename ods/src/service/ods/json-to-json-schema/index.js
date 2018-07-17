@@ -1,80 +1,8 @@
 import odsLogger from '../../../modules/log/ODSLogger';
 import JsonSchemaSaver from '../../../modules/json-schema-builder';
-import { DataPipeLineTaskQueue } from '../../../modules/ODSConfig/DataPipeLineTaskQueue';
 import { TaskStatusEnum } from '../../../modules/ODSConstants';
 
-/**
- * Pick Up Task 
- *    Get my Current Status:
- *      If Ready => Proceed
- *      If On Hold, Processing, or Error => Just return. NO ERRORS.
- *        The parent or caller should do whatever is necessary. It is just this 
- *        task cannot proceed.
- *    Get Task Values (Id)
- *    Update Status as Processing
- *    Get Task Attributes
- * Do the requested Task 
- *    Analyze Response
- *    Update Status (with attribute outcome)
- * Prepare return values
- */
-export async function JsonToJsonSchema(task) {
-  odsLogger.log('debug', 'Parameter: JsonToJsonSchema:', task);
-  const dataPipeLineTaskQueue = task;
-  const resp = {
-    Status: 'Unknown',
-    error: {},
-  };
-  try {
-    // Valid parameter
-    ValidateParameter(dataPipeLineTaskQueue);
-    // Pickup Task
-    const processStatusResp = await dataPipeLineTaskQueue.PickUpTask(true);
-    odsLogger.log('debug', `Value after Picking Task: ${JSON.stringify(dataPipeLineTaskQueue, null, 2)}`);
-
-    if (processStatusResp && processStatusResp.Picked) {
-      const SaveSchemaResp = await DoTaskSaveJsonSchema(dataPipeLineTaskQueue);
-      odsLogger.log('info', 'saveSchema response and Task details:', SaveSchemaResp, dataPipeLineTaskQueue);
-
-      if (SaveSchemaResp && (SaveSchemaResp.Status !== TaskStatusEnum.Processing.name)) {
-        // save status
-        await dataPipeLineTaskQueue.updateTaskStatus(SaveSchemaResp.Status, SaveSchemaResp.error
-          , dataPipeLineTaskQueue.TaskQueueAttributes);
-      }
-
-      if (SaveSchemaResp.Status === TaskStatusEnum.Completed.name) {
-        resp.Status = 'success';
-        resp.error = undefined;
-      } else {
-        resp.Status = SaveSchemaResp.Status || 'Error';
-        resp.error = SaveSchemaResp.error || new Error('Saving Schema didnt complete nor did it throw an Error.');
-      }
-    } else {
-      resp.Status = (processStatusResp && processStatusResp.ExistingStatus) ? processStatusResp.ExistingStatus : 'UNKNOWN.2';
-      resp.error = undefined;
-    }
-  } catch (err) {
-    resp.Status = 'Error';
-    resp.error = err;
-    odsLogger.log('error', `Error Processing JsonToJsonSchema for Task: ${task}, messages: ${err.message}`, err);
-  }
-  return resp;
-}
-
-function ValidateParameter(task) {
-  if (task && task instanceof DataPipeLineTaskQueue) {
-    if (!task.TableName) {
-      throw new Error('Table Name is invalid.');
-    }
-    if (!task.DataPipeLineTaskQueueId) {
-      throw new Error('DataPipeLineTaskQueueId is invalid.');
-    }
-  } else {
-    throw new Error('Task should be of Type DataPipeLineTaskQueue.');
-  }
-}
-
-async function DoTaskSaveJsonSchema(dataPipeLineTaskQueue) {
+export async function DoTaskSaveJsonSchema(dataPipeLineTaskQueue) {
   const taskResp = {};
   let input;
 

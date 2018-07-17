@@ -4,8 +4,12 @@ CREATE TEMPORARY TABLE DPLTables
      "TableName"             VARCHAR(100)
     ,"CleanTableName"        VARCHAR(100)
 );
-INSERT INTO DPLTables ("TableName", "CleanTableName")
-SELECT "DynamoTableName", REPLACE(REPLACE("DynamoTableName", 'prod-', ''), '-history-v2', '') FROM ods."DynamoTablesHelper" WHERE "Stage" = 'prod';
+INSERT INTO 
+        DPLTables ("TableName", "CleanTableName")
+SELECT  "DynamoTableName" as "TableName"
+        ,REPLACE(REPLACE("DynamoTableName", 'prod-', ''), '-history-v2', '') as "CleanTableName"
+FROM    ods."DynamoTablesHelper" 
+WHERE   "Stage" = 'prod';
 
 INSERT INTO
     ods."TaskAttribute"
@@ -19,7 +23,7 @@ SELECT   DPT."DataPipeLineTaskId"
         ,Tbls."TableName" AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
-JOIN    ods."DataPipeLineTask" DPT   ON DPT."TaskName" LIKE  Tbls."CleanTableName" || ' - %'
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"
 INNER
 JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER
@@ -39,7 +43,7 @@ SELECT   DPT."DataPipeLineTaskId"
         ,'dev-ods-data'
 FROM    DPLTables Tbls
 INNER
-JOIN    ods."DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"
 INNER
 JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER
@@ -56,10 +60,10 @@ INSERT INTO
     )
 SELECT   DPT."DataPipeLineTaskId"
         ,TCA."AttributeId"
-        ,'dynamodb/' || Tbls."CleanTableName" || '/{Id}-' || Tbls."CleanTableName" || '-' || REPLACE(REPLACE(A."AttributeName", 'Prefix.', ''), 'File', '') || '-' AS "AttributeValue"
+        ,'dynamodb/' || Tbls."CleanTableName" || '/{Id}/{Id}-' || Tbls."CleanTableName" || '-' || REPLACE(REPLACE(A."AttributeName", 'Prefix.', ''), 'File', '') || '-' AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
-JOIN    ods."DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"
 INNER
 JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER
@@ -79,7 +83,7 @@ SELECT   DPT."DataPipeLineTaskId"
         ,'{Id}_stage_' || REPLACE(lower(Tbls."CleanTableName"), '-', '_') || '_' AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
-JOIN    ods."DataPipeLineTask" DPT   ON DPT."TaskName" LIKE Tbls."CleanTableName" || ' - %'
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"
 INNER
 JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER

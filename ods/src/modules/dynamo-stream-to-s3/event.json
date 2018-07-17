@@ -25,6 +25,9 @@
                     },
                     "Username": {
                         "S": "John Doe"
+                    },
+                    "Id" : {
+                        "S": "asdfd-89123-ijk6y-987bg"
                     }
                 },
                 "SequenceNumber": "13021600000000001596893679",

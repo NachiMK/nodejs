@@ -1,5 +1,5 @@
 import moment from 'moment';
-import _ from '../../../../../../../../Library/Caches/typescript/2.9/node_modules/@types/lodash';
+import _ from 'lodash';
 import { executeQueryRS, executeCommand, executeScalar } from '../../psql';
 import { CreatingDataPipeLineTaskError, GettingPendingTaskError, GetTaskAttributeError } from '../../../modules/ODSErrors/DataPipeLineTaskQueueError';
 import ODSLogger from '../../../modules/log/ODSLogger';

@@ -113,6 +113,29 @@ CREATE TABLE IF NOT EXISTS ods."DataPipeLineTask"(
     ,CONSTRAINT CHCK_DataPipeLineTask_RunSeq    CHECK ("RunSequence" > 0)
 );
 
+CREATE TABLE IF NOT EXISTS ods."DynamoTableSchema"(
+     "DynamoTableSchemaId"  SERIAL NOT NULL PRIMARY KEY
+    ,"DataPipeLineTaskId"   INT NOT NULL REFERENCES ods."DataPipeLineTask" ("DataPipeLineTaskId")
+    ,"S3JsonSchemaPath"     VARCHAR(300) NOT NULL
+    ,"NextRefreshAt"        timestamp NULL
+    ,"LastRefreshedDate"    timestamp NULL
+    ,"CreatedDtTm"          timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ,"UpdatedDtTm"          timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ,CONSTRAINT UNQ_DynamoTableSchema UNIQUE("DataPipeLineTaskId")
+);
+
+CREATE TABLE IF NOT EXISTS ods."DynamoTableSchemaHistory"(
+     "Id"                       SERIAL NOT NULL PRIMARY KEY
+    ,"RecordCreated"            timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ,"DynamoTableSchemaId"      INT NOT NULL
+    ,"DataPipeLineTaskId"       INT NOT NULL
+    ,"S3JsonSchemaPath"         VARCHAR(300) NULL
+    ,"NextRefreshAt"            timestamp NULL
+    ,"LastRefreshedDate"        timestamp NULL
+    ,"CreatedDtTm"              timestamp NOT NULL
+    ,"UpdatedDtTm"              timestamp NOT NULL
+);
+
 -- Examples: dynamoDB URL, Base S3 bucket URL, Dynamo Table Name
 CREATE TABLE IF NOT EXISTS ods."TaskAttribute"
 (

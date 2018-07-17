@@ -11,15 +11,7 @@ SELECT   DPL."DataPipeLineTaskId"
         ,DPC."TaskName" as "ConfigTaskName"
         ,DPC."DataPipeLineTaskConfigId"
         ,DPC."ParentId" as "ConfigParentId"
-        ,(
-            SELECT  TA."AttributeValue"
-            FROM    ods."TaskAttribute" AS TA
-            INNER
-            JOIN    ods."Attribute"             A   ON  A."AttributeId"         = TA."AttributeId"
-            WHERE   A."AttributeName"       = 'Dynamo.TableName'
-            AND     TA."DataPipeLineTaskId" = DPL."DataPipeLineTaskId"
-           ) AS "DynamoTableName"
-        ,   (
+        ,  (
                 SELECT  N."DataPipeLineTaskId"
                 FROM    ods."DataPipeLineTask" AS N
                 WHERE   N."RunSequence" > DPL."RunSequence"

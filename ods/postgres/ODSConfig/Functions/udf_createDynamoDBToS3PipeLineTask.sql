@@ -36,12 +36,14 @@ BEGIN
     INNER
     JOIN    ods."DataPipeLineTaskConfig"   DPC ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
     INNER
-    JOIN    ods."TaskAttribute"         TA  ON  TA."DataPipeLineTaskId" = DPL."DataPipeLineTaskId"
+    JOIN    ods."DataPipeLineMapping"      DPM  ON  DPM."DataPipeLineMappingId" = DPC."DataPipeLineMappingId"
     INNER
-    JOIN    ods."Attribute"             A   ON  A."AttributeId"         = TA."AttributeId"
-    WHERE   A."AttributeName"       = 'Dynamo.TableName'
-    AND     DPL."SourceEntity"      = TableName
-    AND     TA."AttributeValue"     LIKE '%' || TableName || '%'
+    JOIN    ods."DataSource" AS S ON S."DataSourceId" = DPM."SourceDataSourceId"
+    INNER
+    JOIN    ods."DataSource" AS D ON D."DataSourceId" = DPM."TargetDataSourceId"
+    WHERE   DPL."SourceEntity"      = TableName
+    AND     S."DataSourceName" = 'DynamoDB'
+    AND     D."DataSourceName" = 'S3/JSON'
     RETURNING "DataPipeLineTaskQueueId"
     INTO    DataPipeLineTaskQueueId;
 
@@ -78,9 +80,10 @@ BEGIN
                                         ,TAL."AttributeValue"
                                 FROM    ods."TaskQueueAttributeLog" AS TAL
                                 WHERE   TAL."DataPipeLineTaskQueueId" = ' || DataPipeLineTaskQueueId ||
-                                ' ORDER BY TAL."AttributeName"') 
+                                ' 
+                                AND     TAL."AttributeName" != ''Dynamo.TableName''
+                                ORDER BY TAL."AttributeName"') 
                         AS final_result( "DataPipeLineTaskQueueId" INT
-                                        ,"Dynamo.TableName"  VARCHAR
                                         ,"Prefix.DataFile" VARCHAR
                                         ,"S3DataFileBucketName" VARCHAR
                                         )

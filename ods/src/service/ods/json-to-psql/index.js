@@ -24,10 +24,21 @@ import { DataPipeLineTaskQueue } from '../../../modules/ODSConfig/DataPipeLineTa
 import odsLogger from '../../../modules/log/ODSLogger';
 import { GetPendingPipeLineTask as DataGetPendingPipeLineTask } from '../../../data/ODSConfig/DataPipeLineTask';
 import { DataPipeLineTaskConfigNameEnum as TaskConfigEnum, TaskStatusEnum } from '../../../modules/ODSConstants';
-import { JsonToJsonSchema } from '../json-to-json-schema';
-import { JsonToJsonNormalize } from '../json-to-json-normalize';
+import { DoTaskSaveJsonSchema } from '../json-to-json-schema';
+import { DoTaskJsonToJsonNormalize } from '../json-to-json-normalize';
 import { JsonToCSV } from '../json-to-csv';
 import { PreStagetoRAW, CsvToPreStage } from '../csv-to-pre-stage-psql';
+import { ODSPipeLineFactory } from '../PipeLineTaskFactory/index';
+
+const ChildTaskFunctions = {
+  [TaskConfigEnum.ProcessJSONToPostgres.name]: ProcessParent,
+  [TaskConfigEnum.JSONHistoryDataToJSONSchema.name]: ODSPipeLineFactory(DoTaskSaveJsonSchema),
+  [TaskConfigEnum.JSONHistoryToFlatJSON.name]: ODSPipeLineFactory(DoTaskJsonToJsonNormalize),
+  [TaskConfigEnum.FlatJSONToCSV.name]: ODSPipeLineFactory(JsonToCSV),
+  [TaskConfigEnum.CSVToPrestage.name]: ODSPipeLineFactory(CsvToPreStage),
+  [TaskConfigEnum.PreStagetoRAW.name]: ODSPipeLineFactory(PreStagetoRAW),
+  default: defaultNotImplementedFunction,
+};
 
 export async function JsonToPSQL(event = {}) {
   const {
@@ -90,15 +101,6 @@ async function GetPendingPipeLineTasks(request) {
 
 async function ProcessPipeLineTask(Task) {
   let resp;
-  const ChildTaskFunctions = {
-    [TaskConfigEnum.ProcessJSONToPostgres.name]: ProcessParent,
-    [TaskConfigEnum.JSONHistoryDataToJSONSchema.name]: JsonToJsonSchema,
-    [TaskConfigEnum.JSONHistoryToFlatJSON.name]: JsonToJsonNormalize,
-    [TaskConfigEnum.FlatJSONToCSV.name]: JsonToCSV,
-    [TaskConfigEnum.CSVToPrestage.name]: CsvToPreStage,
-    [TaskConfigEnum.PreStagetoRAW.name]: PreStagetoRAW,
-    default: defaultNotImplementedFunction,
-  };
 
   if (Task) {
     odsLogger.log('info', `Processing Task: ${JSON.stringify(Task, null, 2)}`);

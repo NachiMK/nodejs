@@ -674,3 +674,7 @@ function print_msg(msg, debug = 0) {
     }
 } 
 */
+
+export const JsonDataNormalizer = async (params = {}) => {
+  throw new Error(`Function not implemented. PayLoad:${params}`);
+};

@@ -4,6 +4,8 @@ TRUNCATE TABLE ods."DataPipeLineTaskQueue" CASCADE;
 TRUNCATE TABLE ods."DataPipeLineTaskParam" CASCADE;
 TRUNCATE TABLE ods."TaskAttribute" CASCADE;
 TRUNCATE TABLE ods."TaskConfigAttribute" CASCADE;
+TRUNCATE TABLE ods."DynamoTableSchema" CASCADE;
+TRUNCATE TABLE ods."DynamoTableSchemaHistory" CASCADE;
 TRUNCATE TABLE ods."DataPipeLineTask" CASCADE;
 TRUNCATE TABLE ods."DataPipeLineTaskConfig" CASCADE;
 TRUNCATE TABLE ods."TaskType" CASCADE;
