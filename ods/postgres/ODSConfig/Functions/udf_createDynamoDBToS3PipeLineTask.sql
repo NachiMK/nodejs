@@ -59,8 +59,8 @@ BEGIN
     SELECT
          DPL."DataPipeLineTaskQueueId"
         ,A."AttributeName" as "AttributeName"
-        ,CASE WHEN TA."AttributeValue" LIKE '%{Id}%' 
-              THEN REPLACE(TA."AttributeValue", '{Id}', CAST("DataPipeLineTaskQueueId" AS VARCHAR))
+        ,CASE WHEN TA."AttributeValue" LIKE '%.Id}%' 
+              THEN REPLACE(TA."AttributeValue", '{My.Id}', CAST("DataPipeLineTaskQueueId" AS VARCHAR))
               ELSE TA."AttributeValue" 
          END as "AttributeValue"
     FROM    ods."TaskAttribute" AS TA

@@ -122,7 +122,7 @@ export async function GetPendingPipeLineTask(TableName) {
     } else {
       ODSLogger.log('warn', `There are NO Pending DataPipeLineTask for Table:${TableName}, DB Call returned 0 rows.`);
     }
-    ODSLogger.log('info', `No Of Pendings Tasks ${pendingTasks.length} for Table: ${TableName}`);
+    ODSLogger.log('info', `No Of Pendings Tasks ${(pendingTasks && pendingTasks.length) ? pendingTasks.length : 0} for Table: ${TableName}`);
     ODSLogger.log('debug', `Pendings Tasks ${JSON.stringify(pendingTasks, null, 2)} for Table: ${TableName}`);
   } catch (err) {
     pendingTasks = [];

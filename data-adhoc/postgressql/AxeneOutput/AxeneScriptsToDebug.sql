@@ -122,6 +122,7 @@ UPDATE "AxeneBatchFiles" SET "Status" = 'File in Axene Output' WHERE "FileName" 
 
 SELECT * FROM "AxeneBatch";
 SELECT * FROM "AxeneBatchFiles" WHERE "Status" = 'started';
+SELECT * FROM "AxeneBatchFiles" WHERE "Status" NOT IN ('started', 'success');
 SELECT * FROM "AxeneBatchFilesHistory" WHERE "FileName" = '117_0df220fe-d3f7-4456-85c7-80cdf0a289d5_1000_p';
 SELECT * FROM "AxeneBatchFilesHistory" WHERE "AxeneBatchID" = '117' AND "Status" = 'success';
 SELECT * FROM "AxeneBatchFilesHistory" WHERE "HistoryID" >= 6845
@@ -130,4 +131,9 @@ SELECT * FROM "AxeneErrors";
 SELECT * FROM "AxeneBatchFilesHistory" WHERE "AxeneBatchID" = '117'
 ORDER BY "FileName", "HistoryID" ASC
 
-SELECT * FROM "AxeneBatchFilesHistory" WHERE "RecordCreated" > '2018-06-29 23:08:50'
+SELECT * FROM "AxeneBatchFilesHistory" WHERE "RecordCreated" > '2018-06-29 23:08:50' LIMIT 100;
+SELECT * FROM "AxeneOutputValues" LIMIT 100;
+
+SELECT * FROM public.udf_get_axenestatus(2018,'CA','');
+SELECT * FROM public.udf_get_axenestatus(2018,'','11150ce1-18ea-483b-9628-bc5e239ec4ed');
+SELECT * FROM public.udf_get_axenestatus(2018,'','');

@@ -1,9 +1,9 @@
-import odsLogger from '../log/ODSLogger';
+import { json as hixmeSchemaGenerator } from '@hixme/generate-schema';
 
 const awsSDK = require('aws-sdk');
 const table = require('@hixme/tables');
 const _ = require('lodash');
-const generator = require('@hixme/generate-schema');
+// const generator = require('@hixme/generate-schema');
 
 awsSDK.config.update({
   region: 'us-west-2',
@@ -14,14 +14,14 @@ table.config({
   tablePrefix: '',
   debug: false,
   generateLengths: false,
-  saveToFile: false,
 });
 
 export async function GetDynamoTableSchema(event = {}) {
-  odsLogger.log(event);
+  console.log('event', event);
   const retResp = {};
   try {
-    const schema = generateTableSchema(event.TableName);
+    const schema = await generateTableSchema(event.TableName);
+    // console.log('schema', JSON.stringify(schema, null, 2));
     if (schema && schema.length > 0) {
       retResp.Status = 'success';
       retResp.Schema = schema;
@@ -30,6 +30,7 @@ export async function GetDynamoTableSchema(event = {}) {
     retResp.Status = 'error';
     retResp.error = err;
     retResp.Schema = undefined;
+    console.error('Error in generateTableSchema call', JSON.stringify(err, null, 2));
   }
   return retResp;
 }
@@ -38,10 +39,10 @@ const generateTableSchema = async (tableName, options = {}) => {
   const theTable = table.create(tableName);
 
   // this might take a while. TODO: Optimize this part.
-  const data = await theTable.getAll().filter(b => typeof b.IsActive === 'undefined' || b.IsActive);
+  const data = await theTable.getAll();
   let schemas = [];
 
-  if (options.partitionKey) {
+  if (options && options.partitionKey) {
     const dataByPartition = _.groupBy(data, options.partitionKey);
 
     schemas = Object.keys(dataByPartition).map((key) => {
@@ -57,17 +58,27 @@ const generateTableSchema = async (tableName, options = {}) => {
   let schemString = '';
   schemas.forEach((s) => {
     schemString += JSON.stringify(s.schema);
+    // console.log('s.schema', JSON.stringify(s.schema, null, 2));
   });
 
   return schemString;
 };
 
-function generateSchemaByData(name, data) {
-  const schema = generator.json(name, data, {
-    generateEnums: false,
-    maxEnumValues: 0,
-    generateLengths: false,
-  });
+export function generateSchemaByData(name, data) {
+  let schema = {};
+  try {
+    console.log('About to generate schema for:', name);
+    schema = hixmeSchemaGenerator(name, data, {
+      generateEnums: false,
+      maxEnumValues: 0,
+      generateLengths: false,
+    });
+  } catch (err) {
+    schema = {};
+    console.error('Error calling hixme generator', JSON.stringify(err, null, 2));
+    throw new Error(`Error calling hixme generator: ${JSON.stringify(err, null, 2)}`);
+  }
+
   // Remove the array of items from top and just leave object
   return { name, schema: { $schema: schema.$schema, ...schema.items } };
 }

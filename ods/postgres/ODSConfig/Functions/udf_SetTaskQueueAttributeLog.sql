@@ -5,6 +5,7 @@ RETURNS
 DECLARE
     -- retRecord ods."TaskQueueAttributeLog"%rowtype;
     ParentTaskId INT;
+    RootTaskId INT;
 BEGIN
     
     IF DataPipeLineTaskQueueId is null THEN
@@ -33,52 +34,42 @@ BEGIN
     RAISE NOTICE ' udf_setTaskQueueAttributeLog, TaskId: %, Prev. Task Id: %, Parent: %'
     , DataPipeLineTaskQueueId, PrevTaskId, ParentTaskId;
 
+    -- Find the Root ID
+    SELECT  ods."udf.GetRootTaskId"(DataPipeLineTaskQueueId)
+    INTO    RootTaskId;
+
+    RootTaskId := COALESCE(RootTaskId, ParentTaskId, -9999);
+
     WITH MyAttributes
     AS
     (
         -- set my task attributes
-        SELECT   Q."DataPipeLineTaskQueueId"
-                ,A."AttributeName"
-                ,CASE WHEN TA."AttributeValue" LIKE '%{Id}%' 
-                    THEN REPLACE(TA."AttributeValue"
-                                ,'{Id}'
-                                ,(
-                                    CAST(PrevTaskId AS VARCHAR(10)) || '-' ||
-                                    CAST(DataPipeLineTaskQueueId AS VARCHAR(10)) || '-' || 
-                                    CAST("DataPipeLineTaskQueueId" AS VARCHAR)
-                                )
-                                )
-                    ELSE TA."AttributeValue"
-                END AS "AttributeValue"
-        FROM    ods."DataPipeLineTaskQueue" AS Q
-        INNER
-        JOIN    ods."DataPipeLineTask"      AS DPL  ON  DPL."DataPipeLineTaskId" = Q."DataPipeLineTaskId"
-        INNER
-        JOIN    ods."TaskAttribute"         AS TA   ON  TA."DataPipeLineTaskId" = DPL."DataPipeLineTaskId"
-        INNER
-        JOIN    ods."Attribute"             AS  A   ON  A."AttributeId" = TA."AttributeId"
-        WHERE   (Q."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId) -- OR Q."ParentTaskId" = DataPipeLineTaskQueueId
+        SELECT   "DataPipeLineTaskQueueId"
+                ,"AttributeName"
+                ,"AttributeValue"
+        FROM    ods."udf_GetMyTaskAttributes"(DataPipeLineTaskQueueId, RootTaskId, ParentTaskId)
 
         UNION ALL
 
         -- Copy down Attributes from
         -- my previous task or my Parent Task that I am interested in
-        SELECT   Q."DataPipeLineTaskQueueId"
-                ,A."AttributeName"
-                ,L."AttributeValue"
-        FROM    ods."DataPipeLineTaskQueue"     AS Q
-        INNER
-        JOIN    ods."DataPipeLineTask"          AS DPL  ON  DPL."DataPipeLineTaskId" = Q."DataPipeLineTaskId"
-        INNER
-        JOIN    ods."DataPipeLineTaskConfig"    AS DPC  ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
-        INNER
-        JOIN    ods."TaskConfigAttribute"       AS  TA  ON  TA."DataPipeLineTaskConfigId" = DPC."DataPipeLineTaskConfigId"
-        INNER
-        JOIN    ods."Attribute"                 AS  A   ON  A."AttributeId" = TA."AttributeId"
-        INNER
-        JOIN    ods."TaskQueueAttributeLog"     AS  L   ON  L."DataPipeLineTaskQueueId" IN (PrevTaskId, ParentTaskId)
-                                                        AND L."AttributeName"   =   A."AttributeName"
-        WHERE   (Q."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId) --  OR Q."ParentTaskId" = DataPipeLineTaskQueueId
+        SELECT   "DataPipeLineTaskQueueId"
+                ,"AttributeName"
+                ,"AttributeValue"
+        FROM    ods."udf_GetMyParentPreviousTaskAttributes"(DataPipeLineTaskQueueId, PrevTaskId, ParentTaskId)
+
+        UNION ALL
+        SELECT   "DataPipeLineTaskQueueId"
+                ,"AttributeName"
+                ,"AttributeValue"
+        FROM    ods."udf_GetMyParentPreviousTaskAttributes"(DataPipeLineTaskQueueId, PrevTaskId, ParentTaskId)
+
+        UNION ALL
+
+        SELECT   "DataPipeLineTaskQueueId"
+                ,"AttributeName"
+                ,"AttributeValue"
+        FROM    ods."udf_GetSpecialAttributes"(DataPipeLineTaskQueueId, ParentTaskId)
     )
     INSERT  INTO ods."TaskQueueAttributeLog" AS A
     (

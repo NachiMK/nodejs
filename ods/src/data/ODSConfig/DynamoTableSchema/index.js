@@ -3,24 +3,29 @@ import { executeQueryRS, executeCommand } from '../../psql';
 import ODSLogger from '../../../modules/log/ODSLogger';
 import { DataBaseError } from '../../../modules/ODSErrors/ODSError';
 
-export async function GetDynamoTablesToRefreshSchema() {
+export async function GetDynamoTablesToRefreshSchema(params = {}) {
+  const {
+    RefreshAll,
+    RefreshTableList,
+  } = params;
   let refreshTableList;
   try {
-    const sqlQuery = getTablesToRefreshSchema();
+    const sqlQuery = getTablesToRefreshSchema(RefreshAll, RefreshTableList);
     const dbName = getDBName();
     const batchKey = `RefreshSchema_${moment().format('YYYYMMDD_HHmmssSSS')}`;
-    const params = {
+    const queryParams = {
       Query: sqlQuery,
       DBName: dbName,
       BatchKey: batchKey,
     };
-    const retRS = await executeQueryRS(params);
+    const retRS = await executeQueryRS(queryParams);
     if (retRS.rows.length > 0) {
       refreshTableList = await Promise.all(retRS.rows.map(async (dataRow) => {
         const retVal = {
+          DynamoTableSchemaId: dataRow.DynamoTableSchemaId,
           DataPipeLineTaskId: dataRow.DataPipeLineTaskId,
-          NextRefreshAt: dataRow.NextRefreshAt,
-          ExistingS3Path: dataRow.ExistingS3Path,
+          DynamoTableName: dataRow.DynamoTableName,
+          S3JsonSchemaPath: dataRow.S3JsonSchemaPath,
         };
         return retVal;
       }));
@@ -40,12 +45,12 @@ export async function GetDynamoTablesToRefreshSchema() {
   return refreshTableList;
 }
 
-export async function UpdateSchemaFile(taskId, tableName, s3Path) {
+export async function UpdateSchemaFile(dynamoTableSchemaId, s3Path) {
   try {
     const params = {
-      Query: getUpdateQuery(tableName, s3Path),
+      Query: getUpdateQuery(dynamoTableSchemaId, s3Path),
       DBName: getDBName(),
-      BatchKey: taskId,
+      BatchKey: dynamoTableSchemaId,
     };
     const executeResp = await executeCommand(params);
     if (executeResp && executeResp.error) {
@@ -58,12 +63,14 @@ export async function UpdateSchemaFile(taskId, tableName, s3Path) {
   }
 }
 
-function getTablesToRefreshSchema() {
-  return 'SELECT * FROM ods."udf_GetDynamoTablesToRefresh"()';
+function getTablesToRefreshSchema(RefreshAll, RefreshTableList) {
+  const refreshall = (RefreshAll === true);
+  const tablelist = (RefreshTableList && RefreshTableList.length && (RefreshTableList.length > 0)) ? RefreshTableList : '';
+  return `SELECT * FROM ods."udf_GetDynamoTablesToRefresh"('${tablelist}', ${refreshall})`;
 }
 
-function getUpdateQuery(tableName, s3Path) {
-  return `SELECT ods.udf_UpdateDynamTableSchemaPath('${tableName}', '${s3Path}')`;
+function getUpdateQuery(dynamoTableSchemaId, s3Path) {
+  return `SELECT ods."udf_UpdateDynamTableSchemaPath"('${dynamoTableSchemaId}', '${s3Path}')`;
 }
 
 function getDBName(DBName = '') {

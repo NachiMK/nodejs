@@ -1,12 +1,12 @@
-import pg from '../../../../../../../Library/Caches/typescript/2.9/node_modules/@types/pg';
+import pg from 'pg';
 import crypto from 'crypto';
 import moment from 'moment';
 // the import order matters, we need pg types set first.
-import Knex from '../../../../../../../Library/Caches/typescript/2.9/node_modules/@types/knex';
+import Knex from 'knex';
 import knexDialect from 'knex/lib/dialects/postgres';
 import ODSLogger from '../../modules/log/ODSLogger';
 
-require('../../../../../../../Library/Caches/typescript/2.9/node_modules/@types/dotenv').config();
+require('dotenv').config();
 
 pg.types.setTypeParser(20, 'text', parseInt);
 pg.types.setTypeParser(1700, parseFloat);

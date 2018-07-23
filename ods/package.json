@@ -127,7 +127,12 @@
     "testPathIgnorePatterns": [
       "/node_modules/"
     ],
-    "verbose": true
+    "verbose": true,
+    "stage": "dev",
+    "log_dbname": "ODSLog_dev",
+    "odsloglevel": "info",
+    "DEV_ODSLOG_PG": "postgres://odslog_user:H!xme_0ds_ah_dev1@localhost/odslog_dev",
+    "DEV_ODSCONFIG_PG": "postgres://odsconfig_user:H!xme_0ds_ah_dev1@localhost/odsconfig_dev"
   },
   "eslintConfig": {
     "parser": "babel-eslint",

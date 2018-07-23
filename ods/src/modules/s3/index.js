@@ -1,9 +1,10 @@
 import AWS from 'aws-sdk';
 
-export const s3 = new AWS.S3({ region: 'us-west-2' });
+const awsS3 = new AWS.S3({ region: 'us-west-2',
+  endpoint: 'https://s3.us-west-2.amazonaws.com' });
 
 export const s3BucketFactory = Bucket => (Key, options) =>
-  s3.getObject({
+  awsS3.getObject({
     Bucket,
     Key,
     ...options,
@@ -15,22 +16,25 @@ export const uploadFileToS3 = async ({
   Body,
 }) => {
   try {
-    return await s3.putObject({
+    // console.log(`Bucket:${Bucket}, key:${Key}, Body:${Body}`);
+    const retVal = await awsS3.putObject({
       Bucket,
       Key,
       Body,
     }).promise();
+    console.log('retVal:', JSON.stringify(retVal, null, 2));
+    return retVal;
   } catch (err) {
     const error = new Error(err.message);
     error.status = err.status;
-
+    console.error('error uploading to S3:', JSON.stringify(err, null, 2));
     throw error;
   }
 };
 
 export const s3FileParser = (filepath) => {
   const [source, empty, Bucket, ...file] = filepath.split('/');
-  console.log(source, empty, Bucket, file);
+  console.log(`filePath Parsed: source:${source}, empty: ${empty}, Bucket: ${Bucket}, File:${file}`);
   return {
     Bucket,
     Key: file.join('/'),
@@ -47,7 +51,7 @@ export const getS3JSON = async ({
   } catch (e) {
     throw e;
   }
-};  
+};
 
 export const s3FileExists = async ({
   Bucket,

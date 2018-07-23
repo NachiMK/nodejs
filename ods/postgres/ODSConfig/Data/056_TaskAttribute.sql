@@ -60,7 +60,9 @@ INSERT INTO
     )
 SELECT   DPT."DataPipeLineTaskId"
         ,TCA."AttributeId"
-        ,'dynamodb/' || Tbls."CleanTableName" || '/{Id}/{Id}-' || Tbls."CleanTableName" || '-' || REPLACE(REPLACE(A."AttributeName", 'Prefix.', ''), 'File', '') || '-' AS "AttributeValue"
+        ,'dynamodb/' || Tbls."CleanTableName" || 
+        CASE WHEN DPT."ParentTaskId" IS NULL THEN '/{My.Id}/{My.Id}-' ELSE '/{Root.Id}/{Parent.Id}-{My.Id}-' END
+        || Tbls."CleanTableName" || '-' || REPLACE(REPLACE(A."AttributeName", 'Prefix.', ''), 'File', '') || '-' AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
 JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"

@@ -12,6 +12,7 @@ FROM    (
             UNION   SELECT 'S3SchemaFileBucketName' as "AttributeName"
             UNION   SELECT 'Prefix.SchemaFile' as "AttributeName"
             UNION   SELECT 'S3SchemaFile' as "AttributeName" -- Output/Input
+            UNION   SELECT 'S3RAWJsonSchemaFile' as 'AttributeName'
 
             UNION   SELECT 'S3UniformJSONBucketName' as "AttributeName"
             UNION   SELECT 'Prefix.UniformJSONFile' as "AttributeName"

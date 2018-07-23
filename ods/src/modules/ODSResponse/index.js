@@ -5,7 +5,7 @@ const _ = require('lodash');
 export async function GetDefaultOdsResponse() {
   return {
     Status: 'Ready',
-    Error: {},
+    error: {},
     StartTime: moment().format('MM/DD/YYYY HH:mm:ss.SSS'),
     EndTime: undefined,
     Input: {},
@@ -33,7 +33,7 @@ export function IsResponseSuccess(ODSResponse) {
 export async function SetOdsResponseStatusToError(ODSResponse, err) {
   if (ODSResponse) {
     ODSResponse.Status = 'Error';
-    ODSResponse.Error = (!_.isUndefined(err)) ? err : 'No Error was provided';
+    ODSResponse.error = (!_.isUndefined(err)) ? err : 'No Error was provided';
     ODSResponse.EndTime = moment().format('MM/DD/YYYY HH:mm:ss.SSS');
   }
   return ODSResponse;

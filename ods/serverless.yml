@@ -128,38 +128,6 @@ functions:
     description: ${self:custom.documentation.summary}
     timeout: 299
 
-  build-json-schema:
-    handler: lib/api/ods/json-schema/get/index.build
-    description: ${self:custom.documentation.summary}
-    timeout: 300 
-    events:
-      - http:
-          path: json-schema 
-          method: GET
-          cors: true
-          request:
-            parameters:
-              querystrings:
-                Output: true 
-                Datafile: true 
-                FilePrefix: false
-                Overwrite: false
-          documentation:
-            summary: "[GET] Build ODS JSON Schema from baseline JSON Schema"
-            queryParams:
-            -
-              name: "Output"
-              description: "S3 file path to store the JSON schema."
-            -
-              name: "Datafile"
-              description: "S3 file path of the source of the JSON schema to build from."
-            -
-              name: "FilePrefix"
-              description: "Optional. Prefix for output file."
-            -
-              name: "Overwrite"
-              description: "Optional. Yes or No to overwrite the Output file if it exists. Defaults to Yes."
-
 resources:
   Resources:
     GatewayResponse:

@@ -1,26 +1,35 @@
+DROP TABLE IF EXISTS DPLTables;
+CREATE TEMPORARY TABLE DPLTables
+(
+     "TableName"             VARCHAR(100)
+    ,"CleanTableName"        VARCHAR(100)
+);
+INSERT INTO 
+        DPLTables ("TableName", "CleanTableName")
+SELECT  "DynamoTableName" as "TableName"
+        ,REPLACE(REPLACE("DynamoTableName", 'prod-', ''), '-history-v2', '') as "CleanTableName"
+FROM    ods."DynamoTablesHelper" 
+WHERE   "Stage" = 'prod';
+
 INSERT INTO ods."DynamoTableSchema"
 (
-     "DataPipeLineTaskId"
+     "SourceEntity"
+    ,"DynamoTableName"
     ,"S3JsonSchemaPath"
     ,"NextRefreshAt"
     ,"LastRefreshedDate"
+    ,"DataPipeLineTaskId"
 )
-SELECT   "DataPipeLineTaskId"
+SELECT   H."CleanTableName" as "SourceEntity"
+        ,H."TableName" as "DynamoTableName"
         ,'s3://dev-ods-data/dynamotableschema/' || DPL."SourceEntity" || '-' || to_char(CURRENT_TIMESTAMP, 'YYYYMMDD_HH24MISSMS') || '.json'
-        , NULL
+        , date_trunc('day', CURRENT_TIMESTAMP + interval '3 day')
         , CURRENT_TIMESTAMP
-FROM    ods."DynamoTablesHelper" H
+        ,"DataPipeLineTaskId"
+FROM    DPLTables H
 INNER
 JOIN    ods."DataPipeLineTask" DPL ON DPL."SourceEntity" = H."CleanTableName"
 INNER
 JOIN    ods."DataPipeLineTaskConfig"   DPC ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
-INNER
-JOIN    ods."DataPipeLineMapping"      DPM  ON  DPM."DataPipeLineMappingId" = DPC."DataPipeLineMappingId"
-INNER
-JOIN    ods."DataSource" AS S ON S."DataSourceId" = DPM."SourceDataSourceId"
-INNER
-JOIN    ods."DataSource" AS D ON D."DataSourceId" = DPM."TargetDataSourceId"
-WHERE   S."DataSourceName" = 'DynamoDB'
-AND     D."DataSourceName" = 'S3/JSON'
-AND     "Stage" = 'prod'
-AND     NOT EXISTS (SELECT 1 FROM ods."DynamoTableSchema" WHERE "DataPipeLineTaskId" = DPL."DataPipeLineTaskId");
+WHERE   DPC."TaskName" = 'JSON History Data to JSON Schema'
+AND     NOT EXISTS (SELECT 1 FROM ods."DynamoTableSchema" WHERE "SourceEntity" = DPL."SourceEntity");

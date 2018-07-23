@@ -49,7 +49,7 @@ export async function JsonToPSQL(event = {}) {
     odsLogger.log('info', `Processing JsonToPSQL for Table: ${TableName}`);
     // get list of all pending tasks
     const PendingTasks = await GetPendingPipeLineTasks({ TableName });
-    if (PendingTasks) {
+    if (PendingTasks && PendingTasks.length && PendingTasks.length > 0) {
       // loop through them and process it
       while (PendingTasks.length > 0) {
         const task = PendingTasks.shift();
@@ -94,7 +94,7 @@ async function GetPendingPipeLineTasks(request) {
 
   if (TableName) {
     // do something
-    tasks = await DataGetPendingPipeLineTask(TableName);
+    tasks = await DataGetPendingPipeLineTask(TableName) || [];
   }
   return tasks.map(task => new DataPipeLineTaskQueue(task));
 }
@@ -108,6 +108,8 @@ async function ProcessPipeLineTask(Task) {
     if (ChildTaskFunctions[Task.TaskConfigName]) {
       try {
         // process child tasks
+        // odsLogger.log('info', `ChildTaskFunctions: ${JSON.stringify(ChildTaskFunctions, null, 2)}, Task.TaskConfigName: ${Task.TaskConfigName}`);
+        // odsLogger.log('info', `Type Of : ${typeof ChildTaskFunctions[Task.TaskConfigName]}`);
         resp = await (ChildTaskFunctions[Task.TaskConfigName] || ChildTaskFunctions.default)(Task);
       } catch (err) {
         odsLogger.log('error', err.message);

@@ -19,7 +19,7 @@ import { TaskStatusEnum } from '../../../modules/ODSConstants';
  * Prepare return values
  */
 
-export async function ODSTaskFactory(childTaskFunction) {
+export function ODSPipeLineFactory(childTaskFunction) {
   // this returns a pointer to a function that takes a parameter named
   // task. Once this pointer is returned, the caller calls this function.
   return async (task) => {

@@ -38,26 +38,12 @@ export const handler = async (event) => {
 
   const saveStatus = {
     ...defaultResp,
-    S3BucketName,
+    S3BucketName: process.env.ODSS3Bucket || `${process.env.STAGE || 'dev'}-ods-data`,
     tableName,
     RowCount,
   };
-
-  let pipeLineTaskResp;
-  try {
-    ODSLogger.log('info', `Capturing data for Table:${tableName}, Row Count:${RowCount}`);
-    pipeLineTaskResp = await createDynamoDBToS3PipeLineTask(tableName, RowCount);
-    FilePrefix = pipeLineTaskResp.DataFilePrefix || `dynamodb/${tableName}`;
-    S3BucketName = pipeLineTaskResp.S3DataFileBucketName || 'dev-ods-data';
-  } catch (err) {
-    RetError = new Error(`Error creating DatapipeLine Task for ${tableName} 
-                    so data was not saved to S3 bucket.
-                    error:${JSON.stringify(err, null, 2)}`);
-    ODSLogger.log('error', 'Error creating DatapipeLine: %j', RetError);
-    await SetOdsResponseStatusToError(saveStatus, RetError);
-    return saveStatus;
-  }
-
+  // default file prefix,
+  FilePrefix = `dynamodb/${tableName}/missed/${getCurrentTime()}-${tableName}-`;
   const StreamEventsToS3Params = {
     DynamoStreamEvent: event,
     KeyName: FilePrefix,
@@ -66,6 +52,25 @@ export const handler = async (event) => {
     DateTimeFormat,
     TableName: tableName,
   };
+
+  let pipeLineTaskResp;
+  try {
+    ODSLogger.log('info', `Capturing data for Table:${tableName}, Row Count:${RowCount}`);
+    pipeLineTaskResp = await createDynamoDBToS3PipeLineTask(tableName, RowCount);
+    FilePrefix = pipeLineTaskResp.DataFilePrefix || FilePrefix;
+    S3BucketName = pipeLineTaskResp.S3DataFileBucketName || S3BucketName;
+    StreamEventsToS3Params.KeyName = FilePrefix;
+    StreamEventsToS3Params.S3BucketName = S3BucketName;
+  } catch (err) {
+    RetError = new Error(`Error creating DatapipeLine Task for ${tableName} 
+                    so data was not saved to S3 bucket.
+                    error:${JSON.stringify(err, null, 2)}`);
+    ODSLogger.log('error', 'Error creating DatapipeLine: %j', RetError);
+    await SetOdsResponseStatusToError(saveStatus, RetError);
+    // let us save the file to default folder (in async manner)
+    SaveDataOnDBFailure(StreamEventsToS3Params);
+    return saveStatus;
+  }
 
   let saveStreamToS3Resp;
   try {
@@ -95,3 +100,25 @@ export const handler = async (event) => {
   ODSLogger.log('info', 'Completed Saving to S3, savestatus:%j', saveStatus);
   return saveStatus;
 };
+
+function getCurrentTime() {
+  const now = new Date();
+  let timestamp = now.getFullYear().toString();
+  timestamp += (now.getMonth() < 10 ? '0' : '') + now.getMonth().toString();
+  timestamp += (now.getDate() < 10 ? '0' : '') + now.getDate().toString();
+  timestamp += (now.getHours() < 10 ? '0' : '') + now.getHours().toString();
+  timestamp += (now.getMinutes() < 10 ? '0' : '') + now.getMinutes().toString();
+  timestamp += (now.getSeconds() < 10 ? '0' : '') + now.getSeconds().toString();
+  timestamp += now.getMilliseconds();
+  return timestamp;
+}
+
+function SaveDataOnDBFailure(params) {
+  try {
+    DynamoStreamEventsToS3(params)
+      .then(res => ODSLogger.log('error', `DB Tracking Failed. But, Event saved to S3 file.${res}`))
+      .catch(res => ODSLogger.log('error', `DB Tracking failed and Error saving Event to S3 file.${res}`));
+  } catch (err) {
+    ODSLogger.log('error', `DB Tracking failed and Error saving Event to S3 file.${err}`);
+  }
+}

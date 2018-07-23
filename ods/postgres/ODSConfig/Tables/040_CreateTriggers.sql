@@ -9,10 +9,12 @@ CREATE OR REPLACE FUNCTION ods.trg_Capture_DynamoTableSchema()
             (
                  "RecordCreated"
                 ,"DynamoTableSchemaId"
-                ,"DataPipeLineTaskId"
+                ,"SourceEntity"
+                ,"DynamoTableName"
                 ,"S3JsonSchemaPath"
                 ,"NextRefreshAt"
                 ,"LastRefreshedDate"
+                ,"DataPipeLineTaskId"
                 ,"CreatedDtTm"
                 ,"UpdatedDtTm"
             )

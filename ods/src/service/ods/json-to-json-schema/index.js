@@ -1,5 +1,5 @@
 import odsLogger from '../../../modules/log/ODSLogger';
-import JsonSchemaSaver from '../../../modules/json-schema-builder';
+import JsonSchemaSaver from '../../../modules/ods-schema-builder';
 import { TaskStatusEnum } from '../../../modules/ODSConstants';
 
 export async function DoTaskSaveJsonSchema(dataPipeLineTaskQueue) {
@@ -55,6 +55,7 @@ function getInput(task) {
 
   const input = {
     Datafile: task.getTaskAttributeValue('S3DataFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
+    RAWJsonSchemaFile: task.getTaskAttributeValue('S3RAWJsonSchemaFile'),
     FilePrefix: schemaFilePrefix,
     Output: `s3://${task.getTaskAttributeValue('S3SchemaFileBucketName')}/${s3KeySchemaFile.replace(schemaFilePrefix, '')}`,
     Overwrite: 'yes',

@@ -1,0 +1,157 @@
+[
+  {
+    "Item": {
+      "HistoryId": "11e00e9a3d239640ecefa80830a6d926",
+      "HistoryAction": "MODIFY",
+      "HistoryDate": "20180717",
+      "HistoryCreated": "2018-07-17T23:12:06.129Z",
+      "Rowkey": "d40d9949-bc94-3a47-a29e-110b29d03b47",
+      "SourceTable": "clients",
+      "RecordSeqNumber": "3039088400000000037516109879",
+      "ApproximateCreationDateTime": "2018-07-17T23:12:00.000Z",
+      "SalesDirectorFirstName": "Brian",
+      "ContactPhoneNumber": "6502332750",
+      "IsActive": true,
+      "SalesDirectorPublicKey": "7611638f-01ed-bd3a-2b73-517923f2b466",
+      "PostalCode": "91406",
+      "BenefitsEffectivePolicyUnit": "Days",
+      "County": "Unknown",
+      "ClientServicesRepPublicKey": "e3d9c569-1be4-4320-9a33-05b9747365c2",
+      "MigrationYear": 2017,
+      "CompanyName": "Kleiner Perkins Caufield & Byers",
+      "CurrentHealthPlanDesigns": [],
+      "ShowNewExperience": true,
+      "HixmeAccidentCompositePrices": [
+        {
+          "Price": 10.85,
+          "Relationship": "Employee"
+        },
+        {
+          "Price": 11.49,
+          "Relationship": "Spouse"
+        },
+        {
+          "Price": 11.49,
+          "Relationship": "Child"
+        }
+      ],
+      "EnrollmentEndDate": "2017-12-31",
+      "ContactFirstName": "Unknown",
+      "BenefitsEffectivePolicy": 60,
+      "ClientServicesRepFirstName": "Tammy",
+      "EnrollmentStartDate": "2017-01-01",
+      "SalesDirectorLastName": "Finster",
+      "CustomerServicePhoneNumber": "8669362854",
+      "StateProvince": "OH",
+      "City": "Menlo Park",
+      "ContactLastName": "Unknown",
+      "IsProspect": true,
+      "HixmeConnectCompositePrices": [
+        {
+          "Price": 109.6,
+          "Relationship": "Employee",
+          "MetalLevel": "Bronze"
+        },
+        {
+          "Price": 116.17,
+          "Relationship": "Spouse",
+          "MetalLevel": "Bronze"
+        },
+        {
+          "Price": 151.19,
+          "Relationship": "Child",
+          "MetalLevel": "Bronze"
+        },
+        {
+          "Price": 100.6,
+          "Relationship": "Employee",
+          "MetalLevel": "Silver"
+        },
+        {
+          "Price": 105.99,
+          "Relationship": "Spouse",
+          "MetalLevel": "Silver"
+        },
+        {
+          "Price": 145.13,
+          "Relationship": "Child",
+          "MetalLevel": "Silver"
+        },
+        {
+          "Price": 80.4,
+          "Relationship": "Employee",
+          "MetalLevel": "Gold"
+        },
+        {
+          "Price": 83.36,
+          "Relationship": "Spouse",
+          "MetalLevel": "Gold"
+        },
+        {
+          "Price": 134.71,
+          "Relationship": "Child",
+          "MetalLevel": "Gold"
+        },
+        {
+          "Price": 77.6,
+          "Relationship": "Employee",
+          "MetalLevel": "Platinum"
+        },
+        {
+          "Price": 79.37,
+          "Relationship": "Spouse",
+          "MetalLevel": "Platinum"
+        },
+        {
+          "Price": 130.72,
+          "Relationship": "Child",
+          "MetalLevel": "Platinum"
+        }
+      ],
+      "StreetAddress": "61 S. Sandusky Street",
+      "ContactEmailAddress": "unknown",
+      "HixmeBundleConfig": [
+        {
+          "IsGapSeparate": true,
+          "TierStrategy": "FourTier",
+          "CompositeAgeFactor": 1.2538,
+          "MaxNumberOfChildren": 1,
+          "MaxNumberOfDependents": null,
+          "MinimumContribution": -7000,
+          "StateProvince": "*",
+          "Relationship": "Employee",
+          "AllowNegativePersonRates": true,
+          "CompositeBankingFee": 12.97
+        },
+        {
+          "IsGapSeparate": true,
+          "TierStrategy": "FourTier",
+          "CompositeAgeFactor": 1.4451,
+          "MaxNumberOfChildren": 1,
+          "MaxNumberOfDependents": null,
+          "MinimumContribution": -7000,
+          "StateProvince": "*",
+          "Relationship": "Spouse",
+          "AllowNegativePersonRates": true,
+          "CompositeBankingFee": 12.97
+        },
+        {
+          "IsGapSeparate": true,
+          "TierStrategy": "FourTier",
+          "CompositeAgeFactor": 0.9937,
+          "MaxNumberOfChildren": 1,
+          "MaxNumberOfDependents": null,
+          "MinimumContribution": -7000,
+          "StateProvince": "*",
+          "Relationship": "Child",
+          "AllowNegativePersonRates": true,
+          "CompositeBankingFee": 25.94
+        }
+      ],
+      "Id": "d40d9949-bc94-3a47-a29e-110b29d03b47",
+      "BenefitsEffectiveDate": "2017-01-01",
+      "ClientServicesRepLastName": "Olson",
+      "CompanyLogoUrl": "https://www.hixme.com/images/logo-1.png"
+    }
+  }
+]

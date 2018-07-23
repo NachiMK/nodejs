@@ -18,6 +18,7 @@ VALUES
     ,('JSON History Data to JSON Schema', 'Process JSON to Postgres', 'S3DataFile')
     ,('JSON History Data to JSON Schema', 'Process JSON to Postgres', 'S3SchemaFileBucketName')
     ,('JSON History Data to JSON Schema', 'Process JSON to Postgres', 'Prefix.SchemaFile')
+    ,('JSON History Data to JSON Schema', 'Process JSON to Postgres', 'S3RAWJsonSchemaFile')
 
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3UniformJSONBucketName')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'Prefix.UniformJSONFile')

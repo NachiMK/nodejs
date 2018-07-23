@@ -115,23 +115,28 @@ CREATE TABLE IF NOT EXISTS ods."DataPipeLineTask"(
 
 CREATE TABLE IF NOT EXISTS ods."DynamoTableSchema"(
      "DynamoTableSchemaId"  SERIAL NOT NULL PRIMARY KEY
-    ,"DataPipeLineTaskId"   INT NOT NULL REFERENCES ods."DataPipeLineTask" ("DataPipeLineTaskId")
+    ,"SourceEntity"         VARCHAR(100) NOT NULL
+    ,"DynamoTableName"      VARCHAR(150) NOT NULL
     ,"S3JsonSchemaPath"     VARCHAR(300) NOT NULL
     ,"NextRefreshAt"        timestamp NULL
     ,"LastRefreshedDate"    timestamp NULL
+    ,"DataPipeLineTaskId"   INT NOT NULL REFERENCES ods."DataPipeLineTask" ("DataPipeLineTaskId")
     ,"CreatedDtTm"          timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
     ,"UpdatedDtTm"          timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-    ,CONSTRAINT UNQ_DynamoTableSchema UNIQUE("DataPipeLineTaskId")
+    ,CONSTRAINT UNQ_DynamoTableSchema_SourceEntity UNIQUE("SourceEntity")
+    ,CONSTRAINT UNQ_DynamoTableSchema_TableName UNIQUE("DynamoTableName")
 );
 
 CREATE TABLE IF NOT EXISTS ods."DynamoTableSchemaHistory"(
      "Id"                       SERIAL NOT NULL PRIMARY KEY
     ,"RecordCreated"            timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
     ,"DynamoTableSchemaId"      INT NOT NULL
-    ,"DataPipeLineTaskId"       INT NOT NULL
+    ,"SourceEntity"             VARCHAR(100) NOT NULL
+    ,"DynamoTableName"          VARCHAR(150) NOT NULL
     ,"S3JsonSchemaPath"         VARCHAR(300) NULL
     ,"NextRefreshAt"            timestamp NULL
     ,"LastRefreshedDate"        timestamp NULL
+    ,"DataPipeLineTaskId"       INT NOT NULL
     ,"CreatedDtTm"              timestamp NOT NULL
     ,"UpdatedDtTm"              timestamp NOT NULL
 );
