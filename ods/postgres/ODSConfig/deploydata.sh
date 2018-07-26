@@ -74,6 +74,11 @@ else
     echo "Not Resetting Data. To Reset send param ResetData:TRUE"
 fi
 
+for filename in Types/*.sql; do
+    echo "Deploying Type:" $filename
+    psql ${dbhostname} -d odsconfig_${stagename} -f "$filename"
+done
+
 for filename in Functions/*.sql; do
     echo "Deploying Function:" $filename
     psql ${dbhostname} -d odsconfig_${stagename} -f "$filename"

@@ -55,7 +55,7 @@ function getInput(task) {
 
   const input = {
     Datafile: task.getTaskAttributeValue('S3DataFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
-    RAWJsonSchemaFile: task.getTaskAttributeValue('S3RAWJsonSchemaFile'),
+    S3RAWJsonSchemaFile: task.getTaskAttributeValue('S3RAWJsonSchemaFile'),
     FilePrefix: schemaFilePrefix,
     Output: `s3://${task.getTaskAttributeValue('S3SchemaFileBucketName')}/${s3KeySchemaFile.replace(schemaFilePrefix, '')}`,
     Overwrite: 'yes',

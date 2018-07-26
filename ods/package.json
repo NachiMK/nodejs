@@ -81,6 +81,7 @@
     "lodash": "^4.17.4",
     "moment": "^2.22.1",
     "npm": "^5.10.0",
+    "object-fill-missing-keys": "^7.2.1",
     "pg": "^7.4.1",
     "run-func": "^1.0.2",
     "sleep": "^5.1.1",

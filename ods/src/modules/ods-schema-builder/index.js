@@ -1,13 +1,12 @@
 // Generate JSON Schema
-import moment from 'moment';
+import _merge from 'lodash/merge';
+
 import {
-  s3FileExists,
   s3FileParser,
-  uploadFileToS3,
-  getS3JSON,
 } from '../s3';
 import { generateSchema } from './generateJsonSchema';
 import odsLogger from '../log/ODSLogger';
+import { GetJSONFromS3Path, SaveJsonToS3File } from '../s3ODS';
 
 // STEP - Parameter validation
 //   Did you send me the data file name
@@ -106,9 +105,9 @@ export const parseSchemaJSON = (data, parentKey) => {
 export default async ({
   Datafile,
   Output,
-  FilePrefix = '',
   Overwrite = 'Yes',
-  RAWJsonSchemaFile = '',
+  S3RAWJsonSchemaFile = '',
+  SaveDataSchemaToS3 = true,
 }) => {
   const result = {
     status: {
@@ -118,9 +117,9 @@ export default async ({
     Input: {
       Datafile,
       Output,
-      FilePrefix,
       Overwrite,
-      RAWJsonSchemaFile,
+      S3RAWJsonSchemaFile,
+      SaveDataSchemaToS3,
     },
   };
 
@@ -131,43 +130,27 @@ export default async ({
     if (!Output || Output.length === 0 || Output.substring(0, 2) !== 's3') {
       throw new Error(`Output file path invalid with value ${Output}. Please provide a valid AWS S3 path.`);
     }
-    if (!RAWJsonSchemaFile || RAWJsonSchemaFile.length === 0 || RAWJsonSchemaFile.substring(0, 2) !== 's3') {
-      throw new Error(`RAWJsonSchemaFile file path invalid with value ${RAWJsonSchemaFile}. Please provide a valid AWS S3 path.`);
+    if (!S3RAWJsonSchemaFile || S3RAWJsonSchemaFile.length === 0 || S3RAWJsonSchemaFile.substring(0, 2) !== 's3') {
+      throw new Error(`S3RAWJsonSchemaFile file path invalid with value ${S3RAWJsonSchemaFile}. Please provide a valid AWS S3 path.`);
     }
 
     // get schema from data and combine that with Raw schema.
-    const schemaByData = await generateRawSchemaFromData('', Datafile);
-    const combinedSchema = await getCombinedSchema(schemaByData, RAWJsonSchemaFile);
+    const schemaByDataResp = await generateRawSchemaFromData({ Datafile, SaveDataSchemaToS3, Output });
+    if (schemaByDataResp.Status && schemaByDataResp.Status === 'SUCCESS') {
+      result.SchemaFileByData = schemaByDataResp.file || '';
+    }
+    const respCombinedSchema = await getCombinedSchema(schemaByDataResp.Schema, S3RAWJsonSchemaFile);
 
     // throws an NoSuchKey error if file does not exist
-    const fileJSON = parseSchemaJSON(combinedSchema);
-
-    // Set up save file parameters
-    const saveFileParams = s3FileParser(Output);
-    let filename = `${saveFileParams.Key}${FilePrefix && FilePrefix.length ?
-      FilePrefix.concat('-') : ''}${moment().format('YYYYMMDD_HHmmssSSS')}-schema.json`;
-    filename = filename.replace('--', '-').replace('-_', '-');
-
-    // Handle blocking overwrite if Overwrite is 'No'
-    if (Overwrite.toLowerCase() === 'no') {
-      const fileFound = await s3FileExists({
-        Bucket: saveFileParams.Bucket,
-        Key: filename,
-      });
-
-      if (fileFound) {
-        throw new Error('File could not be overwritten. If you wish to overwrite this file, set Overwrite to "Yes"');
-      }
+    if (!(respCombinedSchema && respCombinedSchema.Status
+        && respCombinedSchema.Status === 'success' && respCombinedSchema.CombineSchema)) {
+      throw new Error(`Schema from Data and Original Schema couldnt be combined.
+      Error:${JSON.stringify(respCombinedSchema.error, null, 2)}`);
     }
+    const fileJSON = parseSchemaJSON(respCombinedSchema.CombineSchema);
 
-    await uploadFileToS3({
-      Bucket: saveFileParams.Bucket,
-      Key: filename,
-      Body: JSON.stringify(fileJSON),
-    });
-
-    result.file = `s3://${saveFileParams.Bucket}/${filename}`;
-
+    // Save file in S3
+    result.file = await SaveJsonToS3File(Output, fileJSON);
     return result;
   } catch (e) {
     result.status.message = 'error';
@@ -181,22 +164,19 @@ export default async ({
   }
 };
 
-async function getCombinedSchema(schemaFromData, RAWJsonSchemaFile) {
+async function getCombinedSchema(schemaFromData, S3RAWJsonSchemaFile) {
   const resp = {};
-  if (schemaFromData && RAWJsonSchemaFile) {
+  let rawJsonSchema;
+  if (schemaFromData && schemaFromData.items && S3RAWJsonSchemaFile) {
     try {
-      // do something
-      const { Bucket, Key } = s3FileParser(RAWJsonSchemaFile);
-      const rawJsonSchema = await getS3JSON({
-        Bucket,
-        Key,
-      });
+      rawJsonSchema = await GetJSONFromS3Path(S3RAWJsonSchemaFile);
       if (rawJsonSchema) {
-        Object.assign(schemaFromData, rawJsonSchema);
+        rawJsonSchema = _merge(rawJsonSchema, schemaFromData.items.properties.Item);
+        // rawJsonSchema = Object.assign(rawJsonSchema, schemaFromData.items.properties.Item);
         resp.Status = 'success';
-        resp.CombineSchema = schemaFromData;
+        resp.CombineSchema = rawJsonSchema;
       } else {
-        throw new Error('RAW JSON Schema was not Found in S3 Path.', RAWJsonSchemaFile);
+        throw new Error('RAW JSON Schema was not Found in S3 Path.', S3RAWJsonSchemaFile);
       }
     } catch (err) {
       resp.Status = 'error';
@@ -205,27 +185,37 @@ async function getCombinedSchema(schemaFromData, RAWJsonSchemaFile) {
       odsLogger.log('error', 'Error combining Schema', err.message);
     }
   } else {
-    throw new Error(`Cannot combine schema either schemaFromData : ${schemaFromData} is null or RAWJsonSchemaFile Path is null: ${RAWJsonSchemaFile}`);
+    throw new Error(`Cannot combine schema either schemaFromData : ${schemaFromData} is null or S3RAWJsonSchemaFile Path is null: ${S3RAWJsonSchemaFile}`);
   }
   return resp;
 }
 
-async function generateRawSchemaFromData(Datafile) {
-  let schema;
+async function generateRawSchemaFromData({ Datafile, SaveDataSchemaToS3 = true, Output }) {
+  const rawSchemaResp = {
+    Status: 'Processing',
+    file: undefined,
+    Schema: undefined,
+  };
   try {
     // do something
-    const { Bucket, Key } = s3FileParser(Datafile);
-    const data = await getS3JSON({
-      Bucket,
-      Key,
-    });
+    const data = await GetJSONFromS3Path(Datafile);
+
     if (data) {
-      schema = await generateSchema('', data);
+      rawSchemaResp.Schema = await generateSchema('', data);
+      if (SaveDataSchemaToS3 && Output && rawSchemaResp.Schema) {
+        // save file
+        const saveFileParams = s3FileParser(Output);
+        const s3PathToSave = `s3://${saveFileParams.Bucket}/${saveFileParams.Key}-bydata-`;
+        rawSchemaResp.file = await SaveJsonToS3File(s3PathToSave, rawSchemaResp);
+        // response status
+        rawSchemaResp.Status = 'SUCCESS';
+      }
     }
   } catch (err) {
-    schema = undefined;
-    odsLogger.log('error', `Error getting data from data file to parse schema:${Datafile}, error: ${err.message}`);
-    throw err.message;
+    rawSchemaResp.Status = 'error';
+    rawSchemaResp.error = new Error(`Error getting schema from data file to parse:${Datafile}, error: ${err.message}`);
+    odsLogger.log('error', rawSchemaResp.error);
+    throw rawSchemaResp.error;
   }
-  return schema;
+  return rawSchemaResp;
 }

@@ -1,0 +1,6 @@
+{
+    "S3DataFile": "s3://dev-ods-data/unit-test/clients/test-clients-data-20180725_114740006.json",
+    "Output": "s3://dev-ods-data/unit-test/clients/test-clients-UniformJSON-{YYYYMMDD_HHmmssSSS}.json",
+    "Overwrite": "yes",
+    "S3SchemaFile": "s3://dev-ods-data/unit-test/clients/test-clients-Schema-20180725_134744950.json"
+}

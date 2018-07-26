@@ -44,12 +44,20 @@ export async function JsonToPSQL(event = {}) {
   const {
     TableName,
   } = event;
+  const RetResp = {
+    Status: 'Started',
+    TasksToProcess: -1,
+    RemainingTasks: -1,
+    error: undefined,
+  };
+  let PendingTasks;
   try {
     ValidateParameter(event);
     odsLogger.log('info', `Processing JsonToPSQL for Table: ${TableName}`);
     // get list of all pending tasks
-    const PendingTasks = await GetPendingPipeLineTasks({ TableName });
-    if (PendingTasks && PendingTasks.length && PendingTasks.length > 0) {
+    PendingTasks = await GetPendingPipeLineTasks({ TableName });
+    RetResp.TasksToProcess = (PendingTasks && PendingTasks.length) ? PendingTasks.length : 0;
+    if (RetResp.TasksToProcess > 0) {
       // loop through them and process it
       while (PendingTasks.length > 0) {
         const task = PendingTasks.shift();
@@ -68,12 +76,19 @@ export async function JsonToPSQL(event = {}) {
           break;
         }
       }
+      RetResp.Status = 'success';
     } else {
+      RetResp.Status = 'warning';
       odsLogger.log('warn', `No Pending Steps for Table: ${TableName}, Resp:${PendingTasks}`);
     }
+    RetResp.RemainingTasks = (PendingTasks && PendingTasks.length) ? PendingTasks.length : 0;
   } catch (err) {
+    RetResp.RemainingTasks = (PendingTasks && PendingTasks.length) ? PendingTasks.length : 0;
+    RetResp.error = err;
+    RetResp.Status = 'error';
     odsLogger.log('error', `Error Processing JSONToPSQL for Table: ${TableName} Error Message:${err.message}`);
   }
+  return RetResp;
 }
 
 function ValidateParameter(event) {

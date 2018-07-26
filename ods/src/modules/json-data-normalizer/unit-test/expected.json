@@ -1,0 +1,15 @@
+{
+    "ShowNewExperience": false,
+    "HixmeConnectCompositePrices": [
+        {
+            "MetalLevel": "",
+            "Price": -999999.99
+        }
+    ],
+    "MigrationYear": -999999.99,
+    "HixmeBundleConfig": [
+        {
+            "IsGapSeparate": false
+        }
+    ]
+}

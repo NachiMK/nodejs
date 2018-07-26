@@ -35,7 +35,7 @@ BEGIN
     , DataPipeLineTaskQueueId, PrevTaskId, ParentTaskId;
 
     -- Find the Root ID
-    SELECT  ods."udf.GetRootTaskId"(DataPipeLineTaskQueueId)
+    SELECT  ods."udf_GetRootTaskId"(DataPipeLineTaskQueueId)
     INTO    RootTaskId;
 
     RootTaskId := COALESCE(RootTaskId, ParentTaskId, -9999);

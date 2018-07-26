@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "ShowNewExperience": {
+            "type": "boolean",
+            "default": false,
+            "transfer_type": "string",
+            "db_type": "boolean"
+        },
+        "HixmeConnectCompositePrices": {
+            "items": {
+                "properties": {
+                    "MetalLevel": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    },
+                    "Price": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    }
+                },
+                "required": [
+                    "MetalLevel",
+                    "Price",
+                    "Relationship"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "MigrationYear": {
+            "type": "number",
+            "default": -999999.99,
+            "transfer_type": "string",
+            "db_type": "number"
+        },
+        "HixmeBundleConfig": {
+            "items": {
+                "properties": {
+                    "IsGapSeparate": {
+                        "type": "boolean",
+                        "default": false,
+                        "transfer_type": "string",
+                        "db_type": "boolean"
+                    }
+                },
+                "required": [
+                    "IsGapSeparate"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        }
+    },
+    "required": [
+        "HixmeConnectCompositePrices",
+        "ShowNewExperience",
+        "MigrationYear",
+        "HixmeBundleConfig"
+    ],
+    "title": "prod-clients"
+}

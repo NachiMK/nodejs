@@ -2,10 +2,10 @@ import { JsonToPSQL } from '.';
 
 const event = require('./event.json');
 
-async function TestJsonToPSQL() {
+function TestJsonToPSQL() {
   try {
     console.log(`Event:${JSON.stringify(event, null, 2)}`);
-    await JsonToPSQL(event);
+    return JsonToPSQL(event);
   } catch (err) {
     console.log(err.message);
     console.log(JSON.stringify(err, null, 2));
@@ -15,8 +15,12 @@ async function TestJsonToPSQL() {
 TestJsonToPSQL();
 
 /*
-
-npm run build && odsloglevel=info STAGE=dev log_dbname=ODSLog DEV_ODSLOG_PG='postgres://odslog_user:H!xme_0ds_ah_dev1@localhost
-/odslog_dev' DEV_ODSCONFIG_PG='postgres://odsconfig_user:H!xme_0ds_ah_dev1@localhost/odsconfig_dev' node lib/service/ods/json-to-psql/generate-test.js
-
+npm run build\
+ && Clear
+ && odsloglevel=info\
+ STAGE=dev\
+ log_dbname=ODSLog\
+ DEV_ODSLOG_PG='postgres://odslog_user:H!xme_0ds_ah_dev1@localhost/odslog_dev'\
+ DEV_ODSCONFIG_PG='postgres://odsconfig_user:H!xme_0ds_ah_dev1@localhost/odsconfig_dev'\
+ node lib/service/ods/json-to-psql/generate-test.js
 */

@@ -58,6 +58,7 @@ function getInput(task) {
     FilePrefix: myFilePrefix,
     Output: `s3://${task.getTaskAttributeValue('S3UniformJSONBucketName')}/${s3FileKeyPrefix.replace(myFilePrefix, '')}`,
     Overwrite: 'yes',
+    S3SchemaFile: task.getTaskAttributeValue('S3SchemaFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
   };
 
   return input;

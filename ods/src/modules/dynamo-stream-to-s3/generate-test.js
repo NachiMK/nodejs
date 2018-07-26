@@ -4,7 +4,7 @@ const eventData = require('./event.json');
 
 const StreamEventsToS3Param = {
   DynamoStreamEvent: eventData,
-  KeyName: 'dynamodb/clients/test-clients-data-',
+  KeyName: 'unit-test/clients/test-clients-data-',
   S3BucketName: 'dev-ods-data',
   AppendDateTime: true,
   DateTimeFormat: 'YYYYMMDD_HHmmssSSS',
