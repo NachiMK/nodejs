@@ -205,7 +205,7 @@ async function generateRawSchemaFromData({ Datafile, SaveDataSchemaToS3 = true, 
       if (SaveDataSchemaToS3 && Output && rawSchemaResp.Schema) {
         // save file
         const saveFileParams = s3FileParser(Output);
-        const s3PathToSave = `s3://${saveFileParams.Bucket}/${saveFileParams.Key}-bydata-`;
+        const s3PathToSave = `s3://${saveFileParams.Bucket}/${saveFileParams.Key}-bydata`;
         rawSchemaResp.file = await SaveJsonToS3File(s3PathToSave, rawSchemaResp);
         // response status
         rawSchemaResp.Status = 'SUCCESS';

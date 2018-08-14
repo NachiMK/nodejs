@@ -48,6 +48,28 @@ BEGIN
                 ((LENGTH(PlanID) = 0) OR PlanId IS NULL)
             );
 
+    IF BatchIDs IS NULL THEN
+        SELECT  string_agg(CAST(AB."ID" AS VARCHAR), ',')
+        INTO    BatchIDs
+        FROM    "AxeneBatch" AS AB 
+        WHERE   1 = 1
+        AND     (
+                    (("Event"->'body'->>'Year' = CAST(Year AS VARCHAR)) AND (Year IS NOT NULL))
+                    OR
+                    (Year IS NULL)
+                )
+        AND     (
+                    (("Event"->'body'->>'State' = State) AND (State IS NOT NULL) AND (LENGTH(State) > 0))
+                    OR
+                    ((LENGTH(State) = 0) OR State IS NULL)
+                )
+        AND     (
+                    (("Event"->'body'->>'PlanID' = PlanId) AND (PlanId IS NOT NULL) AND (LENGTH(PlanID) > 0))
+                    OR
+                    ((LENGTH(PlanID) = 0) OR PlanId IS NULL)
+                );
+    END IF;
+
     BatchIDs := COALESCE(BatchIDs, '-1');
     raise notice '%',BatchIDs;
 
@@ -56,18 +78,20 @@ BEGIN
         AS
         (
             SELECT   AB."ID"
-                ,"Event"->''query''->>''Year'' AS "Year"
-                ,"Event"->''query''->>''State'' AS "State"
-                ,"Event"->''query''->>''PlanID'' AS "PlanId"
+                ,COALESCE("Event"->''query''->>''Year'', "Event"->''body''->>''Year'')   AS "Year"
+                ,COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'')  AS "State"
+                ,COALESCE("Event"->''query''->>''PlanID'', "Event"->''body''->>''PlanID'') AS "PlanId"
                 ,COUNT(*) AS "NumberofPlansSubmitted"
                 ,SUM(CASE WHEN "EndDate" IS NOT NULL THEN 1 ELSE 0 END) as "NumberofPlansReceived"
                 ,(SELECT COUNT(*) FROM "AxeneOutputValues" AS AO WHERE AO."BatchID" = CAST(AB."ID" AS VARCHAR)) as "NumberofplanswithAV"
                 ,SUM(CASE WHEN "Status" = ''error'' THEN 1 ELSE 0 END) as "NumberofPlanswithErrors"
                 ,MIN("StartDate") as "LastSubmissionTime"
                 ,MAX("EndDate") as "LastSubmissionEndTime"
-                ,ROW_NUMBER() OVER (PARTITION BY "Event"->''query''->>''Year''
-                                    ,"Event"->''query''->>''PlanID''
-                                    ,"Event"->''query''->>''State'' ORDER BY MIN(AF1."StartDate") DESC) as RowNbr
+                ,ROW_NUMBER() OVER (PARTITION BY 
+                                     COALESCE("Event"->''query''->>''Year'', "Event"->''body''->>''Year'')
+                                    ,COALESCE("Event"->''query''->>''PlanID'', "Event"->''body''->>''PlanID'')
+                                    ,COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'')
+                                    ORDER BY MIN(AF1."StartDate") DESC) as RowNbr
             FROM    "AxeneBatch" AS AB 
             INNER
             JOIN    "AxeneBatchFiles" AS AF1 ON AF1."AxeneBatchID" = AB."ID"
@@ -75,9 +99,9 @@ BEGIN
             AND     AB."ID" IN (' || BatchIDs || ')
             GROUP   BY
                 AB."ID"
-                ,"Event"->''query''->>''Year''
-                ,"Event"->''query''->>''State''
-                ,"Event"->''query''->>''PlanID''
+                ,COALESCE("Event"->''query''->>''Year'', "Event"->''body''->>''Year'')
+                ,COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'')
+                ,COALESCE("Event"->''query''->>''PlanID'', "Event"->''body''->>''PlanID'')
 
             UNION
 
@@ -98,10 +122,10 @@ BEGIN
             AND     LENGTH(''' || State || ''') = 0
             AND     "State" NOT IN 
                     (
-                        SELECT  DISTINCT "Event"->''query''->>''State''
+                        SELECT  DISTINCT COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'')
                         FROM    "AxeneBatch" AB
                         WHERE   AB."ID" IN (' || BatchIDs || ')
-                        AND     "Event"->''query''->>''State'' IS NOT NULL
+                        AND     COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'') IS NOT NULL
                     )
         )
         SELECT   "ID" as "BatchID"

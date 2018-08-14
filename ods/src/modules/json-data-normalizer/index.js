@@ -38,7 +38,6 @@ export const JsonDataNormalizer = async (params = {}) => {
     resp.error = err;
   }
 
-  // throw new Error(`Function not implemented. PayLoad:${params}`);
   return resp;
 };
 

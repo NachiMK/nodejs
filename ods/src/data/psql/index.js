@@ -37,7 +37,7 @@ export const executeQueryRS = async (params = {}) => {
     ODSLogger.log('debug', 'About to run query:%j', params);
     const id = logresp.scalarValue;
     const knexResp = await localKnex.raw(Query);
-    if ((knexResp) && (knexResp.rows)) {
+    if ((knexResp) && (knexResp.rowCount >= 0)) {
       ret.rows = knexResp.rows;
       ret.completed = true;
       ret.rowCount = knexResp.rowCount;

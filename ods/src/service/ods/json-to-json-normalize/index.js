@@ -49,14 +49,9 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
 }
 
 function getInput(task) {
-  const s3FileKeyPrefix = task.getTaskAttributeValue('Prefix.UniformJSONFile');
-  const indexOfPrefix = s3FileKeyPrefix.lastIndexOf('/');
-  const myFilePrefix = s3FileKeyPrefix.substr(indexOfPrefix + 1, s3FileKeyPrefix.length - indexOfPrefix);
-
   const input = {
     Datafile: task.getTaskAttributeValue('S3DataFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
-    FilePrefix: myFilePrefix,
-    Output: `s3://${task.getTaskAttributeValue('S3UniformJSONBucketName')}/${s3FileKeyPrefix.replace(myFilePrefix, '')}`,
+    Output: `s3://${task.getTaskAttributeValue('S3UniformJSONBucketName')}/${task.getTaskAttributeValue('Prefix.UniformJSONFile')}`,
     Overwrite: 'yes',
     S3SchemaFile: task.getTaskAttributeValue('S3SchemaFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
   };
