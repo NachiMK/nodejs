@@ -48,18 +48,16 @@ export async function DynamoStreamEventsToS3(StreamEventsToS3Param = {}) {
         const item = record.dynamodb.NewImage;
         if (item) {
           const itemParams = {
-            Item: {
-              HistoryId: record.eventID,
-              HistoryAction: record.eventName,
-              HistoryDate: eventReceivedDtTm.slice(0, 10).replace(/-/g, ''),
-              HistoryCreated: eventReceivedDtTm,
-              Rowkey: getRowKey(item),
-              SourceTable: TableName,
-              RecordSeqNumber: record.dynamodb.SequenceNumber,
-              ApproximateCreationDateTime: (new Date(record.dynamodb.ApproximateCreationDateTime * 1000)).toISOString(),
-            },
+            HistoryId: record.eventID,
+            HistoryAction: record.eventName,
+            HistoryDate: eventReceivedDtTm.slice(0, 10).replace(/-/g, ''),
+            HistoryCreated: eventReceivedDtTm,
+            Rowkey: getRowKey(item),
+            SourceTable: TableName,
+            RecordSeqNumber: record.dynamodb.SequenceNumber,
+            ApproximateCreationDateTime: (new Date(record.dynamodb.ApproximateCreationDateTime * 1000)).toISOString(),
           };
-          Object.assign(itemParams.Item, UnmarshallStreamImage(item));
+          Object.assign(itemParams, UnmarshallStreamImage(item));
           return itemParams;
         }
         return undefined;
@@ -68,7 +66,7 @@ export async function DynamoStreamEventsToS3(StreamEventsToS3Param = {}) {
   } catch (err) {
     const RetError = new Error(`Error Reading from Stream Events ${TableKeyName} 
                          to save to S3 bucket: ${S3BucketName} 
-                         error:${JSON.stringify(err, null, 2)}`);
+                         error:${err.message}`);
     console.warn(`${JSON.stringify(RetError, null, 2)}`);
     await SetOdsResponseStatusToError(saveStatus, RetError);
     return saveStatus;

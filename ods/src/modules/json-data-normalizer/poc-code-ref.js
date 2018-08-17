@@ -465,6 +465,71 @@ function IdMeAndMyDescendents(json_row, parent_id, parent_level, parent_name, my
     return;
 }
 
+// function IdMeAndMyDescendents(jsonRow, parentId, parentLevel, parentName, myName, parentObject, retJsonRow, debug = 0) {
+//   // if no parent then we are the root.
+//   const mylevel = parentLevel + 1;
+//   PrintMsg(`At Start: parent_level:${parentLevel} my_level: ${mylevel}`, debug);
+
+//   if (jsonRow) {
+//     if (!(_.isEmpty(jsonRow))) {
+//       // add ods details
+//       addBatchId(jsonRow);
+//       addBatchUniqueId(jsonRow, myName, debug);
+//       const myId = jsonRow[batch_unique_key_name];
+
+//       // root - process default values for root. So recursion can take of the rest.
+//       if (IsRootObject(parentLevel, parentObject)) {
+//         // Add root representation for parent which would be simply a slash.
+//         // Parent value would be -1
+//         addDefaultParent(jsonRow);
+//       }
+
+//       // add parent if needed to given object.
+//       addParentIdToChildObject(parentId, parentLevel, parentObject, parentName, jsonRow, debug);
+
+//       parentName = myName;
+//       // check if it is a simple property/array/object
+//       const rowAttributes = Object.keys(jsonRow);
+//       rowAttributes.forEach((attribute) => {
+//         if (jsonRow[attribute] instanceof Array) {
+//           PrintMsg(`---- converting --array ----- parent ${parentName} attribute: ${attribute}`, debug);
+//           if (IsArrayOfSimpleTypes(jsonRow[attribute])) {
+//             // let my_parent = getNewParentParamObject(my_id, my_name, my_level, json_row, debug);
+//             retJsonRow[attribute] = convertSimpleArrayToObjects(jsonRow[attribute], myId, mylevel, parentName, attribute, jsonRow, debug);
+//           } else {
+//             // loop through each object and get the values;
+//             const myObjArrays = jsonRow[attribute];
+//             // PrintJson("1.mapping my_obj_array:", my_obj_arrays);
+//             retJsonRow[attribute] = myObjArrays.map((val) => {
+//               // PrintJson("my_obj_array:", val, debug);
+//               PrintMsg(`2.parent: ${myId} parent_my_level ${mylevel} parent(attribute) ${attribute} parent: ${parentName}`, debug);
+//               const nObj = {};
+//               IdMeAndMyDescendents(val, myId, mylevel, parentName, attribute, jsonRow, nObj, debug);
+//               // PrintJson("9000.nObj:", nObj, debug);
+//               return nObj;
+//             });
+//           }
+//           PrintMsg('---- converted --array -----', debug);
+//         } else if (jsonRow[attribute] instanceof Object) {
+//           const nObj = {};
+//           PrintJson('100.json_row:', jsonRow, debug);
+//           PrintMsg(`101.parent: ${myId} parent_my_level ${mylevel} parent(attribute) ${attribute} parent: ${parentName}`, debug);
+//           IdMeAndMyDescendents(jsonRow[attribute], myId, mylevel, parentName, attribute, jsonRow, nObj, debug);
+//           PrintJson('103.Child:', nObj, debug);
+//           retJsonRow[attribute] = nObj;
+//         } else if (!(jsonRow[attribute] instanceof Object)) {
+//           // PrintJson("attribute:" + attribute + " value:", json_row[attribute], debug);
+//           retJsonRow[attribute] = jsonRow[attribute];
+//         }
+//       });
+
+//       // for (var attribute in jsonRow) {
+//       //   // code in here was moved to above forEach due to ESLint complaining
+//       // }
+//     }
+//   }
+// }
+
 function getNewParentParamObject(parentId, parentName, parentLevel, parentObject, debug = 0) {
     let p = {
         parent_id: parentId,

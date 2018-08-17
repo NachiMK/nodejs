@@ -410,6 +410,417 @@
                 "StreamViewType": "NEW_IMAGE"
             },
             "eventSourceARN": "arn:aws:dynamodb:us-east-1:123456789012:table/prod-clients/stream/2016-11-16T20:42:48.104"
-        }
+        },
+        {
+          "eventID": "7de3041dd709b024af6f29e4fa13d43c",
+          "eventName": "INSERT",
+          "eventVersion": "1.1",
+          "eventSource": "aws:dynamodb",
+          "awsRegion": "us-west-2",
+          "dynamodb": {
+              "ApproximateCreationDateTime": 1579499740,
+              "Keys": {
+                  "Timestamp": {
+                      "S": "2016-11-19:12:09:36"
+                  },
+                  "Username": {
+                      "S": "Rani Queen"
+                  }
+              },
+              "NewImage": {
+                  "BenefitsEffectiveDate": {
+                      "S": "2017-02-01"
+                    },
+                    "BenefitsEffectivePolicy": {
+                      "N": "65"
+                    },
+                    "BenefitsEffectivePolicyUnit": {
+                      "S": "Days"
+                    },
+                    "City": {
+                      "S": "Menlo Park"
+                    },
+                    "ClientServicesRepFirstName": {
+                      "S": "Tammy"
+                    },
+                    "ClientServicesRepLastName": {
+                      "S": "Olson"
+                    },
+                    "ClientServicesRepPublicKey": {
+                      "S": "e3d9c569-1be4-4320-9a33-05b9747365c2"
+                    },
+                    "CompanyLogoUrl": {
+                      "S": "https://www.hixme.com/images/logo-1.png"
+                    },
+                    "CompanyName": {
+                      "S": "Kleiner Perkins Caufield & Byers"
+                    },
+                    "ContactEmailAddress": {
+                      "S": "unknown"
+                    },
+                    "ContactFirstName": {
+                      "S": "Unknown"
+                    },
+                    "ContactLastName": {
+                      "S": "Unknown"
+                    },
+                    "ContactPhoneNumber": {
+                      "S": "6502332750"
+                    },
+                    "County": {
+                      "S": "Unknown"
+                    },
+                    "CurrentHealthPlanDesigns": {
+                      "L": []
+                    },
+                    "CustomerServicePhoneNumber": {
+                      "S": "8669362854"
+                    },
+                    "EnrollmentEndDate": {
+                      "S": "2017-12-31"
+                    },
+                    "EnrollmentStartDate": {
+                      "S": "2017-01-01"
+                    },
+                    "HixmeAccidentCompositePrices": {
+                      "L": [
+                        {
+                          "M": {
+                            "Price": {
+                              "N": "10.85"
+                            },
+                            "Relationship": {
+                              "S": "Employee"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "Price": {
+                              "N": "11.49"
+                            },
+                            "Relationship": {
+                              "S": "Spouse"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "Price": {
+                              "N": "11.49"
+                            },
+                            "Relationship": {
+                              "S": "Child"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "HixmeBundleConfig": {
+                      "L": [
+                        {
+                          "M": {
+                            "AllowNegativePersonRates": {
+                              "BOOL": true
+                            },
+                            "CompositeAgeFactor": {
+                              "N": "1.2538"
+                            },
+                            "CompositeBankingFee": {
+                              "N": "12.97"
+                            },
+                            "IsGapSeparate": {
+                              "BOOL": true
+                            },
+                            "MaxNumberOfChildren": {
+                              "N": "1"
+                            },
+                            "MaxNumberOfDependents": {
+                              "NULL": true
+                            },
+                            "MinimumContribution": {
+                              "N": "-7000"
+                            },
+                            "Relationship": {
+                              "S": "Employee"
+                            },
+                            "StateProvince": {
+                              "S": "*"
+                            },
+                            "TierStrategy": {
+                              "S": "FourTier"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "AllowNegativePersonRates": {
+                              "BOOL": true
+                            },
+                            "CompositeAgeFactor": {
+                              "N": "1.44"
+                            },
+                            "CompositeBankingFee": {
+                              "N": "12.9"
+                            },
+                            "IsGapSeparate": {
+                              "BOOL": true
+                            },
+                            "MaxNumberOfChildren": {
+                              "N": "1"
+                            },
+                            "MaxNumberOfDependents": {
+                              "NULL": true
+                            },
+                            "MinimumContribution": {
+                              "N": "-6900"
+                            },
+                            "Relationship": {
+                              "S": "Spouse"
+                            },
+                            "StateProvince": {
+                              "S": "*"
+                            },
+                            "TierStrategy": {
+                              "S": "FourTier"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "AllowNegativePersonRates": {
+                              "BOOL": true
+                            },
+                            "CompositeAgeFactor": {
+                              "N": "0.9937"
+                            },
+                            "CompositeBankingFee": {
+                              "N": "25.94"
+                            },
+                            "IsGapSeparate": {
+                              "BOOL": true
+                            },
+                            "MaxNumberOfChildren": {
+                              "N": "1"
+                            },
+                            "MaxNumberOfDependents": {
+                              "NULL": true
+                            },
+                            "MinimumContribution": {
+                              "N": "-7000"
+                            },
+                            "Relationship": {
+                              "S": "Child"
+                            },
+                            "StateProvince": {
+                              "S": "*"
+                            },
+                            "TierStrategy": {
+                              "S": "FourTier"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "HixmeConnectCompositePrices": {
+                      "L": [
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Bronze"
+                            },
+                            "Price": {
+                              "N": "109.6"
+                            },
+                            "Relationship": {
+                              "S": "Employee"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Bronze"
+                            },
+                            "Price": {
+                              "N": "116.17"
+                            },
+                            "Relationship": {
+                              "S": "Spouse"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Bronze"
+                            },
+                            "Price": {
+                              "N": "151.19"
+                            },
+                            "Relationship": {
+                              "S": "Child"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Silver"
+                            },
+                            "Price": {
+                              "N": "100.6"
+                            },
+                            "Relationship": {
+                              "S": "Employee"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Silver"
+                            },
+                            "Price": {
+                              "N": "105.99"
+                            },
+                            "Relationship": {
+                              "S": "Spouse"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Silver"
+                            },
+                            "Price": {
+                              "N": "145.13"
+                            },
+                            "Relationship": {
+                              "S": "Child"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Gold"
+                            },
+                            "Price": {
+                              "N": "80.4"
+                            },
+                            "Relationship": {
+                              "S": "Employee"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Gold"
+                            },
+                            "Price": {
+                              "N": "83.36"
+                            },
+                            "Relationship": {
+                              "S": "Spouse"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Gold"
+                            },
+                            "Price": {
+                              "N": "134.71"
+                            },
+                            "Relationship": {
+                              "S": "Child"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Platinum"
+                            },
+                            "Price": {
+                              "N": "77.6"
+                            },
+                            "Relationship": {
+                              "S": "Employee"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Platinum"
+                            },
+                            "Price": {
+                              "N": "79.37"
+                            },
+                            "Relationship": {
+                              "S": "Spouse"
+                            }
+                          }
+                        },
+                        {
+                          "M": {
+                            "MetalLevel": {
+                              "S": "Platinum"
+                            },
+                            "Price": {
+                              "N": "130.72"
+                            },
+                            "Relationship": {
+                              "S": "Child"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "Id": {
+                      "S": "d40d9949-bc94-3a47-a29e-110b29d03b47"
+                    },
+                    "IsActive": {
+                      "BOOL": true
+                    },
+                    "IsProspect": {
+                      "BOOL": true
+                    },
+                    "MigrationYear": {
+                      "N": "2017"
+                    },
+                    "PostalCode": {
+                      "S": "91406"
+                    },
+                    "SalesDirectorFirstName": {
+                      "S": "Brian"
+                    },
+                    "SalesDirectorLastName": {
+                      "S": "Finster"
+                    },
+                    "SalesDirectorPublicKey": {
+                      "S": "7611638f-01ed-bd3a-2b73-517923f2b466"
+                    },
+                    "ShowNewExperience": {
+                      "BOOL": true
+                    },
+                    "StateProvince": {
+                      "S": "OH"
+                    },
+                    "StreetAddress": {
+                      "S": "61 S. Sandusky St"
+                    }
+              },
+              "SequenceNumber": "13021600000000001596893680",
+              "SizeBytes": 114,
+              "StreamViewType": "NEW_IMAGE"
+          },
+          "eventSourceARN": "arn:aws:dynamodb:us-east-1:123456789012:table/prod-clients/stream/2016-11-16T20:42:48.104"
+      }
     ]
 }
