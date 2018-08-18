@@ -63,7 +63,7 @@ export const s3FileExists = async ({
       Key,
     });
 
-    return true && findFile;
+    return true && (typeof findFile === 'object');
   } catch (e) {
     if (e.code === 'NoSuchKey') {
       return false;

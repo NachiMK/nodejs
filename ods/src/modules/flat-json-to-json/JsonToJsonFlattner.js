@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { format as _format, transports as _transports, createLogger } from 'winston';
 import { GetJSONFromS3Path } from '../s3ODS/index';
+import { uploadFileToS3 } from '../s3';
 
 export class JsonToJsonFlattner {
     globalBatchKey = 'ODS_Batch_Id';
@@ -14,7 +15,7 @@ export class JsonToJsonFlattner {
       Status: 'processing',
       error: {},
       NormalizedDataSet: {},
-      NormalizedFilePaths: {},
+      NormalizedS3Path: undefined,
     };
     logger = createLogger({
       format: _format.combine(
@@ -27,18 +28,20 @@ export class JsonToJsonFlattner {
       transports: [
         new (_transports.Console)({
           level: 'error',
+          name: 'consoleTransporter',
         }),
       ],
     });
 
     constructor(params = {}) {
       this.s3DataFilePath = params.S3DataFilePath || '';
-      this.s3Output = params.S3Output || '';
+      this.s3Bucket = params.S3Bucket || '';
+      this.s3Key = params.S3Key || '';
       this.tableName = params.TableName;
-      this.outputType = params.OutputType || 'Return-in-output'; // Can be Save-to-S3 or Return-in-output
       this.batchId = params.BatchId || Math.floor(Math.random() * 100000);
-      if (!this.S3Output || (this.S3Output.length <= 0)) this.outputType = 'Return-in-output';
       this.loglevel = params.LogLevel || 'warn';
+      this.logger.setLevels(params.LogLevel);
+      this.logger.level = params.LogLevel;
     }
 
     get S3DataFilePath() {
@@ -56,9 +59,6 @@ export class JsonToJsonFlattner {
     get Output() {
       return this.output;
     }
-    get OutputType() {
-      return this.outputType;
-    }
     get BatchId() {
       return this.batchId;
     }
@@ -67,6 +67,12 @@ export class JsonToJsonFlattner {
     }
     get LogLevel() {
       return this.loglevel;
+    }
+    get S3Bucket() {
+      return this.s3Bucket;
+    }
+    get S3Key() {
+      return this.s3Key;
     }
 
     async getNormalizedDataset() {
@@ -103,7 +109,42 @@ export class JsonToJsonFlattner {
       } catch (err) {
         this.Output.Status = 'error';
         this.Output.error = new Error(`Error normalizing data: ${err.message}`);
-        console.log(`Error: ${err.message}`);
+        this.logger.log('error', `Error: ${err.message}`);
+      }
+    }
+
+    async SaveNormalizedData() {
+      try {
+        // get normalized data
+        await this.getNormalizedDataset();
+      } catch (err) {
+        this.Output.Status = 'error';
+        this.Output.error = new Error(`Error getting Normalized Data: ${err.message}`);
+        this.logger.log('error saving file to S3', err.message);
+      }
+      try {
+        this.Output.Status = 'SavingToS3';
+        if (!this.Output.NormalizedDataSet) {
+          throw new Error(`Normalized data is not available nothing to save. ${JSON.stringify(this.Output.NormalizedDataSet, null, 2)}`);
+        }
+        // validate bucket info and proceed.
+        if (this.S3Bucket && this.S3Key && this.S3Bucket.length > 0 && this.S3Key.length > 0) {
+          await uploadFileToS3({
+            Bucket: this.S3Bucket,
+            Key: this.S3Key,
+            Body: JSON.stringify(this.Output.NormalizedDataSet, null, 2),
+          });
+          this.Output.Status = 'success';
+          this.error = undefined;
+          this.Output.NormalizedDataSet = undefined;
+          this.Output.NormalizedS3Path = `s3://${this.S3Bucket}/${this.S3Key}`;
+        } else {
+          throw new Error(`S3Bucket and S3Key are required to save data. S3Bucket:${this.S3Bucket}, S3Key Value: ${this.S3Key}`);
+        }
+      } catch (err) {
+        this.Output.Status = 'error';
+        this.Output.error = new Error(`Error saving file to S3: ${err.message}`);
+        this.logger.log('error saving file to S3', err.message);
       }
     }
 
@@ -150,7 +191,7 @@ export class JsonToJsonFlattner {
               });
             }
             this.LogString('---- converted --array -----');
-          } else if (jsonRow[attribute] instanceof Object) {
+          } else if (_.isObject(jsonRow[attribute])) {
             const nObj = {};
             this.LogJson('100.json_row:', jsonRow);
             this.LogString(`101.parent:${myId} parent_my_level: ${myLevel} parent(attribute): ${attribute} parent: ${parentName}`);
@@ -158,14 +199,9 @@ export class JsonToJsonFlattner {
             this.LogJson('103.Child:', nObj);
             retJsonRow[attribute] = nObj;
           } else if (!(jsonRow[attribute] instanceof Object)) {
-            // this.PrintJson("attribute:" + attribute + " value:", json_row[attribute]);
             retJsonRow[attribute] = jsonRow[attribute];
           }
         });
-
-        // for (var attribute in jsonRow) {
-        //   // above code using object keys was here.
-        // }
       }
     }
 
@@ -176,7 +212,6 @@ export class JsonToJsonFlattner {
         // array has some elements
         if (arrayOfSimpleDataTypes.length > 0) {
           // only if array has simple object proceed or else we need to process it differently.
-          // this.PrintJson("Array element value: ", array_of_simple_datatypes[0]);
           if (!(_.isObject(arrayOfSimpleDataTypes[0]))) {
             retArray = arrayOfSimpleDataTypes.map((val, idx) => {
               const obj = this.getNewObjectFromArrayElement(val, idx, myName);
@@ -187,11 +222,6 @@ export class JsonToJsonFlattner {
             });
           } else {
             throw new Error('Array of objects in method that can process only array of simple types');
-            // retArray = arrayOfSimpleDataTypes.map((val) => {
-            //   throw new Error('Array of objects in method that can process only array of simple types');
-            //   // const obj = addParentIdToChildObject(parentId, parentLevel, parentObject, parentName, val);
-            //   // return obj;
-            // });
           }
         }
       }
@@ -211,33 +241,22 @@ export class JsonToJsonFlattner {
       if (parentLevel < 0) {
         parentLevel = 0;
       }
-      // let parent_key_name = parent_key_refix + parent_level;
-      // let parent_table_name = parent_table_name_key_prefix + parent_level;
 
       this.LogJson('Who am i:', childObj);
-      this.LogJson('ParentId:', parentId);
-      this.LogJson('Parent_level:', parentLevel);
-      this.LogString(`parent_name:${parentName}`);
+      this.LogJson(`ParentId: ${parentId} Parent_level: ${parentLevel} parent_name: ${parentName}`);
 
       if ((childObj) && (!_.isUndefined(parentId))) {
-        // let parent_name_alias = parent_name + "." + batch_unique_key_name;
-        // let parent_ods_path_alias = parent_name + "." + default_parent_path;
-
-        // child_obj[parent_name_alias] = parent_id;
         childObj[this.globalDefaultParentPath] = `/${parentName}`;
         childObj[this.gloablDefaultParentUri] = `/${parentId}`;
-        // child_obj[parent_key_name] = parent_id;
-        // child_obj[parent_table_name] = parent_name;
+
         this.LogJson(`after adding parent at level: ${parentLevel} to me :`, childObj);
         if ((parentObject) && (parentLevel > 0)) {
           this.LogString('adding my ancestors.');
           // get all parent's parent_level_* props and add to me.
-          // child_obj[parent_ods_path_alias] = parent_object[default_parent_path];
           childObj[this.globalDefaultParentPath] = parentObject[this.globalDefaultParentPath] + childObj[this.globalDefaultParentPath];
           childObj[this.gloablDefaultParentUri] = parentObject[this.gloablDefaultParentUri] + childObj[this.gloablDefaultParentUri];
         }
         this.updateUri(childObj);
-        // if (!child_obj.hasOwnProperty(parent_key_name)){}
       }
       this.LogJson('Who am i after update:', childObj);
     }
@@ -311,26 +330,8 @@ export class JsonToJsonFlattner {
       }
       this.LogString(`Table: ${tableName}`);
       if (localCopy && !(_.isEmpty(localCopy))) {
-        // if (HasSimpleTypes(localCopy)) {
-        //   const obj = {};
-        //   // extract all properties of simple data types and add to our current table and return
-        //   const AttributeKeys = Object.keys(localCopy);
-        //   AttributeKeys.forEach((attribute) => {
-        //     this.LogString(`attribute: ${attribute}`);
-        //     this.LogString(`type of: ${typeof (localCopy[attribute])}`);
-        //     if (!(typeof (localCopy[attribute]) === 'object')) {
-        //       obj[attribute] = localCopy[attribute];
-        //       this.LogJson(`Added: ${attribute} Value: ${localCopy[attribute]}`);
-        //       delete localCopy[attribute];
-        //     }
-        //   });
-        //   // for (var attribute in localCopy) {
-        //   //   // code in here was moved to above forEach due to ESLINT complaining
-        //   // }
-        //   // add to array
-        //   this.Output.NormalizedDataSet[tableName].push(obj);
-        // }
-        this.copySimpleProperties(tableName, localCopy);
+        // copy all simple objects
+        this.copySimpleObject(tableName, localCopy);
 
         const AttributeKeys = Object.keys(localCopy);
         AttributeKeys.forEach((attribute) => {
@@ -338,14 +339,11 @@ export class JsonToJsonFlattner {
             if (IsArrayOfSimpleTypes(localCopy[attribute])) {
               throw new Error('Objects that were cleaned shouldnt have simple arrays.');
             } else {
-              // loop through each object and get the values;
+              // loop through each object and normalize each of them;
               const myObjArrays = localCopy[attribute];
-              this.LogString(`processing elements of:${attribute}`);
-              this.LogString(`# of elements to process: ${myObjArrays.length}`);
+              this.LogString(`processing elements of:${attribute} # of elements to process: ${myObjArrays.length}`);
               myObjArrays.forEach((val) => {
-                // this.PrintJson("processing array element:", val);
                 this.normalizeMe(val, attribute);
-                // return;
               });
               delete localCopy[attribute];
             }
@@ -356,15 +354,12 @@ export class JsonToJsonFlattner {
           }
         });
 
-        this.copySimpleProperties(tableName, localCopy);
-
-        // for (var attribute in localCopy) {
-        //   // code in here was moved to above forEach due to ESLint complaining
-        // }
+        // in case any properties left after processing complex objects.
+        if (localCopy) this.copySimpleObject(tableName, localCopy);
       }
     }
 
-    copySimpleProperties(tableName, sourceObject) {
+    copySimpleObject(tableName, sourceObject) {
       if (HasSimpleTypes(sourceObject)) {
         const obj = {};
         // extract all properties of simple data types and add to our current table and return
@@ -377,11 +372,11 @@ export class JsonToJsonFlattner {
             delete sourceObject[attribute];
           }
         });
-        // for (var attribute in localCopy) {
-        //   // code in here was moved to above forEach due to ESLINT complaining
-        // }
+
         // add to array
-        this.Output.NormalizedDataSet[tableName].push(obj);
+        if (AttributeKeys && AttributeKeys.length > 0) {
+          this.Output.NormalizedDataSet[tableName].push(obj);
+        }
       }
     }
 
@@ -430,9 +425,6 @@ function HasSimpleTypes(objToTest) {
       }
     });
     retVal = (intCnt === objAttributes.length);
-    // for (const attribute in objToTest) {
-    //   // moved to above forEach due to ESLint complaining 
-    // }
   }
   return retVal;
 }

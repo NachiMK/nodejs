@@ -77,17 +77,17 @@ SELECT * FROM "Plans" WHERE "HiosPlanID" = '11721MS0120007';
 SELECT * FROM vw_stage_plans_raw WHERE "Hios Plan ID" = '11721MS0120007' AND "plan_year" = 2019;
 SELECT * FROM "PlanRates" WHERE "HiosPlanID" = '11721MS0120007' AND "Year" = 2019;
 
-SELECT * FROM pg_catalog.pg_Tables WHERE tablename like '%bak%' and tablename like '%2018%';
+SELECT * FROM pg_catalog.pg_Tables WHERE tablename like '%bak%' and tablename like '%20180817%';
 
 BEGIN;
 SELECT * FROM public.udf_update_plans('public.stage_plans_raw_testupload153806627_20180808')
 ROLLBACK
 
-SELECT * FROM public.stage_plans_raw_testupload153806627_20180808 WHERE "BaseRate" is null
+SELECT * FROM public.stage_plans_raw_2019PlansData531_20180817 WHERE "BaseRate" is null
 
 SELECT * FROM "Plans" WHERE "HiosPlanID" = '15287RI1170002'
 
-SELECT * FROM stage_plans_raw_2019planstest_20180815 WHERE "Hios Plan ID" = '15287RI1170002'
+SELECT * FROM stage_plans_raw_2019PlansData531_20180817 WHERE "Hios Plan ID" = '15287RI1170002'
 
 -- Compare a column in Plans, Stage Clean, vs Latest Backup
 SELECT  P."HiosPlanID", P."Year", P."PlanStatus", P."IsActive" , SC."StageTableName"
@@ -98,12 +98,12 @@ INNER
 JOIN    stage_plans_clean           as SC   ON  SC."HiosPlanID" = P."HiosPlanID"
                                             AND SC."Year" = P."Year"
 INNER
-JOIN    plans_bak_20180816003752    AS BAK  ON  BAK."HiosPlanID" = P."HiosPlanID"
+JOIN    plans_bak_20180817191033    AS BAK  ON  BAK."HiosPlanID" = P."HiosPlanID"
                                             AND BAK."Year" = P."Year"
 WHERE   1 = 1
 --AND     P."UpdatedDate" > (CURRENT_TIMESTAMP - interval '15 hours') 
 AND     P."PlanStatus" = 'T'
-AND     SC."StageTableName" = 'public.stage_plans_raw_2019PlansTest_20180816';
+AND     SC."StageTableName" = 'public.stage_plans_raw_2019PlansData531_20180817';
 
 /*
 -- Update a column from backup, basically rolling back wrong updates
@@ -112,14 +112,14 @@ UPDATE  "Plans" AS P
 SET     "PlanStatus" = BAK."PlanStatus"
 FROM    stage_plans_clean           as SC
 INNER
-JOIN    plans_bak_20180816003752    AS BAK  ON  BAK."HiosPlanID" = SC."HiosPlanID"
+JOIN    plans_bak_20180817191033    AS BAK  ON  BAK."HiosPlanID" = SC."HiosPlanID"
                                             AND BAK."Year" = SC."Year"
 WHERE   1 = 1
 AND     P."Year" = 2018
 AND     SC."HiosPlanID" = P."HiosPlanID"
 AND     SC."Year" = P."Year"
 AND     COALESCE(P."PlanStatus", '-1') != COALESCE(BAK."PlanStatus", '-1')
-AND     SC."StageTableName" = 'public.stage_plans_raw_2019PlansTest_20180816';
+AND     SC."StageTableName" = 'public.stage_plans_raw_2019PlansData531_20180817';
 -- COMMIT
 -- ROLLBACK
 */
@@ -140,16 +140,16 @@ INNER
 JOIN    stage_plans_clean           as SC   ON  SC."HiosPlanID" = PR."HiosPlanID"
                                             AND SC."Year" = PR."Year"
 INNER
-JOIN    planrates_bak_20180816003752    AS BAK  ON  BAK."HiosPlanID" = PR."HiosPlanID"
+JOIN    planrates_bak_20180817191033    AS BAK  ON  BAK."HiosPlanID" = PR."HiosPlanID"
                                         AND BAK."Year" = PR."Year"
 INNER
-JOIN    plans_bak_20180816003752    AS PBAK  ON  PBAK."HiosPlanID" = PR."HiosPlanID"
+JOIN    plans_bak_20180817191033    AS PBAK  ON  PBAK."HiosPlanID" = PR."HiosPlanID"
                                             AND PBAK."Year" = PR."Year"
 WHERE   1 = 1
 --AND     P."UpdatedDate" > (CURRENT_TIMESTAMP - interval '15 hours') 
 AND     PR."Year" = 2018
 AND     ((PR."BaseRate" IS NULL AND BAK."BaseRate" IS NOT NULL) OR (PR."BaseRate" IS NOT NULL AND BAK."BaseRate" IS NULL) OR (PR."BaseRate" != BAK."BaseRate"))
-AND     SC."StageTableName" = 'public.stage_plans_raw_2019PlansTest_20180816';
+AND     SC."StageTableName" = 'public.stage_plans_raw_2019PlansData531_20180817';
 
 /*
 BEGIN;
@@ -157,16 +157,17 @@ UPDATE  "PlanRates" AS PR
 SET     "BaseRate" = BAK."BaseRate"
 FROM    stage_plans_clean           as SC
 INNER
-JOIN    planrates_bak_20180816003752    AS BAK  ON  BAK."HiosPlanID" = SC."HiosPlanID"
+JOIN    planrates_bak_20180817191033    AS BAK  ON  BAK."HiosPlanID" = SC."HiosPlanID"
                                         AND BAK."Year" = SC."Year"
 INNER
-JOIN    plans_bak_20180816003752    AS PBAK  ON  PBAK."HiosPlanID" = SC."HiosPlanID"
+JOIN    plans_bak_20180817191033    AS PBAK  ON  PBAK."HiosPlanID" = SC."HiosPlanID"
                                             AND PBAK."Year" = SC."Year"
 WHERE   1 = 1
 AND     SC."HiosPlanID" = PR."HiosPlanID"
 AND     SC."Year" = PR."Year"
 AND     PR."Year" = 2018
 AND     ((PR."BaseRate" IS NULL AND BAK."BaseRate" IS NOT NULL) OR (PR."BaseRate" IS NOT NULL AND BAK."BaseRate" IS NULL) OR (PR."BaseRate" != BAK."BaseRate"))
-AND     SC."StageTableName" = 'public.stage_plans_raw_2019PlansTest_20180816';
+AND     SC."StageTableName" = 'public.stage_plans_raw_2019PlansData531_20180817';
 COMMIT;
 */
+
