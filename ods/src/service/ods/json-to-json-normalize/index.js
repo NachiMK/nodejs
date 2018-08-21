@@ -32,11 +32,12 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
   if (IsStatusSuccess(moduleResponse)) {
     // completed successfully
     // get file as well
-    if (moduleResponse.file) {
+    if (moduleResponse.S3FlatJsonFile) {
       // save file
       taskResponse.Status = TaskStatusEnum.Completed.name;
       taskResponse.error = undefined;
-      task.TaskQueueAttributes.S3UniformJSONFile = moduleResponse.file;
+      task.TaskQueueAttributes.S3UniformJsonFile = moduleResponse.S3UniformJsonFile;
+      task.TaskQueueAttributes.S3FlatJsonFile = moduleResponse.S3FlatJsonFile;
     } else {
       taskResponse.Status = TaskStatusEnum.Error.name;
       taskResponse.error = new Error('Json Normalizer returned Success, but S3UniformJSONFile Name is missing.');
@@ -50,10 +51,15 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
 
 function getInput(task) {
   const input = {
-    Datafile: task.getTaskAttributeValue('S3DataFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
-    Output: `s3://${task.getTaskAttributeValue('S3UniformJSONBucketName')}/${task.getTaskAttributeValue('Prefix.UniformJSONFile')}`,
+    S3DataFile: task.getTaskAttributeValue('S3DataFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
     Overwrite: 'yes',
     S3SchemaFile: task.getTaskAttributeValue('S3SchemaFile').replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
+    S3OutputBucket: task.getTaskAttributeValue('S3UniformJSONBucketName'),
+    S3UniformJsonPrefix: task.getTaskAttributeValue('Prefix.UniformJSONFile'),
+    S3FlatJsonPrefix: task.getTaskAttributeValue('Prefix.FlatJSONFile'),
+    TableName: task.TableName,
+    BatchId: task.DataPipeLineTaskQueueId,
+    LogLevel: 'info',
   };
 
   return input;

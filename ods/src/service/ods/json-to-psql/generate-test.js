@@ -20,7 +20,7 @@ npm run build\
  && odsloglevel=info\
  STAGE=dev\
  log_dbname=ODSLog\
- DEV_ODSLOG_PG='postgres://odslog_user:H!xme_0ds_ah_dev1@localhost/odslog_dev'\
- DEV_ODSCONFIG_PG='postgres://odsconfig_user:H!xme_0ds_ah_dev1@localhost/odsconfig_dev'\
+ DEV_ODSLOG_PG='postgres://odslog_user:<Password>@localhost/odslog_dev'\
+ DEV_ODSCONFIG_PG='postgres://odsconfig_user:<Password>@localhost/odsconfig_dev'\
  node lib/service/ods/json-to-psql/generate-test.js
 */

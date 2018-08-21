@@ -1,8 +1,8 @@
 #!/bin/bash
 stage="$1"
-reset="$2"
-createdb="$3"
-hosttodeploy="$4"
+hosttodeploy="$2"
+reset="$3"
+createdb="$4"
 
 if [ -z "${stage}" ]; then 
     stagename='dev'
@@ -11,9 +11,9 @@ else
 fi
 echo "Params:"
 echo "First Param: stage (can be dev, int, or prod):"${stage}
-echo "Second Param: Set to ResetData:TRUE if you want to drop all tables and recreate it:"${reset}
-echo "Thid Param: Set to CreateDB:TRUE if you want to drop existing DB and recreate it:"${createdb}
-echo "Fourth Param: Set to rds if you want to deploy to auror instance or else localhost or empty string:"${hosttodeploy}
+echo "Second Param: Set to rds if you want to deploy to auror instance or else localhost or empty string:"${hosttodeploy}
+echo "Third Param: Set to ResetData:TRUE if you want to drop all tables and recreate it:"${reset}
+echo "Fourth Param: Set to CreateDB:TRUE if you want to drop existing DB and recreate it:"${createdb}
 
 if [ -z "${reset}" ]; then 
     resetdata='no'

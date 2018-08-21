@@ -2,7 +2,7 @@ import { GetJSONFromS3Path, SaveJsonToS3File } from './index';
 
 describe('s3 - get or save json data', () => {
   it('should load data from S3', async () => {
-    const jsonData = await GetJSONFromS3Path('s3://dev-ods-data/dynamotableschmea/test.json');
+    const jsonData = await GetJSONFromS3Path('s3://dev-ods-data/dynamotableschema/test.json');
     expect(jsonData).toBeDefined();
   });
 
@@ -16,7 +16,7 @@ describe('s3 - get or save json data', () => {
     const jsonData = {
       test: 'value',
     };
-    const file = await SaveJsonToS3File('s3://dev-ods-data/dynamotableschmea/test-s3-upload-', jsonData);
+    const file = await SaveJsonToS3File('s3://dev-ods-data/dynamotableschema/test-s3-upload-', jsonData);
     console.log('file:', file);
     expect(file).toBeDefined();
     const loadedJsonData = await GetJSONFromS3Path(file);

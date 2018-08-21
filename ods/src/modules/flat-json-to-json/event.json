@@ -1,7 +1,5 @@
 {
-    "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/test-clients-Data-20180817_debug.json",
-    "S3Output": "s3://dev-ods-data/unit-test/clients/25/",
-    "FilePrefix": "25-clients-nm-",
+    "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/test-clients-UniformJson-20180820_152543059.json",
     "TableName": "clients",
     "BatchId": "25",
     "OutputType": "Return-in-output",

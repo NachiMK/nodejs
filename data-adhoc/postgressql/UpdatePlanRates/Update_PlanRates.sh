@@ -42,7 +42,7 @@ else
     if [ "${applytoprod}" = "YES" ]; then 
         echo "Applying in Prod..."    
         psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "SELECT udf_update_planrates('$batch');"
-        psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "\copy (SELECT * FROM vw_planrates_updates) TO $csvDataFileAU WITH DELIMITER ',' null as '' CSV HEADER"
+        psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "\copy (SELECT * FROM vw_plansrates_updates) TO $csvDataFileAU WITH DELIMITER ',' null as '' CSV HEADER"
     else
         echo "Run below command if all is good:"
         echo "psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -W -d plans_${stagename} -c \"SELECT udf_update_planrates('$batch');\""

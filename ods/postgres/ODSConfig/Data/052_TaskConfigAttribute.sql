@@ -22,11 +22,12 @@ VALUES
 
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3UniformJSONBucketName')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'Prefix.UniformJSONFile')
+    ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'Prefix.FlatJSONFile')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3DataFile')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3SchemaFile')
 
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3SchemaFile')
-    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3UniformJSONFile')
+    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3FlatJSONFile')
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3CSVFilesBucketName')
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'Prefix.CSVFile')
 

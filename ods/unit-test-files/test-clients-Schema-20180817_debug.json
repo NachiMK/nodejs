@@ -1,0 +1,544 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "properties": {
+        "ShowNewExperience": {
+            "type": "boolean",
+            "default": false,
+            "transfer_type": "string",
+            "db_type": "boolean"
+        },
+        "HixmeConnectCompositePrices": {
+            "items": {
+                "properties": {
+                    "MetalLevel": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    },
+                    "Price": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "Relationship": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    }
+                },
+                "required": [
+                    "MetalLevel",
+                    "Price",
+                    "Relationship"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "MigrationYear": {
+            "type": "number",
+            "default": -999999.99,
+            "transfer_type": "string",
+            "db_type": "number"
+        },
+        "HixmeBundleConfig": {
+            "items": {
+                "properties": {
+                    "IsGapSeparate": {
+                        "type": "boolean",
+                        "default": false,
+                        "transfer_type": "string",
+                        "db_type": "boolean"
+                    },
+                    "TierStrategy": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    },
+                    "CompositeAgeFactor": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "MaxNumberOfChildren": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "MaxNumberOfDependents": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "MinimumContribution": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "StateProvince": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    },
+                    "Relationship": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    },
+                    "AllowNegativePersonRates": {
+                        "type": "boolean",
+                        "default": false,
+                        "transfer_type": "string",
+                        "db_type": "boolean"
+                    },
+                    "CompositeBankingFee": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "Note": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    }
+                },
+                "required": [
+                    "IsGapSeparate",
+                    "TierStrategy",
+                    "CompositeAgeFactor",
+                    "MaxNumberOfChildren",
+                    "MaxNumberOfDependents",
+                    "MinimumContribution",
+                    "StateProvince",
+                    "Relationship",
+                    "AllowNegativePersonRates",
+                    "CompositeBankingFee",
+                    "Note"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "IsActive": {
+            "type": "boolean",
+            "default": false,
+            "transfer_type": "string",
+            "db_type": "boolean"
+        },
+        "EnrollmentEndDate": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "date"
+        },
+        "HixmeAccidentCompositePrices": {
+            "items": {
+                "properties": {
+                    "Price": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "Relationship": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    }
+                },
+                "required": [
+                    "Price",
+                    "Relationship"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "SalesDirectorPublicKey": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "BenefitsEffectiveDate": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "date"
+        },
+        "IsProspect": {
+            "type": "boolean",
+            "default": false,
+            "transfer_type": "string",
+            "db_type": "boolean"
+        },
+        "ClientServicesRepPublicKey": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "CompanyLogoUrl": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "ContactLastName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "City": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "ContactPhoneNumber": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "ClientServicesRepFirstName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "EnrollmentStartDate": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "date"
+        },
+        "StateProvince": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "County": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "CurrentHealthPlanDesigns": {
+            "items": {
+                "properties": {
+                    "MedicalOutOfPocketMaximum": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "SpecialistOfficeCopay": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "GenericRxCopay": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "PlanType": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    },
+                    "MedicalDeductible": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    },
+                    "Carrier": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    },
+                    "PlanName": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    },
+                    "Name": {
+                        "type": "string",
+                        "default": "",
+                        "transfer_type": "string",
+                        "db_type": "string"
+                    },
+                    "PrimaryOfficeCopay": {
+                        "type": "number",
+                        "default": -999999.99,
+                        "transfer_type": "string",
+                        "db_type": "number"
+                    }
+                },
+                "required": [
+                    "MedicalOutOfPocketMaximum",
+                    "SpecialistOfficeCopay",
+                    "GenericRxCopay",
+                    "PlanType",
+                    "MedicalDeductible",
+                    "Carrier",
+                    "PlanName",
+                    "Name",
+                    "PrimaryOfficeCopay"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "CompanyName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "PostalCode": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "ClientServicesRepLastName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "StreetAddress": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "SalesDirectorFirstName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "ContactFirstName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "CustomerServicePhoneNumber": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "PayrollCycle": {
+            "type": "number",
+            "default": -999999.99,
+            "transfer_type": "string",
+            "db_type": "number"
+        },
+        "SalesDirectorLastName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "ContactEmailAddress": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "BenefitsEffectivePolicyUnit": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "Id": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "BenefitsEffectivePolicy": {
+            "type": "number",
+            "default": -999999.99,
+            "transfer_type": "string",
+            "db_type": "number"
+        },
+        "IsTestClient": {
+            "type": "boolean",
+            "default": false,
+            "transfer_type": "string",
+            "db_type": "boolean"
+        },
+        "Group": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "BenefitPolicyDays": {
+            "type": "number",
+            "default": -999999.99,
+            "transfer_type": "string",
+            "db_type": "number"
+        },
+        "BenefitPolicyName": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "EBAMGroupId": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "LoanMinimumSalaryRequirement": {
+            "type": "number",
+            "default": -999999.99,
+            "transfer_type": "string",
+            "db_type": "number"
+        },
+        "FederalEmployerIdentificationNumber": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "BRMSConfig": {
+            "properties": {
+                "HRACode": {
+                    "type": "string",
+                    "default": "",
+                    "transfer_type": "string",
+                    "db_type": "string"
+                },
+                "MECCode": {
+                    "type": "string",
+                    "default": "",
+                    "transfer_type": "string",
+                    "db_type": "string"
+                },
+                "GroupId": {
+                    "type": "string",
+                    "default": "",
+                    "transfer_type": "string",
+                    "db_type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "HixmeAccidentGroupId": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "TaxId": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        },
+        "PayrollConfigPublicKey": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "BenefitsEndDate": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "date"
+        },
+        "StreetAddressExt": {
+            "type": "string",
+            "default": "",
+            "transfer_type": "string",
+            "db_type": "string"
+        }
+    },
+    "required": [
+        "HixmeConnectCompositePrices",
+        "ShowNewExperience",
+        "MigrationYear",
+        "HixmeBundleConfig",
+        "EnrollmentEndDate",
+        "IsActive",
+        "HixmeAccidentCompositePrices",
+        "BenefitsEffectiveDate",
+        "SalesDirectorPublicKey",
+        "IsProspect",
+        "ClientServicesRepPublicKey",
+        "CompanyLogoUrl",
+        "ContactLastName",
+        "City",
+        "ClientServicesRepFirstName",
+        "ContactPhoneNumber",
+        "EnrollmentStartDate",
+        "StateProvince",
+        "County",
+        "CurrentHealthPlanDesigns",
+        "CompanyName",
+        "PostalCode",
+        "ClientServicesRepLastName",
+        "StreetAddress",
+        "SalesDirectorFirstName",
+        "ContactFirstName",
+        "CustomerServicePhoneNumber",
+        "PayrollCycle",
+        "SalesDirectorLastName",
+        "ContactEmailAddress",
+        "BenefitsEffectivePolicyUnit",
+        "Id",
+        "BenefitsEffectivePolicy",
+        "Group",
+        "BenefitPolicyDays",
+        "BenefitPolicyName",
+        "LoanMinimumSalaryRequirement",
+        "EBAMGroupId",
+        "FederalEmployerIdentificationNumber",
+        "HixmeAccidentGroupId",
+        "TaxId",
+        "PayrollConfigPublicKey",
+        "BRMSConfig",
+        "IsTestClient"
+    ],
+    "title": "prod-clients"
+}

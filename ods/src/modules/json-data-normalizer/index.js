@@ -1,110 +1,89 @@
-import { GetJSONFromS3Path, SaveJsonToS3File } from '../s3ODS';
-
-const fillMissingKeys = require('object-fill-missing-keys');
+import _isEmpty from 'lodash/isEmpty';
+import { JsonMissingKeyFiller } from '../json-missing-key-filler/index';
+import { JsonToJsonFlattner } from '../flat-json-to-json/JsonToJsonFlattner';
 
 export const JsonDataNormalizer = async (params = {}) => {
   const resp = {
     status: {
-      message: 'SUCCESS',
+      message: 'processing',
     },
-    file: params.Output,
-    defaultSchemaFile: params.Output,
+    error: undefined,
+    S3UniformJsonFile: undefined,
+    S3FlatJsonFile: undefined,
   };
+  let objMissingKeyFiller;
   console.log(`Parameters for JsonDataNormalier: ${JSON.stringify(params)}`);
 
+  ValidateParams(params);
+
   try {
-    const schemaFromS3 = await GetJSONFromS3Path(params.S3SchemaFile);
-    const dataFromS3 = await GetJSONFromS3Path(params.S3DataFile);
-
-    if (!(schemaFromS3) || !(dataFromS3)) {
-      throw new Error(`No data either in Schema File: ${params.S3SchemaFile} or in Data File: ${params.S3DataFile}`);
+    objMissingKeyFiller = new JsonMissingKeyFiller(getParamsForFillingMissedKeys(params));
+    await objMissingKeyFiller.getUniformJsonData();
+    if ((objMissingKeyFiller.ModuleStatus !== 'success')
+        || !(objMissingKeyFiller.S3UniformJsonFile)
+        || _isEmpty(objMissingKeyFiller.S3UniformJsonFile)) {
+      if (objMissingKeyFiller.error) throw objMissingKeyFiller.error;
+      throw new Error('JsonMissingKeyFiller didnt throw error but didnt return a file.');
     }
-
-    const defaultSchema = ExtractOnlyMatchingKey(schemaFromS3, null, 'default');
-    console.log('---------------- DEFAULT SCHEMA ----------');
-    console.log(JSON.stringify(defaultSchema, null, 2));
-    console.log('---------------- DEFAULT SCHEMA ----------');
-
-    if (!defaultSchema) {
-      throw new Error(`Default Schema from File: ${schemaFromS3} couldn't be extracted`);
-    }
-
-    const rowsFilled = AddMissingKeys(dataFromS3, defaultSchema);
-    resp.file = await SaveJsonToS3File(params.Output, rowsFilled);
-    resp.status.message = 'SUCCESS';
+    resp.S3UniformJsonFile = objMissingKeyFiller.S3UniformJsonFile;
   } catch (err) {
-    console.log(`Error in JsonDataNormalier: ${JSON.stringify(err.message, null, 2)}`);
     resp.status.message = 'error';
-    resp.error = err;
+    resp.error = new Error(`Error in getting Uniform Json Data, ${err.message}`);
   }
 
+  // did we create a file successfully? if so let us flaten it.
+  try {
+    if (resp.S3UniformJsonFile) {
+      // let us flatten the data
+      const flatParams = getParamsToFlattenJson(params);
+      flatParams.S3DataFilePath = resp.S3UniformJsonFile;
+      const objJsonFlatner = new JsonToJsonFlattner(flatParams);
+      await objJsonFlatner.SaveNormalizedData();
+      if ((objJsonFlatner.ModuleStatus !== 'success') || (!objJsonFlatner.Output.NormalizedS3Path)) {
+        if (objJsonFlatner.error) throw objJsonFlatner.error;
+        throw new Error('JsonToJsonFlattner didnt throw error but didnt return a file.');
+      }
+      resp.S3FlatJsonFile = objJsonFlatner.Output.NormalizedS3Path;
+      resp.status.message = 'success';
+    }
+  } catch (err) {
+    resp.status.message = 'error';
+    resp.error = new Error(`Error in getting Flat Json Data, ${err.message}`);
+  }
+  // return
   return resp;
 };
 
-export const AddMissingKeys = (dataRows, defaultSchema) => {
-  let localDataRows;
-  if (dataRows) {
-    localDataRows = dataRows.map((item) => {
-      // console.log('item to process:', JSON.stringify(item, null, 2));
-      if (item.Item) return Filldefaults(item.Item, defaultSchema);
-      return Filldefaults(item, defaultSchema);
-    });
-    console.log('Default filled Entire Array', localDataRows);
-  }
-  console.log('---------------- FILLED ROWS ----------');
-  console.log(JSON.stringify(localDataRows, null, 2));
-  console.log('---------------- FILLED ROWS ----------');
-
-  return localDataRows;
-};
-
-function Filldefaults(dataRow, defaultschema) {
-  const result = fillMissingKeys(
-    dataRow,
-    defaultschema,
-  );
-  DeleteNullObjectsArrays(result);
-  return result;
+function getParamsForFillingMissedKeys(params) {
+  return {
+    S3DataFile: params.S3DataFile,
+    Overwrite: 'yes',
+    S3SchemaFile: params.S3SchemaFile,
+    S3OutputBucket: params.S3OutputBucket,
+    S3OutputKey: params.S3UniformJsonPrefix,
+    LogLevel: params.LogLevel || 'warn',
+  };
 }
 
-function DeleteNullObjectsArrays(jsonRow) {
-  if (jsonRow instanceof Object) {
-    Object.keys(jsonRow).forEach((prop) => {
-      if (JSON.stringify(jsonRow[prop]).localeCompare('null') === 0) {
-        delete jsonRow[prop];
-      }
-    });
-  }
+function getParamsToFlattenJson(params) {
+  return {
+    Overwrite: 'yes',
+    S3OutputBucket: params.S3OutputBucket,
+    S3OutputKey: params.S3FlatJsonPrefix,
+    TableName: params.TableName,
+    BatchId: params.BatchId,
+    OutputType: 'Save-to-S3',
+    LogLevel: params.LogLevel || 'warn',
+    S3DataFilePath: undefined,
+  };
 }
 
-export function ExtractOnlyMatchingKey(odsSchema, parentKey, keyName) {
-  const retObjSchema = {};
-  console.log(`Parameters defined: Obj: ${(odsSchema)}, Parent: ${(parentKey)}`);
-  if (odsSchema.properties) {
-    Object.keys(odsSchema.properties).forEach((objectKey) => {
-      const currAttributeObj = odsSchema.properties[objectKey];
-      // proceed if type is defined.
-      if ((currAttributeObj.type) && (currAttributeObj.type !== 'undefined')) {
-        // get the type
-        const typeOfObj = currAttributeObj.type.toLocaleLowerCase();
-        // based on type get default or recurse
-        switch (typeOfObj) {
-          case 'object':
-            retObjSchema[objectKey] = ExtractOnlyMatchingKey(currAttributeObj, objectKey, keyName);
-            break;
-          case 'array':
-            // do we have array of objects or array of props?
-            retObjSchema[objectKey] = [];
-            if (currAttributeObj.items.type.localeCompare('object') === 0) {
-              const objInArray = ExtractOnlyMatchingKey(currAttributeObj.items, undefined, keyName);
-              retObjSchema[objectKey].push(objInArray);
-            }
-            break;
-          default:
-            retObjSchema[objectKey] = currAttributeObj[keyName];
-        }
-      }
-    });
-  }// has property check
-  return retObjSchema;
+function ValidateParams(params = {}) {
+  if (!params.S3DataFile) throw new Error('Invalid Param: S3DataFile is required for JsonDataNormalizer');
+  if (!params.S3SchemaFile) throw new Error('Invalid Param: S3SchemaFile is required for JsonDataNormalizer');
+  if (!params.S3OutputBucket) throw new Error('Invalid Param: S3OutputBucket is required for JsonDataNormalizer');
+  if (!params.S3UniformJsonPrefix) throw new Error('Invalid Param: S3UniformJsonPrefix is required for JsonDataNormalizer');
+  if (!params.S3FlatJsonPrefix) throw new Error('Invalid Param: S3FlatJsonPrefix is required for JsonDataNormalizer');
+  if (!params.TableName) throw new Error('Invalid Param: TableName is required for JsonDataNormalizer');
+  if (!params.BatchId) throw new Error('Invalid Param: BatchId is required for JsonDataNormalizer');
 }

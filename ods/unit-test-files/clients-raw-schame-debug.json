@@ -1,0 +1,354 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "ShowNewExperience": {
+      "type": "boolean"
+    },
+    "HixmeConnectCompositePrices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "MetalLevel": {
+            "type": "string"
+          },
+          "Price": {
+            "type": "number"
+          },
+          "Relationship": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "MetalLevel",
+          "Price",
+          "Relationship"
+        ]
+      }
+    },
+    "MigrationYear": {
+      "type": "number"
+    },
+    "HixmeBundleConfig": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "IsGapSeparate": {
+            "type": "boolean"
+          },
+          "TierStrategy": {
+            "type": "string"
+          },
+          "CompositeAgeFactor": {
+            "type": "number"
+          },
+          "MaxNumberOfChildren": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "MaxNumberOfDependents": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "MinimumContribution": {
+            "type": "number"
+          },
+          "StateProvince": {
+            "type": "string"
+          },
+          "Relationship": {
+            "type": "string"
+          },
+          "AllowNegativePersonRates": {
+            "type": "boolean"
+          },
+          "CompositeBankingFee": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "Note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "IsGapSeparate",
+          "TierStrategy",
+          "CompositeAgeFactor",
+          "MaxNumberOfChildren",
+          "MaxNumberOfDependents",
+          "MinimumContribution",
+          "StateProvince",
+          "Relationship",
+          "AllowNegativePersonRates",
+          "CompositeBankingFee",
+          "Note"
+        ]
+      }
+    },
+    "IsActive": {
+      "type": "boolean"
+    },
+    "EnrollmentEndDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "HixmeAccidentCompositePrices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Price": {
+            "type": "number"
+          },
+          "Relationship": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Price",
+          "Relationship"
+        ]
+      }
+    },
+    "SalesDirectorPublicKey": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "BenefitsEffectiveDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "IsProspect": {
+      "type": "boolean"
+    },
+    "ClientServicesRepPublicKey": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "CompanyLogoUrl": {
+      "type": "string"
+    },
+    "ContactLastName": {
+      "type": "string"
+    },
+    "City": {
+      "type": "string"
+    },
+    "ContactPhoneNumber": {
+      "type": "string"
+    },
+    "ClientServicesRepFirstName": {
+      "type": "string"
+    },
+    "EnrollmentStartDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "StateProvince": {
+      "type": "string"
+    },
+    "County": {
+      "type": "string"
+    },
+    "CurrentHealthPlanDesigns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "MedicalOutOfPocketMaximum": {
+            "type": "number"
+          },
+          "SpecialistOfficeCopay": {
+            "type": "number"
+          },
+          "GenericRxCopay": {
+            "type": "number"
+          },
+          "PlanType": {
+            "type": "string"
+          },
+          "MedicalDeductible": {
+            "type": "number"
+          },
+          "Carrier": {
+            "type": "string"
+          },
+          "PlanName": {
+            "type": "string"
+          },
+          "Name": {
+            "type": "string"
+          },
+          "PrimaryOfficeCopay": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "MedicalOutOfPocketMaximum",
+          "SpecialistOfficeCopay",
+          "GenericRxCopay",
+          "PlanType",
+          "MedicalDeductible",
+          "Carrier",
+          "PlanName",
+          "Name",
+          "PrimaryOfficeCopay"
+        ]
+      }
+    },
+    "CompanyName": {
+      "type": "string"
+    },
+    "PostalCode": {
+      "type": "string"
+    },
+    "ClientServicesRepLastName": {
+      "type": "string"
+    },
+    "StreetAddress": {
+      "type": "string"
+    },
+    "SalesDirectorFirstName": {
+      "type": "string"
+    },
+    "ContactFirstName": {
+      "type": "string"
+    },
+    "CustomerServicePhoneNumber": {
+      "type": "string"
+    },
+    "PayrollCycle": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "SalesDirectorLastName": {
+      "type": "string"
+    },
+    "ContactEmailAddress": {
+      "type": "string"
+    },
+    "BenefitsEffectivePolicyUnit": {
+      "type": "string"
+    },
+    "Id": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "BenefitsEffectivePolicy": {
+      "type": "number"
+    },
+    "IsTestClient": {
+      "type": "boolean"
+    },
+    "Group": {
+      "type": "string"
+    },
+    "BenefitPolicyDays": {
+      "type": "number"
+    },
+    "BenefitPolicyName": {
+      "type": "string"
+    },
+    "EBAMGroupId": {
+      "type": "string"
+    },
+    "LoanMinimumSalaryRequirement": {
+      "type": "number"
+    },
+    "FederalEmployerIdentificationNumber": {
+      "type": "string"
+    },
+    "BRMSConfig": {
+      "type": "object",
+      "properties": {
+        "HRACode": {
+          "type": "string"
+        },
+        "MECCode": {
+          "type": "string"
+        },
+        "GroupId": {
+          "type": "string"
+        }
+      }
+    },
+    "HixmeAccidentGroupId": {
+      "type": "string"
+    },
+    "TaxId": {
+      "type": "string"
+    },
+    "PayrollConfigPublicKey": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "BenefitsEndDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "StreetAddressExt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "HixmeConnectCompositePrices",
+    "ShowNewExperience",
+    "MigrationYear",
+    "HixmeBundleConfig",
+    "EnrollmentEndDate",
+    "IsActive",
+    "HixmeAccidentCompositePrices",
+    "BenefitsEffectiveDate",
+    "SalesDirectorPublicKey",
+    "IsProspect",
+    "ClientServicesRepPublicKey",
+    "CompanyLogoUrl",
+    "ContactLastName",
+    "City",
+    "ClientServicesRepFirstName",
+    "ContactPhoneNumber",
+    "EnrollmentStartDate",
+    "StateProvince",
+    "County",
+    "CurrentHealthPlanDesigns",
+    "CompanyName",
+    "PostalCode",
+    "ClientServicesRepLastName",
+    "StreetAddress",
+    "SalesDirectorFirstName",
+    "ContactFirstName",
+    "CustomerServicePhoneNumber",
+    "PayrollCycle",
+    "SalesDirectorLastName",
+    "ContactEmailAddress",
+    "BenefitsEffectivePolicyUnit",
+    "Id",
+    "BenefitsEffectivePolicy",
+    "Group",
+    "BenefitPolicyDays",
+    "BenefitPolicyName",
+    "LoanMinimumSalaryRequirement",
+    "EBAMGroupId",
+    "FederalEmployerIdentificationNumber",
+    "HixmeAccidentGroupId",
+    "TaxId",
+    "PayrollConfigPublicKey",
+    "BRMSConfig",
+    "IsTestClient"
+  ],
+  "title": "prod-clients"
+}

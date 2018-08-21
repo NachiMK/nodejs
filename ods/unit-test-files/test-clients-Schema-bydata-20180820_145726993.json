@@ -1,0 +1,122 @@
+{
+    "Status": "Processing",
+    "Schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "",
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "HistoryId": {
+                    "type": "string"
+                },
+                "HistoryAction": {
+                    "type": "string"
+                },
+                "HistoryDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "HistoryCreated": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "Rowkey": {
+                    "type": "string",
+                    "minLength": 36,
+                    "maxLength": 36
+                },
+                "SourceTable": {
+                    "type": "string"
+                },
+                "RecordSeqNumber": {
+                    "type": "string"
+                },
+                "ApproximateCreationDateTime": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "SalesDirectorFirstName": {
+                    "type": "string"
+                },
+                "ClientServicesRepPublicKey": {
+                    "type": "string",
+                    "minLength": 36,
+                    "maxLength": 36
+                },
+                "CompanyName": {
+                    "type": "string"
+                },
+                "CurrentHealthPlanDesigns": {
+                    "type": "array",
+                    "items": {}
+                },
+                "HixmeAccidentCompositePrices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "Price": {
+                                "type": "number"
+                            },
+                            "Relationship": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "ContactFirstName": {
+                    "type": "string"
+                },
+                "HixmeConnectCompositePrices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "Price": {
+                                "type": "number"
+                            },
+                            "Relationship": {
+                                "type": "string"
+                            },
+                            "MetalLevel": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "StreetAddress": {
+                    "type": "string"
+                },
+                "ContactEmailAddress": {
+                    "type": "string"
+                },
+                "HixmeBundleConfig": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "IsGapSeparate": {
+                                "type": "boolean"
+                            },
+                            "TierStrategy": {
+                                "type": "string"
+                            },
+                            "CompositeAgeFactor": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                },
+                "Id": {
+                    "type": "string",
+                    "minLength": 36,
+                    "maxLength": 36
+                },
+                "HixmeAccidentGroupId": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

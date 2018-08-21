@@ -3,9 +3,5 @@
     "Overwrite": "yes",
     "S3SchemaFile": "s3://dev-ods-data/unit-test/clients/test-clients-Schema-20180817_debug.json",
     "S3OutputBucket": "dev-ods-data",
-    "S3UniformJsonPrefix": "unit-test/clients/test-clients-UniformJSON-",
-    "S3FlatJsonPrefix": "unit-test/clients/test-clients-FlatJSON-",
-    "TableName": "clients",
-    "BatchId": 25,
-    "LogLevel": "info"
+    "S3OutputKey": "unit-test/clients/test-clients-UniformJSON-{YYYYMMDD_HHmmssSSS}.json"
 }
