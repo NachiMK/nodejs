@@ -1,4 +1,4 @@
-import { parseSchemaJSON } from '.';
+import { parseSchemaJSON } from '.'
 
 const testJSON = {
   $schema: 'http://json-schema.org/draft-04/schema#',
@@ -25,16 +25,10 @@ const testJSON = {
       type: 'boolean',
     },
     Salary: {
-      type: [
-        'number',
-        'null',
-      ],
+      type: ['number', 'null'],
     },
     PhoneNumber: {
-      type: [
-        'number',
-        'string',
-      ],
+      type: ['number', 'string'],
     },
     Spouse: {
       type: 'object',
@@ -114,8 +108,7 @@ const testJSON = {
       },
     },
   },
-};
-
+}
 
 const testOutput = {
   Id: {
@@ -260,52 +253,60 @@ const testOutput = {
           db_type: 'string',
         },
       },
-      required: ['Id', 'BenefitType', 'BenefitName', 'EffectiveDate', 'CoveredBenefits', 'Provider', 'IsActive'],
+      required: [
+        'Id',
+        'BenefitType',
+        'BenefitName',
+        'EffectiveDate',
+        'CoveredBenefits',
+        'Provider',
+        'IsActive',
+      ],
     },
   },
-};
+}
 
 describe('parseSchemaJSON', () => {
   describe('person schema - complex', () => {
-    const output = parseSchemaJSON(testJSON.properties);
+    const output = parseSchemaJSON(testJSON.properties)
 
     // Person Id
     it('should set Person Id type', () => {
-      expect(output.Id.type).toBe(testOutput.Id.type);
-    });
+      expect(output.Id.type).toBe(testOutput.Id.type)
+    })
     it('should set Person Id default value', () => {
-      expect(output.Id.default).toBe(testOutput.Id.default);
-    });
+      expect(output.Id.default).toBe(testOutput.Id.default)
+    })
     it('should set Person Id transfer type', () => {
-      expect(output.Id.transfer_type).toBe(testOutput.Id.transfer_type);
-    });
+      expect(output.Id.transfer_type).toBe(testOutput.Id.transfer_type)
+    })
     it('should set Person Id db type', () => {
-      expect(output.Id.db_type).toBe(testOutput.Id.db_type);
-    });
+      expect(output.Id.db_type).toBe(testOutput.Id.db_type)
+    })
 
     // Person FirstName
     it('should set Person FirstName type', () => {
-      expect(output.FirstName.type).toBe(testOutput.FirstName.type);
-    });
+      expect(output.FirstName.type).toBe(testOutput.FirstName.type)
+    })
     it('should set Person FirstName default value', () => {
-      expect(output.FirstName.default).toBe(testOutput.FirstName.default);
-    });
+      expect(output.FirstName.default).toBe(testOutput.FirstName.default)
+    })
     it('should set Person FirstName transfer type', () => {
-      expect(output.FirstName.transfer_type).toBe(testOutput.FirstName.transfer_type);
-    });
+      expect(output.FirstName.transfer_type).toBe(testOutput.FirstName.transfer_type)
+    })
     it('should set Person FirstName db type', () => {
-      expect(output.FirstName.db_type).toBe(testOutput.FirstName.db_type);
-    });
+      expect(output.FirstName.db_type).toBe(testOutput.FirstName.db_type)
+    })
 
     // Person Children
     it('should set Person Children type', () => {
-      expect(output.Children.type).toBe(testOutput.Children.type);
-    });
+      expect(output.Children.type).toBe(testOutput.Children.type)
+    })
     it('should set Person Children items type', () => {
-      expect(output.Children.items.type).toBe(testOutput.Children.items.type);
-    });
+      expect(output.Children.items.type).toBe(testOutput.Children.items.type)
+    })
     it('should have only 2 keys for Person Children', () => {
-      expect(Object.keys(output.Children).length).toBe(2);
-    });
-  });
-});
+      expect(Object.keys(output.Children).length).toBe(2)
+    })
+  })
+})

@@ -1,9 +1,9 @@
-import { createHistoryTable, EnableStreaming, LinkTableToTrigger } from '.';
+import { createHistoryTable, EnableStreaming, LinkTableToTrigger } from '.'
 
-const delay = require('delay');
+const delay = require('delay')
 
-export * from '../dbadmin/dynamo';
-export * from '../dbadmin/lambda';
+export * from '../dbadmin/dynamo'
+export * from '../dbadmin/lambda'
 
 export const enableHistory = async (tablename, envStage = '') => {
   const retStatus = {
@@ -11,23 +11,23 @@ export const enableHistory = async (tablename, envStage = '') => {
     IsHistoryCreated: '',
     IsStreamEnabled: '',
     IsTriggerLinked: '',
-  };
-  const mystage = envStage || process.env.STAGE;
+  }
+  const mystage = envStage || process.env.STAGE
 
-  const createhistStatus = await createHistoryTable(tablename);
-  if ((createhistStatus) && (createhistStatus.TableStatus.localeCompare('UNKNOWN') !== 0)) {
-    retStatus.IsHistoryCreated = true;
-    const enableStreamStatus = await EnableStreaming(tablename);
-    if ((enableStreamStatus) && (enableStreamStatus === true)) {
-      retStatus.IsStreamEnabled = true;
-      await delay(18000);
-      const linkStatus = await LinkTableToTrigger(tablename, mystage);
-      retStatus.IsTriggerLinked = ((linkStatus) && (linkStatus === true));
+  const createhistStatus = await createHistoryTable(tablename)
+  if (createhistStatus && createhistStatus.TableStatus.localeCompare('UNKNOWN') !== 0) {
+    retStatus.IsHistoryCreated = true
+    const enableStreamStatus = await EnableStreaming(tablename)
+    if (enableStreamStatus && enableStreamStatus === true) {
+      retStatus.IsStreamEnabled = true
+      await delay(18000)
+      const linkStatus = await LinkTableToTrigger(tablename, mystage)
+      retStatus.IsTriggerLinked = linkStatus && linkStatus === true
     }
   }
 
-  return retStatus;
-};
+  return retStatus
+}
 
 export const enableStreamingAndLinkTrigger = async (tablename, envStage = '') => {
   const retStatus = {
@@ -35,15 +35,15 @@ export const enableStreamingAndLinkTrigger = async (tablename, envStage = '') =>
     IsHistoryCreated: '',
     IsStreamEnabled: '',
     IsTriggerLinked: '',
-  };
-  const mystage = envStage || process.env.STAGE;
-
-  const enableStreamStatus = await EnableStreaming(tablename);
-  if ((enableStreamStatus) && (enableStreamStatus === true)) {
-    retStatus.IsStreamEnabled = true;
-    await delay(18000);
-    const linkStatus = await LinkTableToTrigger(tablename, mystage);
-    retStatus.IsTriggerLinked = ((linkStatus) && (linkStatus === true));
   }
-  return retStatus;
-};
+  const mystage = envStage || process.env.STAGE
+
+  const enableStreamStatus = await EnableStreaming(tablename)
+  if (enableStreamStatus && enableStreamStatus === true) {
+    retStatus.IsStreamEnabled = true
+    await delay(18000)
+    const linkStatus = await LinkTableToTrigger(tablename, mystage)
+    retStatus.IsTriggerLinked = linkStatus && linkStatus === true
+  }
+  return retStatus
+}

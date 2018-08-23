@@ -1,18 +1,18 @@
-import { JsonToPSQL } from '.';
+import { JsonToPSQL } from '.'
 
-const event = require('./event.json');
+const event = require('./event.json')
 
 function TestJsonToPSQL() {
   try {
-    console.log(`Event:${JSON.stringify(event, null, 2)}`);
-    return JsonToPSQL(event);
+    console.log(`Event:${JSON.stringify(event, null, 2)}`)
+    return JsonToPSQL(event)
   } catch (err) {
-    console.log(err.message);
-    console.log(JSON.stringify(err, null, 2));
+    console.log(err.message)
+    console.log(JSON.stringify(err, null, 2))
   }
 }
 
-TestJsonToPSQL();
+TestJsonToPSQL()
 
 /*
 npm run build\

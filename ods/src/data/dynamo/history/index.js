@@ -1,17 +1,14 @@
-import table from '@hixme/tables';
+import table from '@hixme/tables'
 
 export async function getHistory(options = {}) {
-  let {
-    startDate = '',
-    endDate = '',
-  } = options;
-  const tableName = options.tableName;
+  let { startDate = '', endDate = '' } = options
+  const tableName = options.tableName
 
   if (startDate) {
-    startDate = Date.now();
+    startDate = Date.now()
   }
   if (endDate) {
-    endDate = Date.now();
+    endDate = Date.now()
   }
 
   // // TableName and IndexName come for free with @hixme/tables query
@@ -26,39 +23,36 @@ export async function getHistory(options = {}) {
   //   })
   // }
 
-  const historytable = createTable(tableName);
+  const historytable = createTable(tableName)
 
-  const historyRows = await historytable.getAll();
-  return historyRows;
+  const historyRows = await historytable.getAll()
+  return historyRows
 }
 
 function createTable(tableName) {
-  const stage = '';// process.env.stage;
+  const stage = '' // process.env.stage;
 
   table.config({
     tablePrefix: stage,
     debug: false,
-  });
+  })
 
-  return table.create(tableName);
+  return table.create(tableName)
 }
 
 export async function getHistoryv1(options = {}) {
-  const {
-    tableName = '',
-    eventDate = '',
-  } = options;
-  console.log(`getHistoryv1: ${eventDate} not used.`);
+  const { tableName = '', eventDate = '' } = options
+  console.log(`getHistoryv1: ${eventDate} not used.`)
 
-  const historytable = createTable(tableName);
+  const historytable = createTable(tableName)
 
-  const historyRows = await historytable.getAll();
+  const historyRows = await historytable.getAll()
 
   // in version 1 we had the history embeded so just extract those out.
-  const normaliedrows = normalizeHistory(historyRows);
+  const normaliedrows = normalizeHistory(historyRows)
 
   // return
-  return normaliedrows;
+  return normaliedrows
 }
 
 // function createTable(table_name) {
@@ -79,12 +73,11 @@ function normalizeHistory(rowToNormalize) {
       HistoryDate: e.created.slice(0, 10).replace(/-/g, ''),
       HistoryCreated: e.created,
       Rowkey: e.key,
-    };
-    Object.assign(item, e.eventRecord);
-    return item;
-  });
+    }
+    Object.assign(item, e.eventRecord)
+    return item
+  })
 }
-
 
 // export async function getAllPersonsForClient(clientPublicKey, options = {}) {
 //   const {

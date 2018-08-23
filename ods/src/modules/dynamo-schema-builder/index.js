@@ -1,84 +1,84 @@
-import { json as hixmeSchemaGenerator } from '@hixme/generate-schema';
+import { json as hixmeSchemaGenerator } from '@hixme/generate-schema'
 
-const awsSDK = require('aws-sdk');
-const table = require('@hixme/tables');
-const _ = require('lodash');
+const awsSDK = require('aws-sdk')
+const table = require('@hixme/tables')
+const _ = require('lodash')
 // const generator = require('@hixme/generate-schema');
 
 awsSDK.config.update({
   region: 'us-west-2',
   endpoint: 'https://dynamodb.us-west-2.amazonaws.com',
-});
+})
 
 table.config({
   tablePrefix: '',
   debug: false,
   generateLengths: false,
-});
+})
 
 export async function GetDynamoTableSchema(event = {}) {
-  console.log('event', event);
-  const retResp = {};
+  console.log('event', event)
+  const retResp = {}
   try {
-    const schema = await generateTableSchema(event.TableName);
+    const schema = await generateTableSchema(event.TableName)
     // console.log('schema', JSON.stringify(schema, null, 2));
     if (schema && schema.length > 0) {
-      retResp.Status = 'success';
-      retResp.Schema = schema;
+      retResp.Status = 'success'
+      retResp.Schema = schema
     }
   } catch (err) {
-    retResp.Status = 'error';
-    retResp.error = err;
-    retResp.Schema = undefined;
-    console.error('Error in generateTableSchema call', JSON.stringify(err, null, 2));
+    retResp.Status = 'error'
+    retResp.error = err
+    retResp.Schema = undefined
+    console.error('Error in generateTableSchema call', JSON.stringify(err, null, 2))
   }
-  return retResp;
+  return retResp
 }
 
 const generateTableSchema = async (tableName, options = {}) => {
-  const theTable = table.create(tableName);
+  const theTable = table.create(tableName)
 
   // this might take a while. TODO: Optimize this part.
-  const data = await theTable.getAll();
-  let schemas = [];
+  const data = await theTable.getAll()
+  let schemas = []
 
   if (options && options.partitionKey) {
-    const dataByPartition = _.groupBy(data, options.partitionKey);
+    const dataByPartition = _.groupBy(data, options.partitionKey)
 
     schemas = Object.keys(dataByPartition).map((key) => {
-      const dataForPartition = dataByPartition[key];
+      const dataForPartition = dataByPartition[key]
       // Generate schema for each partition
-      return generateSchemaByData(key, dataForPartition);
-    });
+      return generateSchemaByData(key, dataForPartition)
+    })
   } else {
-    const schema = generateSchemaByData(tableName, data);
-    schemas.push(schema);
+    const schema = generateSchemaByData(tableName, data)
+    schemas.push(schema)
   }
 
-  let schemString = '';
+  let schemString = ''
   schemas.forEach((s) => {
-    schemString += JSON.stringify(s.schema);
+    schemString += JSON.stringify(s.schema)
     // console.log('s.schema', JSON.stringify(s.schema, null, 2));
-  });
+  })
 
-  return schemString;
-};
+  return schemString
+}
 
 export function generateSchemaByData(name, data) {
-  let schema = {};
+  let schema = {}
   try {
-    console.log('About to generate schema for:', name);
+    console.log('About to generate schema for:', name)
     schema = hixmeSchemaGenerator(name, data, {
       generateEnums: false,
       maxEnumValues: 0,
       generateLengths: false,
-    });
+    })
   } catch (err) {
-    schema = {};
-    console.error('Error calling hixme generator', JSON.stringify(err, null, 2));
-    throw new Error(`Error calling hixme generator: ${JSON.stringify(err, null, 2)}`);
+    schema = {}
+    console.error('Error calling hixme generator', JSON.stringify(err, null, 2))
+    throw new Error(`Error calling hixme generator: ${JSON.stringify(err, null, 2)}`)
   }
 
   // Remove the array of items from top and just leave object
-  return { name, schema: { $schema: schema.$schema, ...schema.items } };
+  return { name, schema: { $schema: schema.$schema, ...schema.items } }
 }

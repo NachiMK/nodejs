@@ -1,6 +1,6 @@
-import { DynamoStreamEventsToS3 } from './index';
+import { DynamoStreamEventsToS3 } from './index'
 
-const eventData = require('./event.json');
+const eventData = require('./event.json')
 
 const StreamEventsToS3Param = {
   DynamoStreamEvent: eventData,
@@ -9,10 +9,10 @@ const StreamEventsToS3Param = {
   AppendDateTime: true,
   DateTimeFormat: 'YYYYMMDD_HHmmssSSS',
   TableName: 'clients',
-};
+}
 
 DynamoStreamEventsToS3(StreamEventsToS3Param)
-  .then(res => console.log(res))
-  .catch(res => console.log(res));
+  .then((res) => console.log(res))
+  .catch((res) => console.log(res))
 
 // npm run build && clear && node lib/modules/dynamo-stream-to-s3/generate-test.js

@@ -1,4 +1,4 @@
-import { JsonToJsonSchema } from './index';
+import { JsonToJsonSchema } from './index'
 
 const task = {
   DataPipeLineTaskQueueId: 3,
@@ -6,11 +6,11 @@ const task = {
   RunSequence: 2020,
   TaskConfigName: 'JSON History to Flat JSON',
   TableName: 'clients',
-};
-console.log(task);
+}
+console.log(task)
 JsonToJsonSchema(task)
-  .then(res => console.log('res', res))
-  .catch(e => console.log('error', e));
+  .then((res) => console.log('res', res))
+  .catch((e) => console.log('error', e))
 
 /*
 npm run build && odsloglevel=info STAGE=dev log_dbname=ODSLog DEV_ODSLOG_PG='postgres://odslog_user:H!xme_0ds_ah_dev1@localhost

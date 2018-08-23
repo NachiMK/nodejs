@@ -1,7 +1,7 @@
-import { testlambdaToCreateSchema } from './testLambda';
+import { testlambdaToCreateSchema } from './testLambda'
 
 export default function test() {
-  return testlambdaToCreateSchema();
+  return testlambdaToCreateSchema()
 }
 
-test();
+test()

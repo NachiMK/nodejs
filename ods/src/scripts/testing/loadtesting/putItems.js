@@ -1,54 +1,54 @@
-import moment from 'moment';
+import moment from 'moment'
 
-const AWS = require('aws-sdk');
+const AWS = require('aws-sdk')
 
 AWS.config.update({
   region: 'us-west-2',
-});
+})
 
 export async function addODSPersons(NumberOfRecords, BatchId) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  console.log('Importing Persons into DynamoDB. Please wait.');
+  const docClient = new AWS.DynamoDB.DocumentClient()
+  console.log('Importing Persons into DynamoDB. Please wait.')
 
-  const arrayOfPersons = await getArrayOfPersons(NumberOfRecords, BatchId);
+  const arrayOfPersons = await getArrayOfPersons(NumberOfRecords, BatchId)
   arrayOfPersons.forEach((person) => {
     const params = {
       TableName: 'dev-ods-persons',
       Item: person,
-    };
+    }
     // console.log(`Adding Person:${JSON.stringify(person, null, 2)}`);
     docClient.put(params, (err, data) => {
       if (err) {
-        console.error('Unable to add person', data, '. Error JSON:', JSON.stringify(err, null, 2));
+        console.error('Unable to add person', data, '. Error JSON:', JSON.stringify(err, null, 2))
       } else {
-        console.log('Adding Person succeeded:', data);
+        console.log('Adding Person succeeded:', data)
       }
-    });
-  });
+    })
+  })
 }
 
 function getArrayOfPersons(len, batchid) {
-  const emptyArray = [...Array(len).keys()];
+  const emptyArray = [...Array(len).keys()]
   const retArray = emptyArray.map((idx) => {
-    const addBenefit = ((idx % 3) === 0);
+    const addBenefit = idx % 3 === 0
     // const p = getPerson(getUniqueId() + idx, idx, addBenefit);
     // console.log(`${idx} of ${len} is : ${JSON.stringify(p, null, 2)}`);
-    return getPerson(getUniqueId(idx), idx, addBenefit, batchid);
-  });
-  console.log('Array', JSON.stringify(retArray, null, 2));
-  return retArray;
+    return getPerson(getUniqueId(idx), idx, addBenefit, batchid)
+  })
+  console.log('Array', JSON.stringify(retArray, null, 2))
+  return retArray
 }
 
 function getUniqueId(idx) {
-  let retVal = parseInt((moment().format('x')), 10);
-  retVal += idx;
+  let retVal = parseInt(moment().format('x'), 10)
+  retVal += idx
   // console.log(`idx:${idx} , retVal: ${retVal}, retVal-idx: ${retVal - idx}`);
-  return retVal;
+  return retVal
 }
 
 function getPerson(uniqueid, id, addBenefit, batchid) {
   const devodsperson = {
-    DateOfBirth: randomDate(new Date(1990, (id % 12), (id % 28)), new Date()),
+    DateOfBirth: randomDate(new Date(1990, id % 12, id % 28), new Date()),
     FirstName: `${batchid}_FirstName_${id}`,
     Gender: getGender(id),
     Id: uniqueid,
@@ -57,27 +57,27 @@ function getPerson(uniqueid, id, addBenefit, batchid) {
     PhoneNumber: '8188188007',
     ReadableId: uniqueid,
     Salary: 1000 * id,
-  };
+  }
   if (addBenefit) {
-    devodsperson.Benefit = getBenefit(uniqueid, id, batchid);
+    devodsperson.Benefit = getBenefit(uniqueid, id, batchid)
   }
   // console.log(`Person:${id}: value: ${JSON.stringify(devodsperson, null, 2)}`);
-  return devodsperson;
+  return devodsperson
 }
 
 function getGender(id) {
-  if ((id % 2) === 0) {
-    return 'M';
+  if (id % 2 === 0) {
+    return 'M'
   }
-  return 'F';
+  return 'F'
 }
 
 function randomDate(start, end) {
-  return new Date(start.getTime() + (Math.random() * (end.getTime() - start.getTime())));
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
 }
 
 function getBenefit(uniqueid, id, batchid) {
-  const arrBenefit = [];
+  const arrBenefit = []
   const benefit = {
     BenefitName: 'HealthPlan',
     BenefitType: 'Health',
@@ -86,9 +86,9 @@ function getBenefit(uniqueid, id, batchid) {
     PBId: `${batchid}${id}001`,
     PersonId: uniqueid,
     ReadableId: `${batchid}${id}001`,
-  };
-  arrBenefit.push(benefit);
-  return arrBenefit;
+  }
+  arrBenefit.push(benefit)
+  return arrBenefit
 }
 
 // function addition(a, b, acc = '', carry = 0) {

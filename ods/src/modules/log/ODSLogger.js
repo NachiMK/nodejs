@@ -1,4 +1,4 @@
-import { format as _format, transports as _transports, createLogger } from 'winston';
+import { format as _format, transports as _transports, createLogger } from 'winston'
 
 const odsLogger = createLogger({
   format: _format.combine(
@@ -6,16 +6,16 @@ const odsLogger = createLogger({
       format: 'YYYY-MM-DD HH:mm:ss',
     }),
     _format.splat(),
-    _format.prettyPrint(),
+    _format.prettyPrint()
   ),
   transports: [
-    new (_transports.Console)({
+    new _transports.Console({
       level: process.env.odsloglevel,
     }),
   ],
-});
+})
 
-export default odsLogger;
+export default odsLogger
 
 /*
 const winston = require('winston');

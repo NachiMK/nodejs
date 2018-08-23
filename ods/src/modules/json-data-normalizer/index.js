@@ -1,6 +1,6 @@
-import _isEmpty from 'lodash/isEmpty';
-import { JsonMissingKeyFiller } from '../json-missing-key-filler/index';
-import { JsonToJsonFlattner } from '../flat-json-to-json/JsonToJsonFlattner';
+import _isEmpty from 'lodash/isEmpty'
+import { JsonMissingKeyFiller } from '../json-missing-key-filler/index'
+import { JsonToJsonFlattner } from '../flat-json-to-json/JsonToJsonFlattner'
 
 export const JsonDataNormalizer = async (params = {}) => {
   const resp = {
@@ -10,49 +10,51 @@ export const JsonDataNormalizer = async (params = {}) => {
     error: undefined,
     S3UniformJsonFile: undefined,
     S3FlatJsonFile: undefined,
-  };
-  let objMissingKeyFiller;
-  console.log(`Parameters for JsonDataNormalier: ${JSON.stringify(params)}`);
+  }
+  let objMissingKeyFiller
+  console.log(`Parameters for JsonDataNormalier: ${JSON.stringify(params)}`)
 
-  ValidateParams(params);
+  ValidateParams(params)
 
   try {
-    objMissingKeyFiller = new JsonMissingKeyFiller(getParamsForFillingMissedKeys(params));
-    await objMissingKeyFiller.getUniformJsonData();
-    if ((objMissingKeyFiller.ModuleStatus !== 'success')
-        || !(objMissingKeyFiller.S3UniformJsonFile)
-        || _isEmpty(objMissingKeyFiller.S3UniformJsonFile)) {
-      if (objMissingKeyFiller.error) throw objMissingKeyFiller.error;
-      throw new Error('JsonMissingKeyFiller didnt throw error but didnt return a file.');
+    objMissingKeyFiller = new JsonMissingKeyFiller(getParamsForFillingMissedKeys(params))
+    await objMissingKeyFiller.getUniformJsonData()
+    if (
+      objMissingKeyFiller.ModuleStatus !== 'success' ||
+      !objMissingKeyFiller.S3UniformJsonFile ||
+      _isEmpty(objMissingKeyFiller.S3UniformJsonFile)
+    ) {
+      if (objMissingKeyFiller.error) throw objMissingKeyFiller.error
+      throw new Error('JsonMissingKeyFiller didnt throw error but didnt return a file.')
     }
-    resp.S3UniformJsonFile = objMissingKeyFiller.S3UniformJsonFile;
+    resp.S3UniformJsonFile = objMissingKeyFiller.S3UniformJsonFile
   } catch (err) {
-    resp.status.message = 'error';
-    resp.error = new Error(`Error in getting Uniform Json Data, ${err.message}`);
+    resp.status.message = 'error'
+    resp.error = new Error(`Error in getting Uniform Json Data, ${err.message}`)
   }
 
   // did we create a file successfully? if so let us flaten it.
   try {
     if (resp.S3UniformJsonFile) {
       // let us flatten the data
-      const flatParams = getParamsToFlattenJson(params);
-      flatParams.S3DataFilePath = resp.S3UniformJsonFile;
-      const objJsonFlatner = new JsonToJsonFlattner(flatParams);
-      await objJsonFlatner.SaveNormalizedData();
-      if ((objJsonFlatner.ModuleStatus !== 'success') || (!objJsonFlatner.Output.NormalizedS3Path)) {
-        if (objJsonFlatner.error) throw objJsonFlatner.error;
-        throw new Error('JsonToJsonFlattner didnt throw error but didnt return a file.');
+      const flatParams = getParamsToFlattenJson(params)
+      flatParams.S3DataFilePath = resp.S3UniformJsonFile
+      const objJsonFlatner = new JsonToJsonFlattner(flatParams)
+      await objJsonFlatner.SaveNormalizedData()
+      if (objJsonFlatner.ModuleStatus !== 'success' || !objJsonFlatner.Output.NormalizedS3Path) {
+        if (objJsonFlatner.error) throw objJsonFlatner.error
+        throw new Error('JsonToJsonFlattner didnt throw error but didnt return a file.')
       }
-      resp.S3FlatJsonFile = objJsonFlatner.Output.NormalizedS3Path;
-      resp.status.message = 'success';
+      resp.S3FlatJsonFile = objJsonFlatner.Output.NormalizedS3Path
+      resp.status.message = 'success'
     }
   } catch (err) {
-    resp.status.message = 'error';
-    resp.error = new Error(`Error in getting Flat Json Data, ${err.message}`);
+    resp.status.message = 'error'
+    resp.error = new Error(`Error in getting Flat Json Data, ${err.message}`)
   }
   // return
-  return resp;
-};
+  return resp
+}
 
 function getParamsForFillingMissedKeys(params) {
   return {
@@ -62,7 +64,7 @@ function getParamsForFillingMissedKeys(params) {
     S3OutputBucket: params.S3OutputBucket,
     S3OutputKey: params.S3UniformJsonPrefix,
     LogLevel: params.LogLevel || 'warn',
-  };
+  }
 }
 
 function getParamsToFlattenJson(params) {
@@ -75,15 +77,21 @@ function getParamsToFlattenJson(params) {
     OutputType: 'Save-to-S3',
     LogLevel: params.LogLevel || 'warn',
     S3DataFilePath: undefined,
-  };
+  }
 }
 
 function ValidateParams(params = {}) {
-  if (!params.S3DataFile) throw new Error('Invalid Param: S3DataFile is required for JsonDataNormalizer');
-  if (!params.S3SchemaFile) throw new Error('Invalid Param: S3SchemaFile is required for JsonDataNormalizer');
-  if (!params.S3OutputBucket) throw new Error('Invalid Param: S3OutputBucket is required for JsonDataNormalizer');
-  if (!params.S3UniformJsonPrefix) throw new Error('Invalid Param: S3UniformJsonPrefix is required for JsonDataNormalizer');
-  if (!params.S3FlatJsonPrefix) throw new Error('Invalid Param: S3FlatJsonPrefix is required for JsonDataNormalizer');
-  if (!params.TableName) throw new Error('Invalid Param: TableName is required for JsonDataNormalizer');
-  if (!params.BatchId) throw new Error('Invalid Param: BatchId is required for JsonDataNormalizer');
+  if (!params.S3DataFile)
+    throw new Error('Invalid Param: S3DataFile is required for JsonDataNormalizer')
+  if (!params.S3SchemaFile)
+    throw new Error('Invalid Param: S3SchemaFile is required for JsonDataNormalizer')
+  if (!params.S3OutputBucket)
+    throw new Error('Invalid Param: S3OutputBucket is required for JsonDataNormalizer')
+  if (!params.S3UniformJsonPrefix)
+    throw new Error('Invalid Param: S3UniformJsonPrefix is required for JsonDataNormalizer')
+  if (!params.S3FlatJsonPrefix)
+    throw new Error('Invalid Param: S3FlatJsonPrefix is required for JsonDataNormalizer')
+  if (!params.TableName)
+    throw new Error('Invalid Param: TableName is required for JsonDataNormalizer')
+  if (!params.BatchId) throw new Error('Invalid Param: BatchId is required for JsonDataNormalizer')
 }

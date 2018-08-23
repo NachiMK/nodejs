@@ -12,4 +12,4 @@ module.exports = {
     client: 'postgres',
     connection: process.env.PROD_BUNDLE_PG,
   },
-};
+}
