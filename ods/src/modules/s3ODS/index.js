@@ -27,9 +27,28 @@ export async function SaveJsonToS3File(
   DateTimeFormat = 'YYYYMMDD_HHmmssSSS',
   Overwrite = 'yes'
 ) {
+  return SaveStringToS3File({
+    S3FullFilePath,
+    StringData: JSON.stringify(JsonData),
+    DateTimeFormat,
+    Overwrite,
+    FileExtension: '.json',
+  })
+}
+
+export async function SaveStringToS3File(params = {}) {
+  const S3FullFilePath = params.S3FullFilePath || ''
+  const stringData = params.StringData || ''
+  const appendDateTime =
+    !_.isUndefined(params.AppendDateTimeToFileName) && _.isBoolean(params.AppendDateTimeToFileName)
+      ? params.AppendDateTimeToFileName
+      : true
+  const DateTimeFormat = params.DateTimeFormat || 'YYYYMMDD_HHmmssSSS'
+  const Overwrite = params.Overwrite || 'yes'
+  const FileExtension = params.FileExtension || '.json'
   try {
-    if (!JsonData) {
-      throw new Error('No data to save for file in Filling Missing Values.')
+    if (!stringData) {
+      throw new Error('No data to save to S3.')
     }
     // Set up save file parameters
     const { Bucket, Key } = s3FileParser(S3FullFilePath)
@@ -40,7 +59,7 @@ export async function SaveJsonToS3File(
       )
     }
     // get file name
-    const filename = getFileName(Key, DateTimeFormat)
+    const filename = getFileName(Key, FileExtension, appendDateTime, DateTimeFormat)
     // Handle blocking overwrite if Overwrite is 'No'
     if (Overwrite.toLowerCase() === 'no') {
       const fileFound = await s3FileExists({
@@ -58,7 +77,7 @@ export async function SaveJsonToS3File(
     await uploadFileToS3({
       Bucket,
       Key: filename,
-      Body: JSON.stringify(JsonData),
+      Body: stringData,
     })
     return `s3://${Bucket}/${filename}`
   } catch (err) {
@@ -68,19 +87,27 @@ export async function SaveJsonToS3File(
   }
 }
 
-function getFileName(Key, DateTimeFormat = 'YYYYMMDD_HHmmssSSS') {
+export function getFileName(
+  Key,
+  FileExtension = '.json',
+  AppendDtTm = true,
+  DateTimeFormat = 'YYYYMMDD_HHmmssSSS'
+) {
   let filename = _.trim(Key)
 
   // add or replace time stamp to file name
-  const timestamp = moment().format(DateTimeFormat)
-  if (Key.includes(DateTimeFormat)) {
-    filename = Key.replace(`{${DateTimeFormat}}`, timestamp).replace(DateTimeFormat, timestamp)
-  } else {
-    filename = `${Key}-${timestamp}`
+  if (AppendDtTm) {
+    const timestamp = moment().format(DateTimeFormat)
+    if (Key.includes(DateTimeFormat)) {
+      filename = Key.replace(`{${DateTimeFormat}}`, timestamp).replace(DateTimeFormat, timestamp)
+    } else {
+      filename = `${Key}-${timestamp}`
+    }
   }
 
   // add extension
-  if (!filename.includes('.json')) filename += '.json'
+  if (FileExtension && !_.isEmpty(FileExtension) && !filename.includes(FileExtension))
+    filename += FileExtension
 
   // remove repeatative characters
   filename = filename.replace('--', '-').replace('-_', '-')

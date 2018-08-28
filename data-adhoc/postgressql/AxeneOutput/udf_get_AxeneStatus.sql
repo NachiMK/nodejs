@@ -135,6 +135,7 @@ BEGIN
                 ,"NumberofPlansSubmitted"
                 ,"NumberofPlansReceived"
                 ,CASE 
+                    WHEN "NumberofPlansSubmitted" = "NumberofplanswithAV" THEN ''Completed''
                     WHEN ("NumberofPlansSubmitted" = "NumberofPlansReceived") AND ("NumberofPlanswithErrors" > 0) THEN ''Completed with Errors''
                     WHEN ("NumberofPlansSubmitted" = "NumberofPlansReceived") AND ("NumberofplanswithAV" != "NumberofPlansSubmitted") THEN ''Completed with Errors''
                     WHEN "NumberofPlansSubmitted" = "NumberofPlansReceived" THEN ''Completed'' 
@@ -145,6 +146,7 @@ BEGIN
                 ,"LastSubmissionTime"
                 ,"LastSubmissionEndTime"
                 ,CASE 
+                    WHEN "NumberofPlansSubmitted" = "NumberofplanswithAV" THEN TRUE
                     WHEN ("NumberofPlansSubmitted" = "NumberofPlansReceived") AND ("NumberofPlanswithErrors" > 0) THEN TRUE
                     WHEN ("NumberofPlansSubmitted" = "NumberofPlansReceived") AND ("NumberofplanswithAV" != "NumberofPlansSubmitted") THEN TRUE
                     WHEN "NumberofPlansSubmitted" = "NumberofPlansReceived" THEN TRUE

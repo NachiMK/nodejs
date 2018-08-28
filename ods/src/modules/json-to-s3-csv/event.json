@@ -1,0 +1,19 @@
+{
+    "JsonData": [
+        {
+            "Id": 123, 
+            "Value": "10dollars"
+        },
+        {   "Id": 321, 
+            "Value": "20dollars"
+        }
+    ],
+    "S3OutputBucket": "dev-ods-data",
+    "S3OutputKey": "unit-test/clients/test-clients-CSVFile-unit-test.csv",
+    "LogLevel": "debug",
+    "Options": {
+        "delimiter": ",",
+        "eol": "\n",
+        "includeHeader" : true
+    }
+}

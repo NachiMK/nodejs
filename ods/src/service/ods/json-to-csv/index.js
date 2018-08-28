@@ -1,5 +1,5 @@
 import odsLogger from '../../../modules/log/ODSLogger'
-// import { JsonToCSV } from '../../../modules/json-to-csv';
+import { JsonToCSV } from '../../../modules/json-to-csv'
 import { TaskStatusEnum } from '../../../modules/ODSConstants'
 
 export async function DoTaskJsonToCSV(dataPipeLineTaskQueue) {
@@ -18,7 +18,7 @@ export async function DoTaskJsonToCSV(dataPipeLineTaskQueue) {
   if (input) {
     try {
       odsLogger.log('info', 'About to call Json to CSV for:', input)
-      const resp = {} // await JsonToCSV(input);
+      const resp = await JsonToCSV(input)
 
       odsLogger.log('info', 'Response for saving CSV files:', resp)
       extractStatusAndAttributes(resp, dataPipeLineTaskQueue, taskResp)
@@ -36,11 +36,11 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
   if (IsStatusSuccess(moduleResponse)) {
     // completed successfully
     // get file as well
-    if (moduleResponse.files) {
+    if (moduleResponse.S3CSVJsonFiles) {
       // save file
       taskResponse.Status = TaskStatusEnum.Completed.name
       taskResponse.error = undefined
-      task.TaskQueueAttributes.CSVFiles = moduleResponse.files
+      task.TaskQueueAttributes.CSVFiles = moduleResponse.S3CSVJsonFiles
     } else {
       taskResponse.Status = TaskStatusEnum.Error.name
       taskResponse.error = new Error(
@@ -57,23 +57,19 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
 }
 
 function getInput(task) {
-  const s3FileKeyPrefix = task.getTaskAttributeValue('Prefix.CSVFile')
-  const indexOfPrefix = s3FileKeyPrefix.lastIndexOf('/')
-  const myFilePrefix = s3FileKeyPrefix.substr(
-    indexOfPrefix + 1,
-    s3FileKeyPrefix.length - indexOfPrefix
-  )
-
   const input = {
-    Datafile: task
-      .getTaskAttributeValue('S3CSVBucketName')
+    S3DataFile: task
+      .getTaskAttributeValue('S3FlatJsonFile')
       .replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
-    FilePrefix: myFilePrefix,
-    Output: `s3://${task.getTaskAttributeValue('S3CSVBucketName')}/${s3FileKeyPrefix.replace(
-      myFilePrefix,
-      ''
-    )}`,
     Overwrite: 'yes',
+    S3SchemaFile: task
+      .getTaskAttributeValue('S3SchemaFile')
+      .replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
+    S3OutputBucket: task.getTaskAttributeValue('S3CSVBucketName'),
+    S3CSVFilePrefix: task.getTaskAttributeValue('Prefix.CSVFile'),
+    TableName: task.TableName,
+    BatchId: task.DataPipeLineTaskQueueId,
+    LogLevel: 'info',
   }
 
   return input

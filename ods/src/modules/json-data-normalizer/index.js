@@ -1,6 +1,6 @@
 import _isEmpty from 'lodash/isEmpty'
 import { JsonMissingKeyFiller } from '../json-missing-key-filler/index'
-import { JsonToJsonFlattner } from '../flat-json-to-json/JsonToJsonFlattner'
+import { JsonToJsonFlattner } from '../json-to-json-flattner/JsonToJsonFlattner'
 
 export const JsonDataNormalizer = async (params = {}) => {
   const resp = {
