@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Example GET | Response Schema",
+    "definitions": {},
+    "properties": {
+        "message": {
+            "description": "Example GET response success status.",
+            "type": "string"
+        },
+        "input": {
+            "description": "Example GET response event object.",
+            "type": "object"
+        }
+    },
+    "type": "object"
+}

@@ -5,10 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.drawInitialNewline = exports.centerText = exports.isSetToTrue = exports.stripNonAlphaNumericChars = exports.isTrue = exports.after = exports.before = exports.isComplete = exports.getStatus = exports.isProd = undefined;
 
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
 var _extends2 = require('babel-runtime/helpers/extends');
 
 var _extends3 = _interopRequireDefault(_extends2);
@@ -115,34 +111,22 @@ function getFormattedError(error = {}, event = {}) {
   return { statusCode, type, message };
 }
 
-const before = exports.before = (0, _warewolf2.default)((() => {
-  var _ref = (0, _asyncToGenerator3.default)(function* (event = {}) {
-    const {
-      body = {},
-      pathParameters = {},
-      query = {},
-      queryStringParameters = {}
-    } = event;
+const before = exports.before = (0, _warewolf2.default)(async (event = {}) => {
+  const {
+    body = {},
+    pathParameters = {},
+    query = {},
+    queryStringParameters = {}
+  } = event;
 
-    event.stage = process.env.STAGE;
-    event.params = (0, _extends3.default)({}, queryStringParameters, pathParameters, query);
-    event.body = (0, _lodash.isString)(body) ? JSON.parse(body) : body;
-  });
+  event.stage = process.env.STAGE;
+  event.params = (0, _extends3.default)({}, queryStringParameters, pathParameters, query);
+  event.body = (0, _lodash.isString)(body) ? JSON.parse(body) : body;
+});
 
-  return function () {
-    return _ref.apply(this, arguments);
-  };
-})());
-
-const after = exports.after = (0, _warewolf2.default)((() => {
-  var _ref2 = (0, _asyncToGenerator3.default)(function* (event) {
-    event.body = event.result || event.results || {};
-  });
-
-  return function (_x) {
-    return _ref2.apply(this, arguments);
-  };
-})(), responseController(), errorHandler);
+const after = exports.after = (0, _warewolf2.default)(async event => {
+  event.body = event.result || event.results || {};
+}, responseController(), errorHandler);
 
 const isTrue = exports.isTrue = value => value && value != null && [true, 'true', 1, '1', 'yes'].includes(value);
 

@@ -29,6 +29,6 @@ function ValidateParams(params = {}) {
   if (!params.S3CSVFilePrefix)
     throw new Error('Invalid Param: S3CSVFilePrefix is required for FlatJsonToCSV')
   if (!params.TableName)
-    throw new Error('Invalid Param: TableName is required for JsonDataNormalizer')
-  if (!params.BatchId) throw new Error('Invalid Param: BatchId is required for JsonDataNormalizer')
+    throw new Error('Invalid Param: TableName is required for FlatJsonToCSV')
+  if (!params.BatchId) throw new Error('Invalid Param: BatchId is required for FlatJsonToCSV')
 }

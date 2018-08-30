@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "required": [
+    "PhoneID",
+    "MemberID",
+    "PhoneNumber"
+  ],
+  "properties": {
+    "PhoneID": {
+      "type": "integer"
+    },
+    "MemberID": {
+      "type": "integer"
+    },
+    "PhoneNumber": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20
+    },
+    "Extension": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10
+    }
+  }
+}

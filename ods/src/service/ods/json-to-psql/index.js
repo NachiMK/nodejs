@@ -29,7 +29,7 @@ import {
 } from '../../../modules/ODSConstants'
 import { DoTaskSaveJsonSchema } from '../json-to-json-schema'
 import { DoTaskJsonToJsonNormalize } from '../json-to-json-normalize'
-import { JsonToCSV } from '../json-to-csv'
+import { DoTaskJsonToCSV } from '../json-to-csv'
 import { PreStagetoRAW, CsvToPreStage } from '../csv-to-pre-stage-psql'
 import { ODSPipeLineFactory } from '../PipeLineTaskFactory/index'
 
@@ -37,7 +37,7 @@ const ChildTaskFunctions = {
   [TaskConfigEnum.ProcessJSONToPostgres.name]: ProcessParent,
   [TaskConfigEnum.JSONHistoryDataToJSONSchema.name]: ODSPipeLineFactory(DoTaskSaveJsonSchema),
   [TaskConfigEnum.JSONHistoryToFlatJSON.name]: ODSPipeLineFactory(DoTaskJsonToJsonNormalize),
-  [TaskConfigEnum.FlatJSONToCSV.name]: ODSPipeLineFactory(JsonToCSV),
+  [TaskConfigEnum.FlatJSONToCSV.name]: ODSPipeLineFactory(DoTaskJsonToCSV),
   [TaskConfigEnum.CSVToPrestage.name]: ODSPipeLineFactory(CsvToPreStage),
   [TaskConfigEnum.PreStagetoRAW.name]: ODSPipeLineFactory(PreStagetoRAW),
   default: defaultNotImplementedFunction,

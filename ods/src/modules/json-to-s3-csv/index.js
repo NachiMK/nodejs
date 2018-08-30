@@ -191,6 +191,7 @@ export class JsonToS3CSV {
       this.Output.S3CSVFile = undefined
       this.Output.error = new Error(`Error in Saving CSV to S3: ${err.message}`)
       this.logger.log('error', `Error in Saving CSV to S3: ${err.message}`)
+      throw this.Output.error
     }
   }
 }

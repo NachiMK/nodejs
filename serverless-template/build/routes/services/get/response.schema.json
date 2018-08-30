@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "Items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "IsActive": {
+            "type": "boolean"
+          },
+          "Domain": {
+            "type": "string"
+          },
+          "DateCreated": {
+            "type": "string"
+          },
+          "Id": {
+            "type": "string"
+          },
+          "Name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

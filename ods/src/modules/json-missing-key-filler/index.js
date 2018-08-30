@@ -110,9 +110,10 @@ export class JsonMissingKeyFiller {
       }
       this.Output.status.message = 'success'
     } catch (err) {
-      console.log(`Error in JsonDataNormalier: ${JSON.stringify(err.message, null, 2)}`)
+      console.log(`Error in JsonDataNormalier: ${err.message}`)
       this.Output.status.message = 'error'
-      this.Output.error = err
+      this.Output.error = new Error(`Error in JsonDataNormalier: ${err.message}`)
+      throw this.Output.error
     }
   }
 

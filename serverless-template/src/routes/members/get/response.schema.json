@@ -1,0 +1,64 @@
+{
+  "definitions": {},
+  "type": "object",
+  "properties": {
+    "MemberID": {
+      "type": "integer"
+    },
+    "ParentID": {
+      "type": "string"
+    },
+    "FirstName": {
+      "type": "string"
+    },
+    "LastName": {
+      "type": "string"
+    },
+    "DateOfBirth": {
+      "type": "string"
+    },
+    "Phones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "PhoneID": {
+            "type": "integer"
+          },
+          "MemberID": {
+            "type": "integer"
+          },
+          "PhoneNumber": {
+            "type": "string"
+          },
+          "Extension": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    "Children": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "MemberID": {
+            "type": "integer"
+          },
+          "ParentID": {
+            "type": "integer"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "DateOfBirth": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -20,7 +20,7 @@ FROM    (
             UNION   SELECT 'S3UniformJSONFile' as "AttributeName" --Output/Input
             UNION   SELECT 'S3FlatJSONFile' as "AttributeName" --Output/Input
 
-            UNION   SELECT 'S3CSVFiles.BucketName' as "AttributeName"
+            UNION   SELECT 'S3CSVFilesBucketName' as "AttributeName"
             UNION   SELECT 'Prefix.CSVFile' as "AttributeName"
             UNION   SELECT 'S3CSVFile#' as "AttributeName" --Output/Input
             

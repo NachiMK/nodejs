@@ -1,0 +1,10 @@
+{
+  "requestContext": {
+    "authorizer": {
+      "claims": {
+        "custom:user-role": "PlatformHixmeAdmin",
+        "cognito:username": "eddd5cbd-4eb6-4df3-94db-69cf66237c96"
+      }
+    }
+  }
+}

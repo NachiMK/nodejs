@@ -27,7 +27,7 @@ VALUES
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3SchemaFile')
 
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3SchemaFile')
-    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3FlatJSONFile')
+    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3FlatJsonFile')
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3CSVFilesBucketName')
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'Prefix.CSVFile')
 

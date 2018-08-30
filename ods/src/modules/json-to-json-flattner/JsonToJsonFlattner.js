@@ -126,6 +126,7 @@ export class JsonToJsonFlattner {
       this.Output.NormalizedDataSet = undefined
       this.Output.error = new Error(`Error normalizing data: ${err.message}`)
       this.logger.log('error', `Error: ${err.message}`)
+      throw this.Output.error
     }
   }
 
@@ -180,6 +181,7 @@ export class JsonToJsonFlattner {
       this.Output.status.message = 'error'
       this.Output.error = new Error(`Error saving file to S3: ${err.message}`)
       this.logger.log('error', JSON.stringify(this.Output.error.message))
+      throw this.Output.error
     }
   }
 

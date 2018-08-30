@@ -59,12 +59,6 @@ BEGIN
         FROM    ods."udf_GetMyParentPreviousTaskAttributes"(DataPipeLineTaskQueueId, PrevTaskId, ParentTaskId)
 
         UNION ALL
-        SELECT   "DataPipeLineTaskQueueId"
-                ,"AttributeName"
-                ,"AttributeValue"
-        FROM    ods."udf_GetMyParentPreviousTaskAttributes"(DataPipeLineTaskQueueId, PrevTaskId, ParentTaskId)
-
-        UNION ALL
 
         SELECT   "DataPipeLineTaskQueueId"
                 ,"AttributeName"

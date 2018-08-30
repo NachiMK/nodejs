@@ -1,0 +1,14 @@
+{
+    "title": "ServicePublicKey",
+    "properties": {
+        "ServicePublicKey": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        }
+    },
+    "required": [
+        "ServicePublicKey"
+    ],
+    "type": "object"
+}

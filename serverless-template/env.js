@@ -54,6 +54,16 @@ module.exports.getStage = (shouldPrint = true) => new Promise((resolve, reject) 
   resolve(STAGE);
 });
 
+module.exports.getStageUppercase = (shouldPrint = true) => new Promise((resolve, reject) => {
+  const taskDescription = 'Setting API / Service Stage';
+  // check for "STAGE" having been set; rejects if not
+  if (typeof STAGE === 'undefined' || STAGE == null) reject(new (Error(taskDescription))());
+  // print success message(s) and resolve value to caller
+  const taskSuccessInfo = `${green(STAGE.toUpperCase())}`;
+  if (shouldPrint) success(taskDescription, taskSuccessInfo);
+  resolve(STAGE.toUpperCase());
+});
+
 module.exports.getAPIBasePath = (shouldPrint = true) => new Promise((resolve) => {
   const taskDescription = 'Setting API Path';
   const serviceNameFromPackageJSONFile = get(pkg, 'name', 'untitled-project');

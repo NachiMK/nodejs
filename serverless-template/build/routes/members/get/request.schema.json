@@ -1,0 +1,12 @@
+{
+    "title": "MemberID",
+    "properties": {
+        "MemberID": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "MemberID"
+    ],
+    "type": "object"
+}

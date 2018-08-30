@@ -19,18 +19,14 @@ export const JsonDataNormalizer = async (params = {}) => {
   try {
     objMissingKeyFiller = new JsonMissingKeyFiller(getParamsForFillingMissedKeys(params))
     await objMissingKeyFiller.getUniformJsonData()
-    if (
-      objMissingKeyFiller.ModuleStatus !== 'success' ||
-      !objMissingKeyFiller.S3UniformJsonFile ||
-      _isEmpty(objMissingKeyFiller.S3UniformJsonFile)
-    ) {
-      if (objMissingKeyFiller.error) throw objMissingKeyFiller.error
+    if (!objMissingKeyFiller.S3UniformJsonFile || _isEmpty(objMissingKeyFiller.S3UniformJsonFile)) {
       throw new Error('JsonMissingKeyFiller didnt throw error but didnt return a file.')
     }
     resp.S3UniformJsonFile = objMissingKeyFiller.S3UniformJsonFile
   } catch (err) {
     resp.status.message = 'error'
     resp.error = new Error(`Error in getting Uniform Json Data, ${err.message}`)
+    throw new Error(resp.error.message)
   }
 
   // did we create a file successfully? if so let us flaten it.
@@ -41,8 +37,7 @@ export const JsonDataNormalizer = async (params = {}) => {
       flatParams.S3DataFilePath = resp.S3UniformJsonFile
       const objJsonFlatner = new JsonToJsonFlattner(flatParams)
       await objJsonFlatner.SaveNormalizedData()
-      if (objJsonFlatner.ModuleStatus !== 'success' || !objJsonFlatner.Output.NormalizedS3Path) {
-        if (objJsonFlatner.error) throw objJsonFlatner.error
+      if (!objJsonFlatner.Output.NormalizedS3Path) {
         throw new Error('JsonToJsonFlattner didnt throw error but didnt return a file.')
       }
       resp.S3FlatJsonFile = objJsonFlatner.Output.NormalizedS3Path
@@ -51,6 +46,7 @@ export const JsonDataNormalizer = async (params = {}) => {
   } catch (err) {
     resp.status.message = 'error'
     resp.error = new Error(`Error in getting Flat Json Data, ${err.message}`)
+    throw new Error(resp.error.message)
   }
   // return
   return resp

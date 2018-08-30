@@ -25,7 +25,7 @@ export async function DoTaskSaveJsonSchema(dataPipeLineTaskQueue) {
     } catch (err) {
       taskResp.Status = TaskStatusEnum.Error.name
       taskResp.error = new Error(
-        `Unknown Error calling module to do task. Retry Process. Error: ${err.message}`
+        `Error calling module to do task. Retry Process. Error: ${err.message}`
       )
     }
   }

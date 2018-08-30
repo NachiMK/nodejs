@@ -16,7 +16,7 @@ custom:
     STAGE: ${opt:stage, env:NODE_ENV, file(package.json):config.stage}
     VERSION: ${file(package.json):version}
     DESCRIPTION: ${file(package.json):description}
-  environment: ${file(./env.js):default}
+  environment: ${file(./env.js):getAndSetVarsFromEnvFile}
   documentation:
     # authorizers:  ${file(schemas/authorizers.yml)}
     description: "Hixme API | ${self:custom.service.DESCRIPTION}"

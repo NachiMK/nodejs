@@ -1,0 +1,1 @@
+Reusable code such as utilities or libraries that could be eventually made into an npm package if it could be shared across services

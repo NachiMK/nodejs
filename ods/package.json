@@ -4,8 +4,6 @@
   "description": "Operational Data Store Service",
   "author": "Nachi <nachi.muthukumar@hixme.com> (https://hixme.com)",
   "contributors": [
-    "Bill Tran <bill.tran@hixme.com> (https://hixme.com)",
-    "Bill Barnes <bill.barnes@hixme.com> (https://hixme.com)",
     "Billy M <billy@hixme.com> (https://hixme.com)"
   ],
   "homepage": "https://hixme.com",
@@ -18,6 +16,7 @@
     "region": "us-west-2",
     "runtime": "nodejs8.10",
     "stage": "dev",
+    "STAGE": "dev",
     "log_dbname": "ODSLog_dev",
     "odsloglevel": "info"
   },
@@ -50,7 +49,7 @@
     "~logs:prod": "sls logs --tail --interval $npm_package_config_log_tailing_interval --stage prod --region $npm_package_config_region --function",
     "logs": "npm run logs:dev --",
     "package": "npm run build && SLS_DEBUG=* sls package",
-    "test": "jest",
+    "test": "STAGE=$npm_package_config_stage jest",
     "qtest": "npm run build && jest --",
     "watch": "npm run build:watch --",
     "release:dev:enablehistory": "run-func /lib/scripts/deploy/index.js DeployEnableHistoryOnTables dev",
@@ -75,6 +74,7 @@
     "aws-sdk": "^2.85.0",
     "babel-runtime": "^6.23.0",
     "delay": "^2.0.0",
+    "delver": "^1.1.4",
     "dotenv": "^4.0.0",
     "dynamodb-marshaler": "^2.0.0",
     "json2csv": "^4.2.1",
@@ -125,14 +125,13 @@
     "eslint-scope": "3.7.1"
   },
   "jest": {
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec)).jsx?$",
     "testEnvironment": "node",
     "testPathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/lib/"
     ],
-    "verbose": true,
-    "stage": "dev",
-    "log_dbname": "ODSLog_dev",
-    "odsloglevel": "info"
+    "verbose": true
   },
   "eslintConfig": {
     "parser": "babel-eslint",

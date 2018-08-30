@@ -8,13 +8,16 @@ service:                  ${file(package.json):name} # TODO: might we instead ru
 # one of the js functions in ./src/utils/index.js, like `${file(env.js):getAPIBasePath}`, etc.
 frameworkVersion:         ">=1.26.0 <2.0.0"
 plugins:
+   # commented out webpack plugin due to issues with webpack errors regarding knex dialects. 
     - serverless-plugin-webpack   # must be listed FIRST
     - serverless-aws-documentation
     - serverless-domain-manager
     - serverless-prune-plugin
+   # - serverless-offline-ssm
+    - serverless-content-encoding
     - serverless-offline          # must be listed LAST
 package:
-  individually:           true
+  individually:           false  # Had out of memory errors when set to true. https://github.com/serverless-heaven/serverless-webpack/issues/299
   excludeDevDependencies: false
   exclude:                ['node_modules/**/aws-sdk/**']
 
@@ -23,7 +26,7 @@ custom:
     NAME:         ${file(package.json):name, 'untitled-api-service'}
     STAGE:        ${opt:stage, env:NODE_ENV, file(package.json):config.stage, 'dev'}
     REGION:       ${opt:region, file(package.json):config.region, 'us-west-2'}
-    RUNTIME:      ${file(package.json):config.runtime, 'nodejs6.10'}
+    RUNTIME:      ${file(package.json):config.runtime, 'nodejs8.10'}
     VERSION:      ${file(package.json):version}
     DESCRIPTION:  ${file(package.json):description}
 
@@ -39,7 +42,8 @@ custom:
     certificateName:      '*.hixme.com'
     createRoute53Record:  false # leave as-is, unless you know what you're doing
     domainName:           ${file(env.js):getHostname}
-    stage:                ${file(env.js):getStage}
+    # NOTE! - Don't need to use function to get stage since its available in this file.
+    stage:                ${self:custom.service.STAGE}
 
   serverless-offline:
     prefix: ${file(env.js):getAPIBasePath}
@@ -50,7 +54,10 @@ custom:
   cognitoPools:
     dev:  arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_AXPnJkIR9
     int:  arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_aZ2JNiTZp
-    prod: arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_Guj3GDdPC # Found typo
+    prod: arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_Guj3GDdPC
+
+  contentEncoding:
+    minimumCompressionSize: 0 # Minimum body size required for compression in bytes (This compresses ALL responses in this service > 0 bytes)  
 
   prune: # remove old lambda versions automatically on each deploy and leave the last N
     automatic: true
@@ -58,11 +65,13 @@ custom:
 
 provider:
   name:                   aws
-  memorySize:             1024
+  memorySize:             1536
   timeout:                30
   runtime:                ${self:custom.service.RUNTIME}
   stage:                  ${self:custom.service.STAGE}
-  region:                 ${self:custom.service.REGION}
+  # NOTE! Had to hardcode region to 'us-west-2' for SSM https://github.com/serverless/serverless/issues/4251.   
+  # Used to be region: ${self:custom.service.REGION}
+  region:                 'us-west-2'
   deploymentBucket:
     serverSideEncryption: AES256
   stackTags:              &stackTags
@@ -75,6 +84,12 @@ provider:
   # TODO: improve the (below) 'environment' function so that it exports 'stackTags'!
   environment:            ${file(env.js):getAndSetVarsFromEnvFile}
   iamRoleStatements:      ${file(src/config.yml):iamRoleStatements}
+  vpc:
+    securityGroupIds:
+      - sg-0c3aa668
+    subnetIds:
+      - subnet-df4b3da8
+      - subnet-37b2e252
 
 functions:                ${file(src/config.yml):functions}
 
@@ -103,4 +118,4 @@ resources:
         RestApiId:
           Ref: 'ApiGatewayRestApi'
   
- # TODO: Support setting resources in config.yml
+ # TODO: Add support for setting resources in config.yml

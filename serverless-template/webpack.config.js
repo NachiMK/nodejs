@@ -5,6 +5,16 @@ module.exports = {
   externals: [
     /aws-sdk/,
     /electron/,
+    /sqlite3/,
+    /mariasql/,
+    /mssql/,
+    /mysql/,
+    /mysql2/,
+    /oracle/,
+    /strong/,
+    /oracledb/,
+    /pg-query-stream/,
+    /pg-native/,
   ],
   target: 'node',
   // new config for webpack 4.x (via...)
@@ -35,28 +45,4 @@ module.exports = {
       },
     ],
   },
-  //
-  // original config for webpack 3.x
-  //
-  // module: {
-  //   loaders: [{
-  //     test: /\.js$/i,
-  //     loader: 'babel-loader',
-  //     exclude: /node_modules/,
-  //     query: {
-  //       cacheDirectory: true,
-  //       presets: [
-  //         'es2017',
-  //         'es2016',
-  //         'es2015-node6',
-  //       ],
-  //       plugins: [
-  //         'add-module-exports',
-  //         'transform-class-properties',
-  //         'transform-export-extensions',
-  //         'transform-object-rest-spread',
-  //       ],
-  //     },
-  //   }],
-  // },
 }

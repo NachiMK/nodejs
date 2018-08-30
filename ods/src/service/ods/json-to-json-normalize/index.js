@@ -24,9 +24,7 @@ export async function DoTaskJsonToJsonNormalize(dataPipeLineTaskQueue) {
       extractStatusAndAttributes(resp, dataPipeLineTaskQueue, taskResp)
     } catch (err) {
       taskResp.Status = TaskStatusEnum.Error.name
-      taskResp.error = new Error(
-        `Unknown Error calling module to do task. Retry Process. Error: ${err.message}`
-      )
+      taskResp.error = new Error(`${err.message}`)
     }
   }
   return taskResp

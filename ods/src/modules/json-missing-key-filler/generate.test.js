@@ -11,7 +11,7 @@ describe('Json Missing Key Filler - Unit Tests', () => {
     expect(objModule.Output.UniformJson).toBeDefined()
   })
   it.only('Json Missing Key Filler should create a file in s3', async () => {
-    event.S3OutputBucket = `${process.env.stage || 'dev'}-ods-data`
+    event.S3OutputBucket = `${process.env.STAGE || 'dev'}-ods-data`
     event.S3OutputKey = `unit-test/clients/test-clients-UniformJson-${moment().format(
       'YYYYMMDD_HHmmssSSS'
     )}.json`

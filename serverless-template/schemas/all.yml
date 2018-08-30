@@ -1,5 +1,10 @@
 -
   contentType: application/json
+  description: Get member response
+  name:        GetMemberResponse
+  schema:      ${file(build/routes/members/get/response.schema.json)}
+-
+  contentType: application/json
   description: Get services response
   name:        GetServicesResponse
   schema:      ${file(build/routes/services/get/response.schema.json)}

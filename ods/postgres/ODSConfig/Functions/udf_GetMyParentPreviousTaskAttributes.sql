@@ -29,7 +29,7 @@ BEGIN
         JOIN    ods."Attribute"                 AS  A   ON  A."AttributeId" = TA."AttributeId"
         INNER
         JOIN    ods."TaskQueueAttributeLog"     AS  L   ON  L."DataPipeLineTaskQueueId" IN (PrevTaskId, ParentTaskId)
-                                                        AND L."AttributeName"   =   A."AttributeName"
+                                                        AND upper(L."AttributeName")   =   upper(A."AttributeName")
         WHERE   (Q."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId) --  OR Q."ParentTaskId" = DataPipeLineTaskQueueId
     LOOP
         RETURN NEXT retRecord;

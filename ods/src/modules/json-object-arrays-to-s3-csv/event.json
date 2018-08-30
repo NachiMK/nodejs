@@ -2,7 +2,7 @@
     "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/test-clients-FlatJSON-20180820_181935976.json",
     "S3OutputBucket": "dev-ods-data",
     "S3OutputKeyPrefix": "unit-test/clients/csv/test-clients-CSVFile-",
-    "LogLevel": "debug",
+    "LogLevel": "info",
     "Options": {
         "splitEachArrayToSeparateFile": true,
         "appendObjectKeyToFileName": true,

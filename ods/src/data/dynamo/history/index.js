@@ -30,7 +30,7 @@ export async function getHistory(options = {}) {
 }
 
 function createTable(tableName) {
-  const stage = '' // process.env.stage;
+  const stage = '' // process.env.STAGE;
 
   table.config({
     tablePrefix: stage,
@@ -56,7 +56,7 @@ export async function getHistoryv1(options = {}) {
 }
 
 // function createTable(table_name) {
-//   const stage = process.env.stage;
+//   const stage = process.env.STAGE;
 //   table.config({
 //     tablePrefix: stage,
 //     debug: false,

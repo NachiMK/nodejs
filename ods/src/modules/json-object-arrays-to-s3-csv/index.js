@@ -103,6 +103,14 @@ export class JsonObjectArrayToS3CSV {
   get KeysToProcess() {
     return this.options.keysToProcess
   }
+  get S3CSVFiles() {
+    let fileList = []
+    if (this.Output && this.Output.keyStatus)
+      fileList = this.Output.keyStatus
+        .filter((keystat) => keystat.status === 'success')
+        .map((filestat) => filestat.csvFileName)
+    return fileList
+  }
 
   /**
    * @function setOptions
@@ -179,16 +187,19 @@ export class JsonObjectArrayToS3CSV {
           `Keys Length: ${dataKeys.length}, Keys: ${JSON.stringify(dataKeys, null, 2)}`
         )
         if (dataKeys && dataKeys.length > 0) {
-          this.Output.keyStatus = Promise.all(
-            dataKeys.map((currentKey) => {
+          this.Output.keyStatus = await Promise.all(
+            dataKeys.map((currentKey, index) => {
               if (
                 (Array.isArray(keystoKeep) &&
                   keystoKeep.indexOf(currentKey) > -1 &&
                   StringLength(this.KeysToProcess) > 0) ||
                 StringLength(this.KeysToProcess) === 0
               ) {
-                this.logger.log('debug', `Calling CareteFileFromJson for  key: ${currentKey}`)
-                return this.CreateFileFromJson(currentKey, inputJson[currentKey])
+                this.logger.log(
+                  'debug',
+                  `Calling CareteFileFromJson for  key: ${currentKey} index: ${index}`
+                )
+                return this.CreateFileFromJson(currentKey, inputJson[currentKey], index)
               } else
                 return {
                   KeyProcessed: currentKey,
@@ -212,24 +223,25 @@ export class JsonObjectArrayToS3CSV {
       this.Output.csvData = undefined
       this.Output.error = new Error(err.message)
       this.logger.log('error', err.message)
+      throw this.Output.error
     }
   }
 
-  async CreateFileFromJson(key, data) {
+  async CreateFileFromJson(key, data, index) {
     let retStatus = {
-      KeyProcessed: key,
+      KeyProcessed: `${index}-${key}`,
       status: 'processing',
       csvFileName: undefined,
       error: undefined,
     }
     try {
-      this.logger.log('debug', `Creating individual files, current key: ${key}`)
+      this.logger.log('debug', `Creating individual files, current key: ${key}, index:${index}`)
       if (data) {
-        const params = this.getParams(key)
+        const params = this.getParams(`${index}-${key}`)
         params.JsonData = data
         const objJsonToCSV = new JsonToS3CSV(params)
         await objJsonToCSV.SaveCSVToS3()
-        if (objJsonToCSV.ModuleStatus === 'success' && objJsonToCSV.Output.S3CSVFile) {
+        if (objJsonToCSV.Output.S3CSVFile) {
           retStatus.csvFileName = objJsonToCSV.Output.S3CSVFile
         } else {
           if (objJsonToCSV.error) throw new Error(objJsonToCSV.Output.error.message)
@@ -260,11 +272,14 @@ export class JsonObjectArrayToS3CSV {
   getParams(key) {
     let keyName = this.S3OutputKeyPrefix
     if (this.Options.appendKeyNameToFileName) {
-      keyName = `${keyName}-${key}`
+      keyName = `${keyName}${key}`
     }
-    if (this.Options.appendDateTimeToFileName) {
-      keyName = getFileName(keyName, this.Options.fileExtension, true, this.Options.dateTimeFormat)
-    }
+    keyName = getFileName(
+      keyName,
+      this.Options.fileExtension,
+      this.Options.appendDateTimeToFileName,
+      this.Options.dateTimeFormat
+    )
     return {
       S3OutputBucket: this.S3OutputBucket,
       S3OutputKey: keyName,

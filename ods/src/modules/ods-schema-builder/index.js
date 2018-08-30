@@ -157,16 +157,8 @@ export default async ({
     const respCombinedSchema = await getCombinedSchema(schemaByDataResp.Schema, S3RAWJsonSchemaFile)
 
     // throws an NoSuchKey error if file does not exist
-    if (
-      !(
-        respCombinedSchema &&
-        respCombinedSchema.Status &&
-        respCombinedSchema.Status === 'success' &&
-        respCombinedSchema.CombineSchema
-      )
-    ) {
-      throw new Error(`Schema from Data and Original Schema couldnt be combined.
-      Error:${JSON.stringify(respCombinedSchema.error, null, 2)}`)
+    if (!(respCombinedSchema && respCombinedSchema.CombineSchema)) {
+      throw new Error(`Schema from Data and Original Schema couldnt be combined.`)
     }
     const fileJSON = parseSchemaJSON(respCombinedSchema.CombineSchema)
 
@@ -180,8 +172,7 @@ export default async ({
     } else {
       result.error = e && e.message ? e.message : e
     }
-
-    return result
+    throw result.error
   }
 }
 
@@ -201,9 +192,10 @@ async function getCombinedSchema(schemaFromData, S3RAWJsonSchemaFile) {
       }
     } catch (err) {
       resp.Status = 'error'
-      resp.error = err
+      resp.error = new Error(`Error combining Schema: ${err.message}`)
       resp.CombineSchema = undefined
-      odsLogger.log('error', 'Error combining Schema', err.message)
+      odsLogger.log('error', resp.error.message)
+      throw resp.error
     }
   } else {
     throw new Error(
@@ -239,7 +231,7 @@ async function generateRawSchemaFromData({ Datafile, SaveDataSchemaToS3 = true, 
     rawSchemaResp.error = new Error(
       `Error getting schema from data file to parse:${Datafile}, error: ${err.message}`
     )
-    odsLogger.log('error', rawSchemaResp.error)
+    odsLogger.log('error', rawSchemaResp.error.message)
     throw rawSchemaResp.error
   }
   return rawSchemaResp

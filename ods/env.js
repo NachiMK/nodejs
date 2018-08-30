@@ -1,62 +1,102 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-const dotenv = require('dotenv')
-const fs = require('fs')
-const PATH = require('path')
-// eslint-disable-next-line import/no-extraneous-dependencies
-const { argv } = require('yargs')
+#!/usr/bin/env node
 
+// NOTE: This file is intentionally written in ES5/6, as it's NOT transpiled
+/* eslint-disable import/no-extraneous-dependencies, no-console */
+
+const { argv } = require('yargs')
+const { get } = require('delver')
+const { green, reset } = require('chalk')
+const dotenv = require('dotenv')
+
+const {
+  centerText,
+  drawInitialNewline,
+  getSubdomainPrefix,
+  horizontalRule,
+} = require('./lib/modules/serverless-utils')
 const pkg = require('./package.json')
 
-const DEFAULT_STAGE = pkg.config.stage
+// if this microservice is initiated with an argument named, "STAGE", then that
+// value will overwrite the "STAGE" of the app. If no args, it defaults to "int",
+// since that's the value in "package.json:config.stage".
+const { stage: STAGE = get(pkg, 'config.stage') } = argv
 
-const { stage = DEFAULT_STAGE } = argv
+function success(description = '', information = '') {
+  drawInitialNewline()
+  centerText(`${description}: ${information}${reset('.')}`)
+  horizontalRule()
+  return true
+}
 
-module.exports.default = () =>
-  new Promise((resolve, reject) => {
-    fs.readFile(PATH.join(__dirname, '.env'), (err, data) => {
-      if (err) return reject(err)
-      const envVars = dotenv.parse(data)
+function pluralize(count = 0) {
+  if (count > 1 || count === 0) return 's'
+  return ''
+}
 
-      // remove vars not related to the current STAGE.
-      // the expectation is all env variables
-      // begins with the stage name if not this will
-      // delete all env variables !!!! CAUTION
-      Object.keys(envVars).forEach((key) => {
-        if (!key.toUpperCase().startsWith(`${stage.toUpperCase()}_`)) {
-          delete envVars[key]
-        }
-      })
-
-      return resolve(Object.assign({}, envVars, { STAGE: stage }))
+module.exports.getAndSetVarsFromEnvFile = (shouldPrint = true) =>
+  new Promise((resolve) => {
+    const taskDescription = 'Locating ".env" Config File'
+    const { parsed: environmentVariables = {} } = dotenv.config()
+    const envVariableCount = Object.keys(environmentVariables).length
+    // in this case, if we don't have any env variables, we don't want to reject;
+    // instead, we want to resolve with a single environment variable: "STAGE"
+    const taskSuccessInfo = `Exported ${green(envVariableCount)} Variable${pluralize(
+      envVariableCount
+    )}`
+    if (shouldPrint) success(taskDescription, taskSuccessInfo)
+    // remove vars not related to the current STAGE.
+    // the expectation is all env variables
+    // begins with the stage name if not this will
+    // delete all env variables !!!! CAUTION
+    Object.keys(environmentVariables).forEach((key) => {
+      if (!key.toUpperCase().startsWith(`${STAGE.toUpperCase()}_`)) {
+        if (shouldPrint) success('removed var', key)
+        delete environmentVariables[key]
+      }
     })
+    resolve(Object.assign({}, environmentVariables, { STAGE }))
   })
 
-module.exports.getDomainName = () =>
+module.exports.getStage = (shouldPrint = true) =>
   new Promise((resolve, reject) => {
-    if (!stage || stage == null || stage.toLowerCase() === 'dev') {
-      return resolve('dev-api.hixme.com')
-    }
-
-    if (stage.toLowerCase() === 'int') {
-      return resolve('int-api.hixme.com')
-    }
-
-    if (stage.toLowerCase() === 'prod') {
-      return resolve('api.hixme.com')
-    }
-
-    return reject()
+    const taskDescription = 'Setting API / Service Stage'
+    // check for "STAGE" having been set; rejects if not
+    if (typeof STAGE === 'undefined' || STAGE == null) reject(new (Error(taskDescription))())
+    // print success message(s) and resolve value to caller
+    const taskSuccessInfo = `${green(STAGE)}`
+    if (shouldPrint) success(taskDescription, taskSuccessInfo)
+    resolve(STAGE)
   })
 
-module.exports.getAPIBasePath = () =>
+module.exports.getStageUppercase = (shouldPrint = true) =>
   new Promise((resolve, reject) => {
-    // eslint-disable-next-line global-require
-    const existingServiceName = require('./package.json').name
-    const apiServiceName = existingServiceName.replace(/-service/, '').trim()
+    const taskDescription = 'Setting API / Service Stage'
+    // check for "STAGE" having been set; rejects if not
+    if (typeof STAGE === 'undefined' || STAGE == null) reject(new (Error(taskDescription))())
+    // print success message(s) and resolve value to caller
+    const taskSuccessInfo = `${green(STAGE.toUpperCase())}`
+    if (shouldPrint) success(taskDescription, taskSuccessInfo)
+    resolve(STAGE.toUpperCase())
+  })
 
-    if (!apiServiceName || apiServiceName == null) {
-      return reject()
-    }
+module.exports.getAPIBasePath = (shouldPrint = true) =>
+  new Promise((resolve) => {
+    const taskDescription = 'Setting API Path'
+    const serviceNameFromPackageJSONFile = get(pkg, 'name', 'untitled-project')
+    // removes the "service" text at the end, if any!
+    const apiBasePath = serviceNameFromPackageJSONFile.replace(/-service/gim, '').trim()
+    const taskSuccessInfo = `Path: "${green(`/${apiBasePath}`)}"`
+    if (shouldPrint) success(taskDescription, taskSuccessInfo)
+    resolve(apiBasePath)
+  })
 
-    return resolve(apiServiceName)
+module.exports.getHostname = (shouldPrint = true) =>
+  new Promise((resolve) => {
+    const taskDescription = 'Setting API Hostname'
+    const hostname = `${getSubdomainPrefix('api', STAGE)}.hixme.com`
+    // the function "getSubdomainPrefix()" will ALWAYS return a value;
+    // as such, we only ever need to resolve
+    const taskSuccessInfo = `${green(hostname)}`
+    if (shouldPrint) success(taskDescription, taskSuccessInfo)
+    resolve(hostname)
   })
