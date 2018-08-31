@@ -135,23 +135,18 @@ export class JsonObjectArrayToS3CSV {
       includeHeader: true,
       appendKeyNameToFileName: true,
     }
-    if (!isUndefined(opts)) {
-      retOpts.keysToProcess = CleanUpString(opts.keysToProcess, '')
-      retOpts.delimiter = CleanUpString(opts.delimiter, retOpts.delimiter)
-      retOpts.eol = CleanUpString(opts.eol, retOpts.eol)
-      retOpts.fileExtension = CleanUpString(opts.fileExtension, retOpts.fileExtension)
-      retOpts.appendDateTimeToFileName = CleanUpString(
-        opts.appendDateTimeToFileName,
-        retOpts.appendDateTimeToFileName
-      )
-      retOpts.dateTimeFormat = CleanUpString(opts.dateTimeFormat, retOpts.dateTimeFormat)
-      retOpts.includeHeader = CleanUpString(opts.includeHeader, retOpts.includeHeader)
-      retOpts.appendKeyNameToFileName = CleanUpString(
-        opts.appendKeyNameToFileName,
-        retOpts.appendKeyNameToFileName
-      )
+    this.options = {
+      ...retOpts,
+
+      keysToProcess: CleanUpString(opts.keysToProcess, ''),
+      delimiter: CleanUpString(opts.delimiter, retOpts.delimiter),
+      eol: CleanUpString(opts.eol, retOpts.eol),
+      fileExtension: CleanUpString(opts.fileExtension, retOpts.fileExtension),
+      appendDateTimeToFileName: CleanUpString(appendDateTimeToFileName, appendDateTimeToFileName),
+      dateTimeFormat: CleanUpString(opts.dateTimeFormat, retOpts.dateTimeFormat),
+      includeHeader: CleanUpString(opts.includeHeader, retOpts.includeHeader),
+      appendKeyNameToFileName: CleanUpString(appendKeyNameToFileName, appendKeyNameToFileName),
     }
-    this.options = retOpts
   }
 
   /**
@@ -244,8 +239,11 @@ export class JsonObjectArrayToS3CSV {
         if (objJsonToCSV.Output.S3CSVFile) {
           retStatus.csvFileName = objJsonToCSV.Output.S3CSVFile
         } else {
-          if (objJsonToCSV.error) throw new Error(objJsonToCSV.Output.error.message)
-          else throw new Error('Unknown Error from JsonToS3CSV')
+          if (objJsonToCSV.error) {
+            throw new Error(objJsonToCSV.Output.error.message)
+          } else {
+            throw new Error('Unknown Error from JsonToS3CSV')
+          }
         }
         retStatus.status = 'success'
       } else {

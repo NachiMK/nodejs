@@ -92,13 +92,14 @@ export class JsonToS3CSV {
       fileExtension: '.csv',
       includeHeader: true,
     }
-    if (!isUndefined(opts)) {
-      retOpts.delimiter = CleanUpString(opts.delimiter, retOpts.delimiter)
-      retOpts.eol = CleanUpString(opts.eol, retOpts.eol)
-      retOpts.fileExtension = CleanUpString(opts.fileExtension, retOpts.fileExtension)
-      retOpts.includeHeader = CleanUpString(opts.includeHeader, retOpts.includeHeader)
+    this.options = {
+      ...retOpts,
+
+      delimiter: CleanUpString(opts.delimiter, retOpts.delimiter),
+      eol: CleanUpString(opts.eol, retOpts.eol),
+      fileExtension: CleanUpString(opts.fileExtension, retOpts.fileExtension),
+      includeHeader: CleanUpString(opts.includeHeader, retOpts.includeHeader),
     }
-    this.options = retOpts
   }
 
   async getCSVData() {

@@ -58,7 +58,9 @@ const CreateSchema = async (tableRequest) => {
             tableRequest.DynamoTableSchemaId,
             s3Resp.S3FilePath
           )
-          if (!dbResp) throw new Error('Error saving S3 file path to database.', dbResp)
+          if (!dbResp) {
+            throw new Error('Error saving S3 file path to database.', dbResp)
+          }
           ODSLogger.log('info', 'Schema File Saved', dbResp)
           Object.assign(s3Resp, dbResp)
         } else {

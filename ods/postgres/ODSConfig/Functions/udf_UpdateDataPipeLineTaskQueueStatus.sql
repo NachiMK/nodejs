@@ -72,7 +72,7 @@ BEGIN
     END IF;
 
     IF SaveStatus IS NOT NULL THEN
-        INSERT INTO ods."TaskQueueAttributeLog"
+        INSERT INTO ods."TaskQueueAttributeLog" AS A
                 (
                      "DataPipeLineTaskQueueId"
                     ,"AttributeName"
@@ -81,7 +81,10 @@ BEGIN
         SELECT  DataPipeLineTaskQueueId, "key" as "AttributeName", REPLACE(CAST("value" AS VARCHAR(500)), '"', '') as "AttributeValue"
         FROM    jsonb_each(SaveStatus::jsonb)
         ON  CONFLICT ON CONSTRAINT UNQ_TaskQueueAttributeLog
-        DO  NOTHING;
+        DO  UPDATE
+            SET "AttributeValue" = EXCLUDED."AttributeValue"
+                ,"UpdatedDtTm" = CURRENT_TIMESTAMP
+            WHERE A."AttributeValue" != EXCLUDED."AttributeValue";
     END IF;
 
     -- Result

@@ -4,18 +4,23 @@ SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('ods-persons', 1)
 
 SELECt  *
 FROM    ods."DataPipeLineTaskQueue"
-WHERE   "DataPipeLineTaskQueueId" = 20
+WHERE   "DataPipeLineTaskQueueId" = 42 or "ParentTaskId" = 42
+ORDER BY "RunSequence"
 
+SELECT * FROM ods."TaskStatus"
 SELECT * FROM ods."Attribute"
 
 select * from jsonb_each('{"S3DataFile":"s3://ss","S3BucketName":"ods-dev-data","KeyName":"dynamodb/clients/30-ods-data-.csv","RowCount":"0"}')
+
+UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 20, "Error" = null, "EndDtTm" = null WHERE "DataPipeLineTaskQueueId" IN (42, 45);
+UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 10, "Error" = null, "StartDtTm" = null WHERE "DataPipeLineTaskQueueId" IN (46);
   
 
 SELECt  *
 FROM    ods."DataPipeLineTaskQueue" Q
 INNER
-JOIN    ods."TaskQueueAttributeLog" TA ON TA."DataPipeLineTaskQueueId" = TA."DataPipeLineTaskQueueId"
-WHERE   Q."DataPipeLineTaskQueueId" = 20
+JOIN    ods."TaskQueueAttributeLog" TA ON Q."DataPipeLineTaskQueueId" = TA."DataPipeLineTaskQueueId"
+WHERE   Q."DataPipeLineTaskQueueId" = 45
 
 INSERT INTO "ods"."DataPipeLineTaskQueue" 
 (
@@ -139,7 +144,7 @@ SELECT * FROM ods."vwDataPipeLineTask" WHERE "DataPipeLineTaskId" = 20 OR "Paren
 SELECT * FROM ods."vwTaskAttribute" WHERE "DataPipeLineTaskId" IN (19);
 SELECT * FROM ods."vwTaskAttribute" WHERE "DataPipeLineTaskId" IN (20, 105, 106, 107, 108, 109, 110);
 
-SELECT * FROM ods."TaskQueueAttributeLog" WHERE "DataPipeLineTaskQueueId" >= 114;
+SELECT * FROM ods."TaskQueueAttributeLog" WHERE "DataPipeLineTaskQueueId" = 45;
     
 SELECT * FROM ods."TaskConfigAttribute"
 -- given a table name I want to find?
@@ -182,7 +187,7 @@ SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('persons', 55)
     INNER
     JOIN    ods."Attribute"             A   ON  A."AttributeId"         = TA."AttributeId"
     WHERE   A."AttributeName"       = 'Dynamo.TableName'
-    AND     DPL."SourceEntity" LIKE 'persons'
+    AND     DPL."SourceEntity" LIKE 'clients'
     AND     TA."AttributeValue" LIKE '%persons%'
     
     SELECT * FROM ods."DataPipeLineTask" WHERE "TaskName" like '%persons - DynamoDB to S3'
@@ -235,7 +240,7 @@ WHERE   ((Q."DataPipeLineTaskQueueId" = 16) OR (Q."ParentTaskId" = 16))
 --AND     T."TaskStatusDesc" IN ('Ready', 'On Hold')
 ;
 
-SELECT * FROM ods."udf_GetPendingPipeLineTasks"('clients', 9);
+SELECT * FROM ods."udf_GetPendingPipeLineTasks"('clients', 41);
 SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(9, 'Processing');
 SELECT * FROM ods."udf_UpdateDataPipeLineTa˙skQueueStatus"(3, 'Error');
 SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(8, 'Completed');
@@ -243,7 +248,7 @@ SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(8, 'Completed');
 SELECT * FROM ods."TaskStatus" Order by "TaskStatusId"
 
 UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 10 WHERE "DataPipeLineTaskQueueId" IN (11);
-UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 20 WHERE "DataPipeLineTaskQueueId" IN (9, 10);
+UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 20, "Error" = '{}' WHERE "DataPipeLineTaskQueueId" IN (42, 45);
 
 DELETE
 FROM    ods."TaskQueueAttributeLog"
@@ -266,12 +271,18 @@ AND     "DataPipeLineTaskQueueId" >= 3;
 
 SELECT  TAL.*
 FROM    ods."TaskQueueAttributeLog" AS TAL
-WHERE   "DataPipeLineTaskQueueId" IN (16);
+WHERE   "DataPipeLineTaskQueueId" IN (42, 43, 44, 45)
+ORDER BY "DataPipeLineTaskQueueId"
+;
 
 SELECT * FROM ods."udf_GetPipeLineTaskQueueAttribute"(1);
 SELECT * FROM ods."udf_GetPipeLineTaskQueueAttribute"(30);
 SELECT * FROM ods."udf_GetPipeLineTaskQueueAttribute"(4, true);
 
+
+SELECT * FROM ods."Attribute" WHERE "AttributeName" = 'S3CSVFilesBucketName'
+SELECT * FROM ods."Attribute" WHERE "AttributeName" like 'S3CSV%'
+-- UPDATE ods."Attribute" SET "AttributeName" = 'S3CSVFilesBucketName' WHERE "AttributeName" = 'S3CSVFiles.BucketName'
 
 SELECT ods."udf_GetDataPipeLineTaskQueueStatus"(3) as "TaskStatus";
 
@@ -309,7 +320,7 @@ ROLLBACK;
 
 SELECT * FROM ods."udf_GetDynamoTablesToRefresh"()
 SELECT ods."udf_GetRootTaskId"(11) as "RootTaskId";
-SELECT * FROM ods."udf_GetMyTaskAttributes"(11, 9, 9);
+SELECT * FROM ods."udf_GetMyTaskAttributes"(45, 41, 42);
 SELECT * FROM ods."udf_GetMyParentPreviousTaskAttributes"(11, 9, 9);
 
 SELECT * 
@@ -349,4 +360,10 @@ JOIN    ods."DynamoTableSchema"     AS  DTS ON  DTS."DataPipeLineTaskId" = Q."Da
 WHERE   (Q."DataPipeLineTaskQueueId" = 11)
 AND     A."AttributeName" = 'S3RAWJsonSchemaFile';
 
-SELECT * FROM ods."udf_GetSpecialAttributes"(11, 9);
+SELECT * FROM ods."udf_GetSpecialAttributes"(45, 41);
+
+SELECT * FROM "AxeneBatch" WHERE "ID" >= 42
+
+BEGIN;
+SELECT * FROM ods."udf_SetTaskQueueAttributeLog"(45);
+COMMIT 

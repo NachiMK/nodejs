@@ -77,17 +77,25 @@ function getParamsToFlattenJson(params) {
 }
 
 function ValidateParams(params = {}) {
-  if (!params.S3DataFile)
+  if (!params.S3DataFile) {
     throw new Error('Invalid Param: S3DataFile is required for JsonDataNormalizer')
-  if (!params.S3SchemaFile)
+  }
+  if (!params.S3SchemaFile) {
     throw new Error('Invalid Param: S3SchemaFile is required for JsonDataNormalizer')
-  if (!params.S3OutputBucket)
+  }
+  if (!params.S3OutputBucket) {
     throw new Error('Invalid Param: S3OutputBucket is required for JsonDataNormalizer')
-  if (!params.S3UniformJsonPrefix)
+  }
+  if (!params.S3UniformJsonPrefix) {
     throw new Error('Invalid Param: S3UniformJsonPrefix is required for JsonDataNormalizer')
-  if (!params.S3FlatJsonPrefix)
+  }
+  if (!params.S3FlatJsonPrefix) {
     throw new Error('Invalid Param: S3FlatJsonPrefix is required for JsonDataNormalizer')
-  if (!params.TableName)
+  }
+  if (!params.TableName) {
     throw new Error('Invalid Param: TableName is required for JsonDataNormalizer')
-  if (!params.BatchId) throw new Error('Invalid Param: BatchId is required for JsonDataNormalizer')
+  }
+  if (!params.BatchId) {
+    throw new Error('Invalid Param: BatchId is required for JsonDataNormalizer')
+  }
 }
