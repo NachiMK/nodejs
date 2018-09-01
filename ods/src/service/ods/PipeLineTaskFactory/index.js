@@ -23,11 +23,12 @@ export function ODSPipeLineFactory(childTaskFunction) {
   // this returns a pointer to a function that takes a parameter named
   // task. Once this pointer is returned, the caller calls this function.
   return async (task) => {
+    let childResp
     odsLogger.log('debug', 'Parameter:', task)
     const dataPipeLineTaskQueue = task
     const resp = {
       Status: 'Unknown',
-      error: {},
+      error: undefined,
     }
     try {
       // Valid parameter
@@ -40,39 +41,55 @@ export function ODSPipeLineFactory(childTaskFunction) {
       )
 
       if (processStatusResp && processStatusResp.Picked) {
-        const childResp = await childTaskFunction(dataPipeLineTaskQueue)
+        childResp = await childTaskFunction(dataPipeLineTaskQueue)
         odsLogger.log('info', 'Response and Task details:', childResp, dataPipeLineTaskQueue)
-
-        if (childResp && childResp.Status !== TaskStatusEnum.Processing.name) {
-          // save status
-          await dataPipeLineTaskQueue.updateTaskStatus(
-            childResp.Status,
-            childResp.error,
-            dataPipeLineTaskQueue.TaskQueueAttributes
-          )
-        }
-
-        if (childResp.Status === TaskStatusEnum.Completed.name) {
-          resp.Status = 'success'
-          resp.error = undefined
-        } else {
-          resp.Status = childResp.Status || 'Error'
-          resp.error =
-            childResp.error || new Error('Task didnt complete nor did it throw an Error.')
-        }
+        // update DB
+        await UpdateStatusInDB(childResp, dataPipeLineTaskQueue)
+        // set return response
+        UpdateReturnResponse(childResp, resp)
       } else {
         resp.Status =
           processStatusResp && processStatusResp.ExistingStatus
             ? processStatusResp.ExistingStatus
             : 'UNKNOWN.2'
-        resp.error = undefined
       }
     } catch (err) {
       resp.Status = 'Error'
       resp.error = err
       odsLogger.log('error', `Error Processing Task: ${task}, messages: ${err.message}`, err)
+      // rare cases we may get error before or right after we call ChildTask function
+      // so those cases let us update the DB status
+      await UpdateStatusInDB(
+        {
+          // for now setting to onhold for unknown error.
+          // in future this should be an error as well.
+          Status: TaskStatusEnum.OnHold.name,
+          error: new Error(`Error before calling actual task. ${err.message}`),
+        },
+        dataPipeLineTaskQueue
+      )
     }
     return resp
+  }
+
+  async function UpdateStatusInDB(childResp, dataPipeLineTaskQueue) {
+    if (childResp && childResp.Status !== TaskStatusEnum.Processing.name) {
+      // save status
+      await dataPipeLineTaskQueue.updateTaskStatus(
+        childResp.Status,
+        childResp.error,
+        dataPipeLineTaskQueue.TaskQueueAttributes
+      )
+    }
+  }
+
+  function UpdateReturnResponse(childResp, resp) {
+    if (childResp.Status === TaskStatusEnum.Completed.name) {
+      resp.Status = 'success'
+    } else {
+      resp.Status = childResp.Status || 'Error'
+      resp.error = childResp.error || new Error('Task didnt complete nor did it throw an Error.')
+    }
   }
 }
 

@@ -293,9 +293,9 @@ function getUpdateQuery(Id, SaveStatus) {
   }
   // _.pick(SaveStatus, ['KeyName', 'S3BucketName', 'AppendDateTime', 'DateTimeFormat', 'S3DataFile', 'RowCount']);
   const attributes = _.omit(SaveStatus, ['Error', 'Status', 'Input'])
-  return `SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(${Id}, '${status}'
-  , '${JSON.stringify(statusError, null, 2)}'
-  , '${JSON.stringify(attributes, null, 2)}')`
+  return `SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(${Id},'${status}','${JSON.stringify(
+    statusError
+  )}','${JSON.stringify(attributes)}')`
 }
 
 function getSetAttributeQuery(taskId) {

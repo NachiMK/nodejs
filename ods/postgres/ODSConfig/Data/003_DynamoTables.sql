@@ -35,6 +35,7 @@ INSERT INTO ods."DynamoTablesHelper" ("DynamoTableName", "Stage")
         ,('prod-prospects', 'prod')
         ,('prod-tags', 'prod')
         ,('prod-tobacco-factors-range', 'prod')
+        ,('prod-modeling-price-points', 'prod')
 ;
 
 DELETE FROM ods."DynamoTablesHelper" WHERE "Stage" = 'int';
@@ -64,6 +65,7 @@ INSERT INTO ods."DynamoTablesHelper" ("DynamoTableName", "Stage")
         ,('int-prospects', 'int')
         ,('int-tags', 'int')
         ,('int-tobacco-factors-range', 'int')
+        ,('int-modeling-price-points', 'int')
 ;
 
 DELETE FROM ods."DynamoTablesHelper" WHERE "Stage" = 'dev';
@@ -94,6 +96,7 @@ INSERT INTO ods."DynamoTablesHelper" ("DynamoTableName", "Stage")
         ,('dev-tags', 'dev')
         ,('dev-tobacco-factors-range', 'dev')
         ,('dev-ods-persons', 'dev')
+        ,('dev-modeling-price-points', 'dev')
 ;
 
 UPDATE  ods."DynamoTablesHelper"

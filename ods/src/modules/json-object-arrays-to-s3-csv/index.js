@@ -142,10 +142,16 @@ export class JsonObjectArrayToS3CSV {
       delimiter: CleanUpString(opts.delimiter, retOpts.delimiter),
       eol: CleanUpString(opts.eol, retOpts.eol),
       fileExtension: CleanUpString(opts.fileExtension, retOpts.fileExtension),
-      appendDateTimeToFileName: CleanUpString(appendDateTimeToFileName, appendDateTimeToFileName),
+      appendDateTimeToFileName: CleanUpString(
+        opts.appendDateTimeToFileName,
+        retOpts.appendDateTimeToFileName
+      ),
       dateTimeFormat: CleanUpString(opts.dateTimeFormat, retOpts.dateTimeFormat),
       includeHeader: CleanUpString(opts.includeHeader, retOpts.includeHeader),
-      appendKeyNameToFileName: CleanUpString(appendKeyNameToFileName, appendKeyNameToFileName),
+      appendKeyNameToFileName: CleanUpString(
+        opts.appendKeyNameToFileName,
+        retOpts.appendKeyNameToFileName
+      ),
     }
   }
 

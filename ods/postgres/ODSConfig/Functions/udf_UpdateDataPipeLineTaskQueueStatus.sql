@@ -34,7 +34,7 @@ BEGIN
         JOIN    ods."TaskStatus"            AS  TS      ON  TS."TaskStatusId" = taskStatusId
         WHERE   DQ."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId
         AND     Parent."DataPipeLineTaskQueueId" = DQ."ParentTaskId"
-        AND     TS."TaskStatusDesc" IN ('Error')
+        AND     TS."TaskStatusDesc" IN ('Error', 'On Hold')
         AND     TS."TaskStatusId" != Parent."TaskStatusId";
 
         UPDATE  ods."DataPipeLineTaskQueue" AS DQ

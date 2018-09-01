@@ -1,12 +1,14 @@
 import _ from 'lodash'
 import { handler as lambdaToCreateSchema } from '.'
 import { s3FileExists, s3FileParser } from '../../../../modules/s3'
+import { getAndSetVarsFromEnvFile } from '../../../../../env'
 
 const event = require('./event.json')
 
 export async function testlambdaToCreateSchema() {
   try {
     console.log('Processing event:', event)
+    getAndSetVarsFromEnvFile(false)
     const resp = await lambdaToCreateSchema(event)
     console.log(JSON.stringify(resp, null, 2))
     let filesRefreshed = false

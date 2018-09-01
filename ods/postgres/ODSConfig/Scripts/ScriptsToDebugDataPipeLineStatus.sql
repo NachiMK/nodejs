@@ -4,7 +4,7 @@ SELECT * FROM ods."udf_createDynamoDBToS3PipeLineTask"('ods-persons', 1)
 
 SELECt  *
 FROM    ods."DataPipeLineTaskQueue"
-WHERE   "DataPipeLineTaskQueueId" = 42 or "ParentTaskId" = 42
+WHERE   "DataPipeLineTaskQueueId" = 50 or "ParentTaskId" = 50
 ORDER BY "RunSequence"
 
 SELECT * FROM ods."TaskStatus"
@@ -12,9 +12,10 @@ SELECT * FROM ods."Attribute"
 
 select * from jsonb_each('{"S3DataFile":"s3://ss","S3BucketName":"ods-dev-data","KeyName":"dynamodb/clients/30-ods-data-.csv","RowCount":"0"}')
 
-UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 20, "Error" = null, "EndDtTm" = null WHERE "DataPipeLineTaskQueueId" IN (42, 45);
-UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 10, "Error" = null, "StartDtTm" = null WHERE "DataPipeLineTaskQueueId" IN (46);
-  
+UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 20, "Error" = null, "EndDtTm" = null WHERE "DataPipeLineTaskQueueId" IN (53, 50);
+UPDATE ods."DataPipeLineTaskQueue" SET "TaskStatusId" = 10, "Error" = null, "StartDtTm" = null WHERE "DataPipeLineTaskQueueId" IN (54);
+
+SELECT * FROM ods."udf_GetPendingPipeLineTasks"('clients');  
 
 SELECt  *
 FROM    ods."DataPipeLineTaskQueue" Q
@@ -74,7 +75,8 @@ ORDER  BY
         
 SELECT  *
 FROM    ods."DataPipeLineTaskQueue"
-WHERE   "DataPipeLineTaskQueueId" = 2 OR "ParentTaskId" = 2
+ORDER BY
+    "DataPipeLineTaskQueueId"
 
 
 
@@ -367,3 +369,7 @@ SELECT * FROM "AxeneBatch" WHERE "ID" >= 42
 BEGIN;
 SELECT * FROM ods."udf_SetTaskQueueAttributeLog"(45);
 COMMIT 
+
+SELECT * FROM ods."DynamoTablesHelper"
+SELECT * FROM ods."DataPipeLineTask" WHERE "DataPipeLineMappingId" = 20 AND "DeletedFlag" = false
+SELECT * FROM ods."DataPipeLineTaskConfig"

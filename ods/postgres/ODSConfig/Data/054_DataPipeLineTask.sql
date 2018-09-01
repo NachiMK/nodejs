@@ -33,10 +33,10 @@ SELECT   Tbls."CleanTableName" || ' - ' || "TaskName"  as "TaskName"
 FROM    DLPTasksTemp TT, DPLTables Tbls
 WHERE NOT EXISTS (
                   SELECT 1 FROM ods."DataPipeLineTask" TGT
-                  WHERE TGT."TaskName" = Tbls."CleanTableName" || ' - ' || "TaskName"
-                  AND   TGT."DataPipeLineMappingId" = TT."DataPipeLineMappingId"
+                  WHERE TGT."DataPipeLineMappingId" = TT."DataPipeLineMappingId"
                   AND   TGT."DataPipeLineTaskConfigId" = TT."DataPipeLineTaskConfigId"
                   AND   TGT."ParentTaskId" IS NULL
+                  AND   TGT."SourceEntity" = Tbls."CleanTableName"
                  )
 AND   TT."ParentId" IS NULL
 ORDER BY

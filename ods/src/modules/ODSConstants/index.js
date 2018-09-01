@@ -52,7 +52,7 @@ export function getTaskConfigParent(TaskConfigName) {
 }
 
 export const TaskStatusEnum = {
-  OnHold: { Value: 10, name: 'On Hold"' },
+  OnHold: { Value: 10, name: 'On Hold' },
   Ready: { Value: 20, name: 'Ready' },
   HistoryCaptured: { Value: 30, name: 'History Captured' },
   Processing: { Value: 40, name: 'Processing' },
