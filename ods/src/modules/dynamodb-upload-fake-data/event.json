@@ -1,0 +1,11 @@
+{
+  "TargetTable": "dev-clients",
+  "S3DataFilePath": "s3://dev-ods-data/load-test/clients/clients-20180906_171639.json",
+  "Action": "put",
+  "DeleteOptions" : {
+    "KeyName" : "ID",
+    "KeyNameInFile" : "ID"
+  },
+  "ContinueUpdateOnError": true,
+  "LogLevel": "debug"
+}

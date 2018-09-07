@@ -56,9 +56,9 @@ BEGIN
         ,"IsHSA"                BOOLEAN         NOT NULL
         ,"IsActive"             BOOLEAN         NOT NULL
         ,"IsForSale"            BOOLEAN         NOT NULL
-        ,"IsApproved"           BOOLEAN         NOT NULL
+        ,"IsApproved"           BOOLEAN         NULL
         ,"UseForModeling"       BOOLEAN         NOT NULL
-        ,"GroupID"              VARCHAR(100)    NOT NULL
+        ,"GroupID"              VARCHAR(100)    NULL
         ,"ActuarialValue"       numeric(12, 8)  NULL
         ,"HixmeValuePlus0"      numeric(12, 8)  NULL
         ,"HixmeValuePlus500"    numeric(12, 8)  NULL
@@ -125,7 +125,7 @@ BEGIN
 END;
 $$;
 /*
-    ) AS
-                SELECT *
-                FROM public."Plans" WHERE 1 = 0 WITH NO DATA;
+    -- Table changes
+    ALTER TABLE stage_plans_av_clean ALTER COLUMN "IsApproved" DROP NOT NULL
+    ALTER TABLE stage_plans_av_clean ALTER COLUMN "GroupID" DROP NOT NULL
 */

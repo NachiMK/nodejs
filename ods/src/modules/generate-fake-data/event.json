@@ -1,0 +1,7 @@
+{
+  "S3FakerSchemaFile": "s3://dev-ods-data/faker-schema/clients-faker-schema.json",
+  "RowsToGenerate": 100,
+  "S3OutputBucket": "dev-ods-data",
+  "S3OutputKey": "load-test/clients/clients-20180906_171639.json",
+  "LogLevel": "warn"
+}
