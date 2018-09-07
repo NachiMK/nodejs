@@ -49,7 +49,7 @@
     "~logs:prod": "sls logs --tail --interval $npm_package_config_log_tailing_interval --stage prod --region $npm_package_config_region --function",
     "logs": "npm run logs:dev --",
     "package": "npm run build && SLS_DEBUG=* sls package",
-    "test": "STAGE=$npm_package_config_stage jest",
+    "test": "STAGE=$npm_package_config_stage jest --",
     "qtest": "npm run build && jest --",
     "watch": "npm run build:watch --",
     "release:dev:enablehistory": "run-func /lib/scripts/deploy/index.js DeployEnableHistoryOnTables dev",

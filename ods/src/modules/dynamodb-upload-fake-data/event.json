@@ -1,6 +1,6 @@
 {
-  "TargetTable": "dev-clients",
-  "S3DataFilePath": "s3://dev-ods-data/load-test/clients/clients-20180906_171639.json",
+  "TargetTable": "dev-modeling-price-points",
+  "S3DataFilePath": "s3://dev-ods-data/load-test/modeling-price-points/modeling-price-points-20180907_154039.json",
   "Action": "put",
   "DeleteOptions" : {
     "KeyName" : "ID",

@@ -65,7 +65,13 @@
       "type": "string",
       "minLength": 36,
       "maxLength": 36,
-      "faker": "random.uuid"
+      "chance" : {
+        "pickone" : [
+          [
+            "ec217eb9-1f9b-47cf-b5a2-8483aa7cf4a0"
+          ]
+        ]
+      }
     },
     "HireDate": {
       "type": "string",
@@ -94,7 +100,13 @@
       }
     },
     "CompanyEmployeeIdHmac": {
-      "type": "string"
+      "type": "string",
+      "chance" : {
+        "hash" : {
+          "length": 15,
+          "casing": "upper"
+        }
+      }
     },
     "City": {
       "type": "string",
@@ -116,7 +128,7 @@
       }
     },
     "IsExempt": {
-      "type": ["boolean", "string"]
+      "type": "boolean"
     },
     "StateProvince": {
       "type": "string",
@@ -146,7 +158,8 @@
       }
     },
     "OptOut2016": {
-      "type": "string"
+      "type": "string",
+      "faker": "random.word"
     },
     "HixmeEmailAlias": {
       "type": "string",
@@ -179,19 +192,37 @@
             "type": "string"
           },
           "PlanName": {
-            "type": "string"
+            "type": "string",
+            "chance": {
+              "pickone": [["Kaiser HMO", "Anthem PPO", "Bluecross EPO"]]
+            }
           },
           "Carrier": {
-            "type": "string"
+            "type": "string",
+            "chance": {
+              "pickone": [["Kaiser", "Anthem", "Bluecross"]]
+            }
           },
           "MedicalOutOfPocketMaximum": {
-            "type": "number"
+            "type": "number",
+            "minimum": 1600,
+            "maximum": 15000,
+            "multipleOf": 500,
+            "exclusiveMinimum": true
           },
           "MedicalDeductible": {
-            "type": "number"
+            "type": "number",
+            "minimum": 100,
+            "maximum": 2000,
+            "multipleOf": 100,
+            "exclusiveMinimum": true
           },
           "SpecialistOfficeCopay": {
-            "type": "number"
+            "type": "number",
+            "minimum": 25,
+            "maximum": 200,
+            "multipleOf": 5,
+            "exclusiveMinimum": true
           },
           "PlanType": {
             "type": "string",
@@ -200,10 +231,18 @@
             }
           },
           "PrimaryOfficeCopay": {
-            "type": "number"
+            "type": "number",
+            "minimum": 25,
+            "maximum": 200,
+            "multipleOf": 5,
+            "exclusiveMinimum": true
           },
           "GenericRxCopay": {
-            "type": "number"
+            "type": "number",
+            "minimum": 25,
+            "maximum": 200,
+            "multipleOf": 5,
+            "exclusiveMinimum": true
           }
         },
         "required": ["Name", "PlanName", "PlanType"]
@@ -222,26 +261,25 @@
       "faker": "address.streetAddress"
     },
     "tf": {
-      "type": "string"
+      "type": "string", "faker": "random.word"
     },
     "Gender": {
       "type": "string",
       "chance": "gender"
     },
-    "field38": {
-      "type": "string"
-    },
     "ClientPublicKey": {
       "type": "string",
       "minLength": 36,
       "maxLength": 36,
-      "faker": "random.uuid"
+      "chance": {
+        "pickone": [["c8063593-dd76-4f66-b07f-88f89f413a7e"]]
+      }
     },
     "ExistingMedicalPlanWaived": {
       "type": "boolean"
     },
     "MEC Opt Out": {
-      "type": "string"
+      "type": "string", "faker": "random.word"
     },
     "Salary": {
       "type": "integer",
@@ -271,23 +309,39 @@
       }
     },
     "Department Code": {
-      "type": "string"
+      "type": "string", "chance" : {
+        "pickone" : [
+          [
+            "IT", "FN", "HR", "CS", "OP"
+          ]
+        ]
+      }
     },
     "Company Code": {
       "type": "string",
       "faker": "company.companyName"
     },
     "MiddleName": {
-      "type": "string"
+      "type": "string", "faker":"word"
     },
     "MarriageStatus": {
-      "type": "string"
+      "type": "string", "chance" : {
+        "pickone" : [
+          [
+            "Married", "Single", "Widowed", "Separated"
+          ]
+        ]
+      }
     },
     "Hours Per Week": {
-      "type": "string"
+      "type": "number",
+      "minimum": 10,
+      "maximum": 40,
+      "multipleOf": 5,
+      "exclusiveMinimum": true
     },
     "Home Phone Number": {
-      "type": "string"
+      "type": "string", "faker": "phone.phoneNumberFormat"
     },
     "ExistingMedicalPlanType": {
       "type": "string"
@@ -296,7 +350,12 @@
       "type": "boolean"
     },
     "CompanyEmployeeIdPlainText": {
-      "type": "string"
+      "type": "string", "chance": {
+        "string" : {
+          "length": "5",
+          "pool": "0123456789"
+        }
+      }
     },
     "Hourly": {
       "type": "string"
@@ -306,10 +365,10 @@
       "faker": "name.jobTitle"
     },
     "DepartmentCode": {
-      "type": "string"
+      "type": "string", "faker": "random.word"
     },
     "ExistingMedicalPlanCombined": {
-      "type": "string"
+      "type": "string", "faker": "random.word"
     },
     "IdUpdate": {
       "type": "boolean"
@@ -318,28 +377,30 @@
       "type": "boolean"
     },
     "Role": {
-      "type": "string"
+      "type": "string", "faker": "random.word"
     },
     "IsTestUser": {
       "type": "boolean"
     },
-    "field43": {
-      "type": "string"
-    },
-    "field42": {
-      "type": "string"
-    },
     "Company ID": {
-      "type": "string"
+      "type": "string", "chance": {
+        "string" : {
+          "length": "5",
+          "pool": "0123456789"
+        }
+      }
     },
     "SMS Cell Phone Number": {
-      "type": "string"
+      "type": "string", "faker": "phone.phoneNumberFormat"
     },
     "AlternatePhoneType": {
-      "type": "string"
+      "type": "string", 
+      "chance": {
+        "pickone": [["Mobile", "Home", "Work"]]
+      }
     },
     "AlternatePhoneNumber": {
-      "type": "string"
+      "type": "string", "faker": "phone.phoneNumberFormat"
     },
     "HoursPerWeek": {
       "type": "string"
@@ -351,12 +412,14 @@
       "type": "string"
     },
     "CompanyEmployeeIdNum": {
-      "type": "string"
+      "type": "string", "chance": {
+        "string" : {
+          "length": "5",
+          "pool": "0123456789"
+        }
+      }
     },
     "EmployementStatusOriginal": {
-      "type": "string"
-    },
-    "field40": {
       "type": "string"
     },
     "ComputedSalary": {
@@ -389,7 +452,7 @@
         }
     },
     "Division": {
-      "type": "string"
+      "type": "string", "faker": "random.word"
     },
     "Rating Area": {
       "type": "number",
@@ -401,16 +464,22 @@
       }
     },
     "Manager with Life Benefit": {
-      "type": "string"
+      "type": "string", "faker": "random.word"
     },
     "OtherCompensation": {
-      "type": "string"
+      "type": "string", "faker": "random.word"
     },
     "HourlyRate": {
       "type": "string"
     },
     "SalaryTier": {
-      "type": "string"
+      "type": "string", "chance" : {
+        "pickone" : [
+          [
+            "Tier1", "Tier2", "Tier3"
+          ]
+        ]
+      }
     },
     "SalaryRange": {
       "type": "string"
@@ -453,9 +522,6 @@
     "EMPLOYER CODE": {
       "type": "string"
     },
-    "field31": {
-      "type": "string"
-    },
     "Vision Tier": {
       "type": "string"
     },
@@ -472,12 +538,6 @@
       "type": "string"
     },
     "CARRIER / APPLICATION SCENARIOS": {
-      "type": "string"
-    },
-    "field35": {
-      "type": "string"
-    },
-    "field34": {
       "type": "string"
     },
     "Other": {
@@ -533,8 +593,6 @@
     "CompanyEmployeeIdPlainText",
     "MissingContact",
     "OptOut2016",
-    "tf",
-    "field38",
     "MEC Opt Out",
     "ExistingMedicalPlanType",
     "AddressSameAsParent",
@@ -552,13 +610,10 @@
     "Home Phone Number",
     "SMS Cell Phone Number",
     "AlternatePhoneType",
-    "field43",
-    "field42",
     "AlternatePhoneNumber",
     "IsTestUser",
     "HoursPerWeek",
     "EmployementStatusOriginal",
-    "field40",
     "ComputedSalary",
     "HourlyPer",
     "Company ID",
@@ -593,8 +648,7 @@
     "CARRIER / APPLICATION SCENARIOS",
     "Vision Tier",
     "CLIENT-SPECIFIC TEST?",
-    "EMPLOYER CODE",
-    "field31"
+    "EMPLOYER CODE"
   ],
   "title": "prod-client-census"
 }

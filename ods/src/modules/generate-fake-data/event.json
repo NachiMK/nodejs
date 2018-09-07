@@ -1,7 +1,7 @@
 {
-  "S3FakerSchemaFile": "s3://dev-ods-data/faker-schema/clients-faker-schema.json",
+  "S3FakerSchemaFile": "s3://dev-ods-data/faker-schema/modeling-price-points-faker-schema.json",
   "RowsToGenerate": 100,
   "S3OutputBucket": "dev-ods-data",
-  "S3OutputKey": "load-test/clients/clients-20180906_171639.json",
+  "S3OutputKey": "load-test/modeling-price-points/modeling-price-points-20180907_154039.json",
   "LogLevel": "warn"
 }

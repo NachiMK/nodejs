@@ -1,14 +1,14 @@
 import isEmpty from 'lodash/isEmpty'
 import chunk from 'lodash/chunk'
+import isInteger from 'lodash/isInteger'
 import { format as _format, transports as _transports, createLogger } from 'winston'
 import { GetJSONFromS3Path } from '../s3ODS'
 import { CleanUpString } from '../../utils/string-utils/index'
 
-const util = require('util')
 const awsBatch = require('aws-sdk')
 awsBatch.config.update({ region: 'us-west-2' })
 
-const MAX_BATCH_ITEMS = 25
+const MAX_BATCH_ITEMS = 5
 
 export class FakeDataUploader {
   logger = createLogger({
@@ -73,7 +73,7 @@ export class FakeDataUploader {
     }
   }
 
-  async BatchUpload() {
+  async BatchUpload(BatchSize = MAX_BATCH_ITEMS) {
     this.ValidateParams()
     let retOutput = {
       ItemCountInInput: -1,
@@ -81,11 +81,14 @@ export class FakeDataUploader {
       BatchErrors: [],
     }
     const allItems = await this.getJsonData()
+    if (!isInteger(BatchSize) || BatchSize >= MAX_BATCH_ITEMS || BatchSize <= 0) {
+      BatchSize = MAX_BATCH_ITEMS
+    }
     // upload if we have some items
     if (allItems && allItems.length > 0) {
       retOutput.ItemCountInInput = allItems.length
       // chunk into smaller arrays
-      const batchedItems = chunk(allItems, MAX_BATCH_ITEMS)
+      const batchedItems = chunk(allItems, BatchSize)
       for (const currentBatch in batchedItems) {
         // batchedItems.forEach(async (currentBatch, index) => {
         this.logger.log('debug', `Processing Items in Batch index: ${currentBatch}`)
