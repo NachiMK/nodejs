@@ -163,7 +163,11 @@ export default async ({
     const fileJSON = parseSchemaJSON(respCombinedSchema.CombineSchema)
 
     // Save file in S3
-    result.file = await SaveJsonToS3File(Output, fileJSON)
+    const { Bucket, Key } = s3FileParser(Output)
+    result.file = await SaveJsonToS3File(fileJSON, {
+      S3OutputBucket: Bucket,
+      S3OutputKey: Key,
+    })
     return result
   } catch (e) {
     result.status.message = 'error'
@@ -220,8 +224,10 @@ async function generateRawSchemaFromData({ Datafile, SaveDataSchemaToS3 = true, 
       if (SaveDataSchemaToS3 && Output && rawSchemaResp.Schema) {
         // save file
         const saveFileParams = s3FileParser(Output)
-        const s3PathToSave = `s3://${saveFileParams.Bucket}/${saveFileParams.Key}-bydata`
-        rawSchemaResp.file = await SaveJsonToS3File(s3PathToSave, rawSchemaResp)
+        rawSchemaResp.file = await SaveJsonToS3File(rawSchemaResp, {
+          S3OutputBucket: saveFileParams.Bucket,
+          S3OutputKey: `${saveFileParams.Key}-bydata`,
+        })
         // response status
         rawSchemaResp.Status = 'SUCCESS'
       }

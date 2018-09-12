@@ -1,0 +1,457 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "PricePoint": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Low", "Medium", "High", "Very High", "Very Low"]]
+      }
+    },
+    "ChildrenCount": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 1,
+          "max": 2,
+          "fixed": 1
+        }
+      }
+    },
+    "WorkerAccident": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 10,
+          "max": 15,
+          "fixed": 2
+        }
+      }
+    },
+    "Region": {
+      "type": "string",
+      "chance": {
+        "pickone": [["A", "B", "C"]]
+      }
+    },
+    "ActuarialValue": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 0.6,
+          "max": 1,
+          "fixed": 3
+        }
+      }
+    },
+    "IsActive": { "type": "boolean" },
+    "WorkerAdmin": {
+      "type": "number",
+      "minimum": 1600,
+      "maximum": 15000,
+      "multipleOf": 500,
+      "exclusiveMinimum": true
+    },
+    "ChildHospitalPlus": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 1500,
+      "multipleOf": 100,
+      "exclusiveMinimum": true
+    },
+    "BundleLevel": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Flexible Value", "Flexible", "Secure", "Secure Plus", "Balanced"]]
+      }
+    },
+    "WorkerAgeFactor": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 1,
+          "max": 3,
+          "fixed": 6
+        }
+      }
+    },
+    "CreatedDate": {
+      "type": "string",
+      "format": "date-time",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2018
+        }
+      }
+    },
+    "WorkerCopayCap": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "multipleOf": 1,
+      "exclusiveMinimum": true
+    },
+    "SpouseContribution": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000,
+      "multipleOf": 10,
+      "exclusiveMinimum": true
+    },
+    "Row": {
+      "type": "number",
+      "chance": {
+        "integer": {
+          "min": 1,
+          "max": 10000
+        }
+      }
+    },
+    "SpouseAccident": {
+      "type": "number",
+      "minimum": 10,
+      "maximum": 200,
+      "multipleOf": 10,
+      "exclusiveMinimum": false
+    },
+    "MemberBundleRate": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 10,
+          "max": 40,
+          "fixed": 2
+        }
+      }
+    },
+    "PlanType": {
+      "type": "string",
+      "chance": {
+        "pickone": [["HMO", "PPO", "EPO"]]
+      }
+    },
+    "WorkerHixmePlus": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 1500,
+      "multipleOf": 100,
+      "exclusiveMinimum": true
+    },
+    "SpouseCopayCap": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "multipleOf": 1,
+      "exclusiveMinimum": true
+    },
+    "ChildContribution": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 400,
+      "multipleOf": 1,
+      "exclusiveMinimum": true
+    },
+    "Class": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Default"]]
+      }
+    },
+    "MemberAgeFactor": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 1,
+          "max": 2,
+          "fixed": 6
+        }
+      }
+    },
+    "ChildAgeFactor": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 0,
+          "max": 1,
+          "fixed": 6
+        }
+      }
+    },
+    "SpouseAgeFactor": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 1,
+          "max": 3,
+          "fixed": 6
+        }
+      }
+    },
+    "RatingArea": {
+      "type": "number",
+      "chance": {
+        "integer": {
+          "min": 1,
+          "max": 67
+        }
+      }
+    },
+    "StateProvince": { "type": "string", "faker": "address.stateAbbr" },
+    "ChildHixmePlus": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 1500,
+      "multipleOf": 100,
+      "exclusiveMinimum": true
+    },
+    "StateAndRatingArea": {
+      "type": "string",
+      "chance": {
+        "integer": {
+          "min": 1,
+          "max": 67
+        }
+      }
+    },
+    "SpouseAdmin": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "multipleOf": 1,
+      "exclusiveMinimum": true
+    },
+    "WorkerHospitalPlus": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 1500,
+      "multipleOf": 100,
+      "exclusiveMinimum": true
+    },
+    "BaseRate": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 150,
+          "max": 600,
+          "fixed": 4
+        }
+      }
+    },
+    "SpouseHospitalPlus": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 1500,
+      "multipleOf": 100,
+      "exclusiveMinimum": true
+    },
+    "SpouseBundleRate": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 10,
+          "max": 30,
+          "fixed": 4
+        }
+      }
+    },
+    "WorkerContribution": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 100,
+          "max": 800,
+          "fixed": 4
+        }
+      }
+    },
+    "ChildBundleRate": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 15,
+          "max": 25,
+          "fixed": 4
+        }
+      }
+    },
+    "ChildAccident": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 150,
+          "max": 250,
+          "fixed": 4
+        }
+      }
+    },
+    "ChildCopayCap": {
+      "type": "number",
+      "minimum": 10,
+      "maximum": 100,
+      "multipleOf": 10,
+      "exclusiveMinimum": true
+    },
+    "MemberContribution": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 150,
+          "max": 700,
+          "fixed": 3
+        }
+      }
+    },
+    "ChildAdmin": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 5,
+          "max": 10,
+          "fixed": 3
+        }
+      }
+    },
+    "HiosPlanID": {
+      "type": "string",
+      "chance": {
+        "string": {
+          "length": 20,
+          "pool": "1234567890HBACD"
+        }
+      }
+    },
+    "ProspectPublicKey": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36,
+      "chance": {
+        "pickone": [["d09ad4c4-4d06-4287-b566-b222b114d93c"]]
+      }
+    },
+    "CensusPublicKey": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36,
+      "faker": "random.uuid"
+    },
+    "Id": { "type": "string", "minLength": 36, "maxLength": 36, "faker": "random.uuid" },
+    "SpouseHixmePlus": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 1500,
+      "multipleOf": 100,
+      "exclusiveMinimum": true
+    },
+    "WorkerBundleRate": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 20,
+          "max": 40,
+          "fixed": 6
+        }
+      }
+    },
+    "ChildrenCap": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "multipleOf": 1,
+      "exclusiveMinimum": true
+    },
+    "SpouseHixmeFunding": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 50,
+          "max": 160,
+          "fixed": 6
+        }
+      }
+    },
+    "ChildHixmeFunding": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 50,
+          "max": 160,
+          "fixed": 6
+        }
+      }
+    },
+    "WorkerHixmeFunding": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 50,
+          "max": 160,
+          "fixed": 6
+        }
+      }
+    },
+    "PlanActuarialValue": {
+      "type": "number",
+      "chance": {
+        "floating": {
+          "min": 0.6,
+          "max": 1,
+          "fixed": 3
+        }
+      }
+    }
+  },
+  "required": [
+    "PricePoint",
+    "ChildrenCount",
+    "WorkerAccident",
+    "Region",
+    "ActuarialValue",
+    "IsActive",
+    "WorkerAdmin",
+    "ChildHospitalPlus",
+    "BundleLevel",
+    "WorkerAgeFactor",
+    "WorkerCopayCap",
+    "CreatedDate",
+    "SpouseContribution",
+    "Row",
+    "SpouseAccident",
+    "MemberBundleRate",
+    "WorkerHixmePlus",
+    "PlanType",
+    "SpouseCopayCap",
+    "ChildContribution",
+    "MemberAgeFactor",
+    "ChildAgeFactor",
+    "SpouseAgeFactor",
+    "RatingArea",
+    "StateProvince",
+    "ChildHixmePlus",
+    "StateAndRatingArea",
+    "SpouseAdmin",
+    "WorkerHospitalPlus",
+    "BaseRate",
+    "SpouseHospitalPlus",
+    "WorkerContribution",
+    "SpouseBundleRate",
+    "ChildBundleRate",
+    "MemberContribution",
+    "ChildCopayCap",
+    "ChildAccident",
+    "HiosPlanID",
+    "ChildAdmin",
+    "ProspectPublicKey",
+    "SpouseHixmePlus",
+    "CensusPublicKey",
+    "Id",
+    "WorkerBundleRate",
+    "ChildrenCap",
+    "Class",
+    "SpouseHixmeFunding",
+    "ChildHixmeFunding",
+    "WorkerHixmeFunding",
+    "PlanActuarialValue"
+  ],
+  "title": "prod-modeling-price-points"
+}

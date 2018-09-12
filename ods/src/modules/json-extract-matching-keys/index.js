@@ -1,6 +1,6 @@
 export function ExtractMatchingKeyFromSchema(odsSchema, parentKey, keyName) {
   const retObjSchema = {}
-  console.log(`Parameters defined: Obj: ${odsSchema}, Parent: ${parentKey}`)
+  // console.log(`Parameters defined: Obj: ${odsSchema}, Parent: ${parentKey}`)
   if (odsSchema.properties) {
     Object.keys(odsSchema.properties).forEach((objectKey) => {
       const currAttributeObj = odsSchema.properties[objectKey]

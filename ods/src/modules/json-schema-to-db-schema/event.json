@@ -1,0 +1,19 @@
+{
+    "TableNamePrefix" : "clients_raw",
+    "BatchId" : 44,
+    "DBOptions" : {
+        "TableSchema" : "raw",
+        "IgnoreColumns" : [],
+        "DataTypeKey": "type",
+        "AppendDateTimeToTable" : true,
+        "AppendBatchId" : true
+    },
+    "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/dbschema/clients-schema-bycsv.json",
+    "S3OutputBucket": "dev-ods-data",
+    "S3OutputKeyPrefix": "unit-test/clients/dbschema/clients-dbschema-raw-",
+    "LogLevel": "debug",
+    "Options": {
+        "AppendDateTimeToFileName": true,
+        "FileExtension": ".sql"
+    }
+}

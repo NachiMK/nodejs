@@ -1,0 +1,402 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "SSNHmac": {
+      "type": "string",
+      "chance": {
+        "hash": {
+          "length": 15,
+          "casing": "upper"
+        }
+      }
+    },
+    "IsActive": { "type": "boolean" },
+    "BenefitsEffectiveDateNote": { "type": "string", "faker": "random.word" },
+    "AlternatePhoneType": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Mobile", "Home", "Work"]]
+      }
+    },
+    "MiddleName": { "type": "string", "faker": "name.findName" },
+    "SSNLastFour": {
+      "type": "string",
+      "chance": {
+        "ssn": {
+          "ssnFour": "true"
+        }
+      }
+    },
+    "IncludedInMedical": { "type": "boolean" },
+    "BenefitsEffectiveDate": {
+      "type": "string",
+      "format": "date",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2019
+        }
+      }
+    },
+    "DateOfBirth": {
+      "type": "string",
+      "format": "date",
+      "chance": {
+        "birthday": {
+          "string": "true"
+        }
+      }
+    },
+    "PhoneNumber": { "type": "string", "faker": "phone.phoneNumberFormat" },
+    "EmployeePublicKey": { "type": "string", "minLength": 36, "maxLength": 36 },
+    "HireDate": {
+      "type": "string",
+      "format": "date",
+      "chance": {
+        "date": {
+          "string": true
+        }
+      }
+    },
+    "BenefitsEligible": { "type": "boolean" },
+    "IsValid": { "type": "boolean" },
+    "EmailAddress": {
+      "type": "string",
+      "chance": {
+        "email": {
+          "domain": "ods.hixmetest.com"
+        }
+      }
+    },
+    "PhoneType": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Mobile", "Home", "Work"]]
+      }
+    },
+    "City": { "type": "string", "faker": "address.city" },
+    "RatingArea": {
+      "type": "number",
+      "chance": {
+        "integer": {
+          "min": 1,
+          "max": 67
+        }
+      }
+    },
+    "IsExempt": { "type": "boolean" },
+    "StateProvince": { "type": "string", "faker": "address.stateAbbr" },
+    "MarriageStatus": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Married", "Single", "Widowed", "Separated"]]
+      }
+    },
+    "County": { "type": "string", "faker": "address.county" },
+    "CompanyEmployeeId": {
+      "type": "string",
+      "chance": {
+        "integer": {
+          "min": 10000,
+          "max": 10000000
+        }
+      }
+    },
+    "AccountCreated": {
+      "type": "string",
+      "format": "date-time",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2018
+        }
+      }
+    },
+    "ContributionGroup": {
+      "type": "string",
+      "chance": {
+        "pickone": [["default", "Class3", "FT HMO", "Hourly", "Class1", "Class2"]]
+      }
+    },
+    "HixmeEmailAlias": {
+      "type": "string",
+      "chance": {
+        "email": {
+          "domain": "ods.hixmealias.com"
+        }
+      }
+    },
+    "Relationship": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Employee", "Spouse", "Child"]]
+      }
+    },
+    "VerifiedPersonalInfo": { "type": "boolean" },
+    "PostalCode": {
+      "type": "string",
+      "faker": "address.zipCode"
+    },
+    "StreetAddress": {
+      "type": "string",
+      "faker": "address.streetAddress"
+    },
+    "SSNEncrypted": {
+      "type": "string",
+      "chance": {
+        "pickone": [
+          [
+            "AQECAHjwmGPTzGXla274nerTTRuqiuypDLpWyhYSfzNfzoFT2QAAAGcwZQYJKoZIhvcNAQcGoFgwVgIBADBRBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDNYl//bi/d+eZrlfEwIBEIAkvcZlmV4sBXuZvHdPeXpUuAU5L91EVa4YG4JvoUfyr67AiWgo"
+          ]
+        ]
+      }
+    },
+    "Gender": { "type": "string", "chance": "gender" },
+    "OriginalHireDate": { "type": "string", "format": "date", "faker": "date.past" },
+    "ClientPublicKey": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36,
+      "chance": {
+        "pickone": [["c8063593-dd76-4f66-b07f-88f89f413a7e"]]
+      }
+    },
+    "PayrollCycle": {
+      "type": "number",
+      "minimum": 16,
+      "maximum": 30,
+      "multipleOf": 2
+    },
+    "TerminationDate": { "type": "string", "format": "date" },
+    "Smoker": { "type": "boolean" },
+    "UserRole": {
+      "type": "string",
+      "chance": {
+        "pickone": [["PlatformEmployee"]]
+      }
+    },
+    "Salary": {
+      "type": "number",
+      "minimum": 45000,
+      "maximum": 140000,
+      "multipleOf": 5000
+    },
+    "FirstName": { "type": "string", "faker": "name.firstName" },
+    "Id": { "type": "string", "minLength": 36, "maxLength": 36, "faker": "random.uuid" },
+    "LastName": { "type": "string", "faker": "name.lastName" },
+    "EmploymentStatus": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Full-Time", "Part-Time", "Terminated"]]
+      }
+    },
+    "JobTitle": { "type": "string", "faker": "name.jobTitle" },
+    "CompanyEmployeeIdEncrypted": {
+      "type": "string",
+      "chance": {
+        "hash": {
+          "length": 15,
+          "casing": "upper"
+        }
+      }
+    },
+    "EnrollmentCreated": {
+      "type": "boolean",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2018
+        }
+      }
+    },
+    "AddressSameAsParent": { "type": "boolean" },
+    "CompanyCode": { "type": "string", "faker": "random.word" },
+    "PreviousCoverageEndDate": {
+      "type": "string",
+      "format": "date",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2018
+        }
+      }
+    },
+    "DepartmentCode": {
+      "type": "string",
+      "chance": {
+        "integer": {
+          "min": 20,
+          "max": 999
+        }
+      }
+    },
+    "IsTestUser": { "type": "boolean" },
+    "DivisionCode": {
+      "type": "string",
+      "chance": {
+        "integer": {
+          "min": 20,
+          "max": 999
+        }
+      }
+    },
+    "ExistingMedicalPlanWaived": { "type": "boolean" },
+    "CobraStatus": { "type": "string", "faker": "random.word" },
+    "IdentityCreated": {
+      "type": "boolean",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2018
+        }
+      }
+    },
+    "IdentityVerified": { "type": "boolean" },
+    "StreetAddressExt": {
+      "type": "string",
+      "chance": {
+        "integer": {
+          "min": 20,
+          "max": 999
+        }
+      }
+    },
+    "EmailAddressType": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Home", "Work"]]
+      }
+    },
+    "EnrollmentEndDate": {
+      "type": "string",
+      "format": "date",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2019
+        }
+      }
+    },
+    "EnrollmentStartDate": {
+      "type": "string",
+      "format": "date",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2019
+        }
+      }
+    },
+    "PayrollClass": {
+      "type": "string",
+      "chance": {
+        "pickone": [["1", "2", "3", "5"]]
+      }
+    },
+    "AlternatePhoneNumber": { "type": "string", "faker": "phone.phoneNumberFormat" },
+    "BenefitClass": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 8,
+      "multipleOf": 2
+    },
+    "BenefitEffectiveDate": {
+      "type": "string",
+      "format": "date",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2019
+        }
+      }
+    },
+    "IsSalesRep": { "type": "boolean" },
+    "OldEmailAddress": {
+      "type": "string",
+      "chance": {
+        "email": {
+          "domain": "ods.hixmeold.com"
+        }
+      }
+    },
+    "OldEmailAddressType": {
+      "type": "string",
+      "chance": {
+        "pickone": [["Home", "Work"]]
+      }
+    },
+    "EnrollmentStarDate": {
+      "type": "string",
+      "format": "date",
+      "chance": {
+        "date": {
+          "string": true,
+          "year": 2019
+        }
+      }
+    },
+    "IsAdmin": { "type": "boolean" }
+  },
+  "required": [
+    "AccountCreated",
+    "AddressSameAsParent",
+    "AlternatePhoneNumber",
+    "AlternatePhoneType",
+    "BenefitClass",
+    "BenefitsEffectiveDate",
+    "BenefitsEligible",
+    "City",
+    "ClientPublicKey",
+    "CobraStatus",
+    "CompanyCode",
+    "CompanyEmployeeId",
+    "CompanyEmployeeIdEncrypted",
+    "ContributionGroup",
+    "County",
+    "DateOfBirth",
+    "DepartmentCode",
+    "DivisionCode",
+    "EmailAddress",
+    "EmployeePublicKey",
+    "EmploymentStatus",
+    "EnrollmentEndDate",
+    "EnrollmentStartDate",
+    "ExistingMedicalPlanWaived",
+    "FirstName",
+    "Gender",
+    "HireDate",
+    "HixmeEmailAlias",
+    "Id",
+    "IdentityCreated",
+    "IdentityVerified",
+    "IncludedInMedical",
+    "IsActive",
+    "IsExempt",
+    "IsTestUser",
+    "IsValid",
+    "JobTitle",
+    "LastName",
+    "MarriageStatus",
+    "OriginalHireDate",
+    "PayrollCycle",
+    "PhoneNumber",
+    "PhoneType",
+    "PostalCode",
+    "PreviousCoverageEndDate",
+    "RatingArea",
+    "Relationship",
+    "Salary",
+    "Smoker",
+    "SSNEncrypted",
+    "SSNHmac",
+    "SSNLastFour",
+    "StateProvince",
+    "StreetAddress",
+    "StreetAddressExt",
+    "TerminationDate",
+    "UserRole",
+    "VerifiedPersonalInfo"
+  ],
+  "title": "prod-persons"
+}

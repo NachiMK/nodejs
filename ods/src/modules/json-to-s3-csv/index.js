@@ -172,7 +172,8 @@ export class JsonToS3CSV {
         if (csvData) {
           this.logger.log('info', 'Saving file to S3')
           await SaveStringToS3File({
-            S3FullFilePath: `s3://${this.S3OutputBucket}/${this.S3OutputKey}`,
+            S3OutputBucket: this.S3OutputBucket,
+            S3OutputKey: this.S3OutputKey,
             StringData: csvData,
             FileExtension: this.Options.fileExtension,
             AppendDateTimeToFileName: false,

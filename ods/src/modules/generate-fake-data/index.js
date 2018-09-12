@@ -126,7 +126,8 @@ export class FakeDataGenerator {
     if (fakeData) {
       this.logger.log('info', 'Saving file to S3')
       await SaveStringToS3File({
-        S3FullFilePath: `s3://${this.S3OutputBucket}/${this.S3OutputKey}`,
+        S3OutputBucket: this.S3OutputBucket,
+        S3OutputKey: this.S3OutputKey,
         StringData: JSON.stringify(fakeData),
         FileExtension: '.json',
         AppendDateTimeToFileName: false,

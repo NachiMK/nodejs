@@ -21,15 +21,40 @@ export const GetJSONFromS3Path = async (s3FilePath) => {
   }
 }
 
-export async function SaveJsonToS3File(
-  S3FullFilePath,
-  JsonData,
-  DateTimeFormat = 'YYYYMMDD_HHmmssSSS',
-  Overwrite = 'yes'
-) {
+export const GetStringFromS3Path = async (s3FilePath) => {
+  try {
+    const { Bucket, Key } = await s3FileParser(s3FilePath)
+    if (_.trim(Bucket).length <= 0 || _.trim(Key).length <= 0) {
+      throw new Error(
+        `Either Bucket ${Bucket} or Key: ${Key} is empty. Need Bucket and Key to Load file.`
+      )
+    }
+    const file = await s3BucketFactory(Bucket)(Key)
+    return file.Body.toString('utf-8')
+  } catch (e) {
+    const msg = `Error loading data from s3 Path:${s3FilePath}, error: ${e.message}`
+    console.log(msg)
+    throw new Error(msg)
+  }
+}
+
+export async function SaveJsonToS3File(JsonData, params = {}) {
+  // get values from params
+  const S3OutputBucket = params.S3OutputBucket
+  const S3OutputKey = params.S3OutputKey
+  const AppendDateTimeToFileName = params.AppendDateTimeToFileName || true
+  // !_.isUndefined(params.AppendDateTimeToFileName) && _.isBoolean(params.AppendDateTimeToFileName)
+  //   ? params.AppendDateTimeToFileName
+  //   : true
+  const DateTimeFormat = params.DateTimeFormat || 'YYYYMMDD_HHmmssSSS'
+  const Overwrite = params.Overwrite || 'yes'
+
+  // delegate call
   return SaveStringToS3File({
-    S3FullFilePath,
+    S3OutputBucket,
+    S3OutputKey,
     StringData: JSON.stringify(JsonData),
+    AppendDateTimeToFileName,
     DateTimeFormat,
     Overwrite,
     FileExtension: '.json',
@@ -37,7 +62,8 @@ export async function SaveJsonToS3File(
 }
 
 export async function SaveStringToS3File(params = {}) {
-  const S3FullFilePath = params.S3FullFilePath || ''
+  const Bucket = params.S3OutputBucket || ''
+  const Key = params.S3OutputKey || ''
   const stringData = params.StringData || ''
   const appendDateTime =
     !_.isUndefined(params.AppendDateTimeToFileName) && _.isBoolean(params.AppendDateTimeToFileName)
@@ -45,13 +71,12 @@ export async function SaveStringToS3File(params = {}) {
       : true
   const DateTimeFormat = params.DateTimeFormat || 'YYYYMMDD_HHmmssSSS'
   const Overwrite = params.Overwrite || 'yes'
-  const FileExtension = params.FileExtension || '.json'
+  const FileExtension = params.FileExtension || ''
   try {
     if (!stringData) {
       throw new Error('No data to save to S3.')
     }
-    // Set up save file parameters
-    const { Bucket, Key } = s3FileParser(S3FullFilePath)
+
     // validate key
     if (_.trim(Bucket).length <= 0 || _.trim(Key).length <= 0) {
       throw new Error(
@@ -101,7 +126,13 @@ export function getFileName(
     if (Key.includes(DateTimeFormat)) {
       filename = Key.replace(`{${DateTimeFormat}}`, timestamp).replace(DateTimeFormat, timestamp)
     } else {
-      filename = `${Key}-${timestamp}`
+      const timeRegEx = new RegExp(
+        `(.*)(${moment().format('YYYY')})(\\d{2})(\\d{2})(_{1})(\\d{9})(.*)`,
+        'g'
+      )
+      if (!Key.match(timeRegEx)) {
+        filename = `${Key}-${timestamp}`
+      }
     }
   }
 

@@ -162,10 +162,10 @@ export class JsonToJsonFlattner {
         this.S3OutputKey.length > 0
       ) {
         this.LogString('About to Save S3 file.', 'info')
-        this.Output.NormalizedS3Path = await SaveJsonToS3File(
-          `s3://${this.S3OutputBucket}/${this.S3OutputKey}`,
-          this.Output.NormalizedDataSet
-        )
+        this.Output.NormalizedS3Path = await SaveJsonToS3File(this.Output.NormalizedDataSet, {
+          S3OutputBucket: this.S3OutputBucket,
+          S3OutputKey: this.S3OutputKey,
+        })
         this.LogString('Done saving file to S3.', 'info')
         this.Output.status.message = 'success'
         this.error = undefined

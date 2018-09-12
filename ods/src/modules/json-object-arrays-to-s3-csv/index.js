@@ -1,5 +1,4 @@
 import isEmpty from 'lodash/isEmpty'
-import isUndefined from 'lodash/isUndefined'
 import { format as _format, transports as _transports, createLogger } from 'winston'
 import { GetJSONFromS3Path, getFileName } from '../s3ODS/index'
 import { JsonToS3CSV } from '../json-to-s3-csv'

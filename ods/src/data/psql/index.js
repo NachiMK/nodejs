@@ -174,6 +174,15 @@ export const updateCommandLogEndTime = async (commandLogID) => {
   return ret
 }
 
+export function knexNoDB() {
+  const knexPgClient = Knex({
+    client: 'pg',
+  })
+  knexPgClient.client = knexDialect
+  const retKnex = knexPgClient
+  return retKnex
+}
+
 function getConnectionString(dbName, stage) {
   const key = `${stage}_${dbName}_PG`.toUpperCase()
   const idx = Object.keys(process.env).indexOf(key)

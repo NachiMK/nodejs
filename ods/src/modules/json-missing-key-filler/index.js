@@ -101,10 +101,10 @@ export class JsonMissingKeyFiller {
         this.S3OutputBucket.length > 0 &&
         this.S3OutputKey.length > 0
       ) {
-        this.Output.S3UniformJsonFile = await SaveJsonToS3File(
-          `s3://${this.S3OutputBucket}/${this.S3OutputKey}`,
-          this.Output.UniformJsonData
-        )
+        this.Output.S3UniformJsonFile = await SaveJsonToS3File(this.Output.UniformJsonData, {
+          S3OutputBucket: this.S3OutputBucket,
+          S3OutputKey: this.S3OutputKey,
+        })
         // clear output if saving to s3
         this.Output.UniformJsonData = undefined
       }

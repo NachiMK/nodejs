@@ -16,10 +16,10 @@ describe('s3 - get or save json data', () => {
     const jsonData = {
       test: 'value',
     }
-    const file = await SaveJsonToS3File(
-      's3://dev-ods-data/dynamotableschema/test-s3-upload-',
-      jsonData
-    )
+    const file = await SaveJsonToS3File(jsonData, {
+      S3OutputBucket: 'dev-ods-data',
+      S3OutputKey: `dynamotableschema/test-s3-upload-`,
+    })
     console.log('file:', file)
     expect(file).toBeDefined()
     const loadedJsonData = await GetJSONFromS3Path(file)

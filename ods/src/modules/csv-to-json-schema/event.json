@@ -1,0 +1,10 @@
+{
+    "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/csv/test-clients-CSVFile-0-clients.csv",
+    "S3OutputBucket": "dev-ods-data",
+    "S3OutputKeyPrefix": "unit-test/clients/dbschema/clients-schema-bycsv-",
+    "LogLevel": "info",
+    "Options": {
+        "appendDateTimeToFileName": true,
+        "fileExtentions": ".json"
+    }
+}
