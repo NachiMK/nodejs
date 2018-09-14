@@ -33,3 +33,17 @@ export function addObject(knexTable, colName) {
 export function addText(knexTable, colName) {
   knexTable.text(colName)
 }
+
+// export class KnexTableScripter {
+//   constructor(params = {}) {
+//     this._tableName = params.TableName || ''
+//     this._tableSchema = params.TableSchema || 'public'
+//   }
+//   async getCreateTableScript(colsAndTypesJson = {}) {
+
+//     function AddColumn(ColumnName, JsonType, Opts) {}
+//   }
+// }
+
+// const objTbl = new KnexTableScripter({ TableName: 'Table', TableSchema: 'public' })
+// objTbl.getCreateTableScript(ColsAndTypesJson)

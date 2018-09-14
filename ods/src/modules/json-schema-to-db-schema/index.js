@@ -94,7 +94,11 @@ export class JsonSchemaToDBSchema {
         const colsAndTypes = await getColumnsAndType(inputdata, this.DataTypeKey)
         this.logger.log('debug', `Cols and Types:${colsAndTypes}`)
         // get script
-        const dbScript = await getSQLStatement(this.TableSchema, this.getTableName(), colsAndTypes)
+        const dbScript = await getCreateTableSQL(
+          this.TableSchema,
+          this.getTableName(),
+          colsAndTypes
+        )
         this.logger.log('debug', `SQL Script:${dbScript}`)
         return dbScript
       }
@@ -125,7 +129,7 @@ export class JsonSchemaToDBSchema {
       }
     } // end of getSchema
 
-    async function getSQLStatement(tableSchema, tableName, colsAndTypes) {
+    async function getCreateTableSQL(tableSchema, tableName, colsAndTypes) {
       let knex
       let dbScript
       if (tableName && colsAndTypes) {
@@ -146,7 +150,7 @@ export class JsonSchemaToDBSchema {
                     // find what action to take
                     const objEnum = JsonToKnexDataTypeEnum[colsAndTypes[colNames[colIndex]]]
                     // create column by calling appropriate function
-                    objEnum.dbFunc(table, colNames[colIndex], objEnum.opts || {})
+                    objEnum.AddColFunction(table, colNames[colIndex], objEnum.opts || {})
                   } catch (err) {
                     const e = new Error(
                       `Error in adding column: ${colIndex} to Table: ${tableName}, error: ${
