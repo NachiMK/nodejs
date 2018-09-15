@@ -3,6 +3,8 @@ import crypto from 'crypto'
 import moment from 'moment'
 // the import order matters, we need pg types set first.
 import Knex from 'knex'
+import isEmpty from 'lodash/isEmpty'
+import isUndefined from 'lodash/isUndefined'
 import knexDialect from 'knex/lib/dialects/postgres'
 import ODSLogger from '../../modules/log/ODSLogger'
 
@@ -23,10 +25,12 @@ export const executeQueryRS = async (params = {}) => {
   }
 
   const { Query = QuoteSQL(Query), DBName } = params
-
+  const dbConnString = params.ConnectionString || ''
   // may throw an error
   IsValidParams(params, true)
-  const localKnex = knex(DBName)
+  const localKnex = IsValidConnectionString(dbConnString)
+    ? knexByConnectionString(dbConnString)
+    : knex(DBName)
   try {
     let logresp = await logSQLCommand(params, 'executeQueryRS')
     ODSLogger.log('debug', 'About to run query:%j', params)
@@ -58,10 +62,13 @@ export const executeScalar = async (params = {}) => {
   }
 
   const { Query = QuoteSQL(Query), DBName } = params
-
+  const dbConnString = params.ConnectionString || ''
   // may throw an error
   IsValidParams(params, true)
-  const localKnex = knex(DBName)
+  const localKnex = IsValidConnectionString(dbConnString)
+    ? knexByConnectionString(dbConnString)
+    : knex(DBName)
+
   try {
     let logresp = await logSQLCommand(params, 'executeScalar')
     const id = logresp.scalarValue
@@ -93,16 +100,19 @@ export const executeCommand = async (params = {}) => {
   }
 
   const { Query = QuoteSQL(Query), DBName } = params
+  const dbConnString = params.ConnectionString || ''
   // may throw an error
   IsValidParams(params, true)
-  const localKnex = knex(DBName)
+  const localKnex = IsValidConnectionString(dbConnString)
+    ? knexByConnectionString(dbConnString)
+    : knex(DBName)
   let logresp
   try {
     logresp = await logSQLCommand(params, 'executeCommand')
     const id = logresp.scalarValue
     ODSLogger.log('debug', 'About to run Execute command:%j', params)
     logresp = await localKnex.raw(Query)
-    ret.completed = true && logresp
+    ret.completed = true && !isUndefined(logresp)
     logresp = await updateCommandLogEndTime(await getCommandLogID(id))
   } catch (err) {
     ret.error = err
@@ -183,7 +193,7 @@ export function knexNoDB() {
   return retKnex
 }
 
-function getConnectionString(dbName, stage) {
+export function getConnectionString(dbName, stage) {
   const key = `${stage}_${dbName}_PG`.toUpperCase()
   const idx = Object.keys(process.env).indexOf(key)
   let retVal
@@ -214,6 +224,19 @@ function knex(dbName) {
   return retKnex
 }
 
+export function knexByConnectionString(connectionString) {
+  const cs = connectionString
+  const knexPgClient = Knex({
+    client: 'pg',
+    connection: cs,
+    debug: STAGE !== 'prod',
+    pool: { min: 0, max: 1 },
+  })
+  knexPgClient.client = knexDialect
+  const retKnex = knexPgClient
+  return retKnex
+}
+
 function IsValidQuery(query) {
   if (query && typeof query === 'string') {
     if (query.length > 0) {
@@ -223,15 +246,15 @@ function IsValidQuery(query) {
   return false
 }
 
-// function IsValidBatchKeyName(batchName) {
-//   if (batchName) {
-//     return true;
-//   }
-//   return false;
-// }
+function IsValidConnectionString(connString) {
+  if (connString && !isEmpty(connString)) {
+    return true
+  }
+  return false
+}
 
 function IsValidDBName(dbName) {
-  if (dbName) {
+  if (dbName && !isEmpty(dbName)) {
     return true
   }
   return false
@@ -246,13 +269,8 @@ function IsValidParams(params = {}, ThrowErrorIfInvalid = true) {
     HasErrors = true
   }
 
-  // if (!IsValidBatchKeyName(BatchKey)) {
-  //   ErrorMsg = `${ErrorMsg} Invalid BatchKey, It cannot be null or empty.`;
-  //   HasErrors = true;
-  // }
-
-  if (!IsValidDBName(DBName)) {
-    ErrorMsg = `${ErrorMsg} DBName cannot be null or empty`
+  if (!IsValidConnectionString(params.ConnectionString) && !IsValidDBName(DBName)) {
+    ErrorMsg = `${ErrorMsg} DBName or ConnectionString is required, Both cannot be empty.`
     HasErrors = true
   }
 

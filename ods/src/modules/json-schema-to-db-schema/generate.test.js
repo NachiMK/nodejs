@@ -5,7 +5,7 @@ describe('JsonSchemaToDBSchema - Unit Tests', () => {
     const event = require('./event.json')
     const obj = new JsonSchemaToDBSchema(event)
     try {
-      const resp = await obj.getDBSchema()
+      const resp = await obj.getDBScriptFromS3Schema()
       console.log('resp', JSON.stringify(resp, null, 2))
       expect(resp).toBeDefined()
     } catch (err) {

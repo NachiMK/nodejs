@@ -47,3 +47,16 @@ export function addText(knexTable, colName) {
 
 // const objTbl = new KnexTableScripter({ TableName: 'Table', TableSchema: 'public' })
 // objTbl.getCreateTableScript(ColsAndTypesJson)
+
+
+export function DropTableIfExists() {
+
+}
+
+export function TableExists() {
+
+}
+
+export function DropTable() {
+  
+}

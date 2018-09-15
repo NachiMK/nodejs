@@ -1,5 +1,6 @@
 import isArray from 'lodash/isArray'
 import isNumber from 'lodash/isNumber'
+import isEmpty from 'lodash/isEmpty'
 import moment from 'moment'
 import { isObject } from 'util'
 import { format as _format, transports as _transports, createLogger } from 'winston'
@@ -8,7 +9,7 @@ import { S3Params } from '../s3-params/index'
 import { IsValidString, CleanUpString } from '../../utils/string-utils/index'
 import { CleanUpBool } from '../../utils/bool-utils/index'
 import { ExtractMatchingKeyFromSchema } from '../json-extract-matching-keys'
-import { JsonToKnexDataTypeEnum } from '../ODSConstants/json-to-knex-mapping'
+import { JsonToKnexDataTypeEnum } from '../../data/psql/json-to-knex-mapping'
 import { knexNoDB } from '../../data/psql/index'
 
 export class JsonSchemaToDBSchema {
@@ -27,6 +28,7 @@ export class JsonSchemaToDBSchema {
     this._batchId = params.BatchId || ''
     this._s3Params = new S3Params(params)
     this.setDBOptions(params.DBOptions)
+    this._outputTableName = ''
     this.consoleTransport = new _transports.Console()
     this.consoleTransport.level = params.LogLevel
     this.logger.add(this.consoleTransport)
@@ -60,6 +62,9 @@ export class JsonSchemaToDBSchema {
   get DataTypeKey() {
     return this._dbOptions.dataTypeKey
   }
+  get OutputTableName() {
+    return this._outputTableName
+  }
 
   setDBOptions(opts = {}) {
     const retOpts = {
@@ -83,29 +88,16 @@ export class JsonSchemaToDBSchema {
     }
   }
 
-  async getDBSchema() {
-    this.ValidateParams()
-    try {
-      // Get data from S3
-      const inputdata = await GetJSONFromS3Path(this.S3Parameters.S3DataFilePath)
-      // object has any items
-      if (inputdata) {
-        // get columns and types.
-        const colsAndTypes = await getColumnsAndType(inputdata, this.DataTypeKey)
-        this.logger.log('debug', `Cols and Types:${colsAndTypes}`)
-        // get script
-        const dbScript = await getCreateTableSQL(
-          this.TableSchema,
-          this.getTableName(),
-          colsAndTypes
-        )
-        this.logger.log('debug', `SQL Script:${dbScript}`)
-        return dbScript
-      }
-    } catch (err) {
-      const e = new Error(`Error in generating SQL Script from JSON Schema. ${err.message}`)
-      this.logger.log('error', e.message)
-      throw e
+  async getDBScriptFromJsonSchema({ JsonSchema, DataTypeKey = 'type' }) {
+    if (JsonSchema) {
+      // get columns and types.
+      const colsAndTypes = await getColumnsAndType(JsonSchema, DataTypeKey)
+      this.logger.log('debug', `Cols and Types:${colsAndTypes}`)
+      // get script
+      this._outputTableName = this.getTableName()
+      const dbScript = await getCreateTableSQL(this.TableSchema, this.OutputTableName, colsAndTypes)
+      this.logger.log('debug', `SQL Script:${dbScript}`)
+      return dbScript
     }
 
     async function getColumnsAndType(jsonSchema, dataTypeKey) {
@@ -188,6 +180,28 @@ export class JsonSchemaToDBSchema {
     }
   }
 
+  async getDBScriptFromS3Schema() {
+    this.ValidateParams()
+    this.S3Parameters.ValidateInputFiles()
+    try {
+      // Get data from S3
+      const inputdata = await GetJSONFromS3Path(this.S3Parameters.S3DataFilePath)
+      // object has any items
+      if (inputdata) {
+        // get script
+        const dbScript = await this.getDBScriptFromJsonSchema({
+          JsonSchema: inputdata,
+          DataTypeKey: this.DataTypeKey,
+        })
+        return dbScript
+      }
+    } catch (err) {
+      const e = new Error(`Error in generating SQL Script from JSON Schema. ${err.message}`)
+      this.logger.log('error', e.message)
+      throw e
+    }
+  }
+
   getTableName() {
     const batch = this.AppendBatchId && isNumber(this.BatchId) ? `_${this.BatchId}` : ''
     const timestamp = this.AppendDateTimeToTable ? `_${moment().format('YYYYMMDD_HHmmssSSS')}` : ''
@@ -198,12 +212,15 @@ export class JsonSchemaToDBSchema {
     return tblName
   }
 
-  async saveDBSchema() {
+  async saveDBSchema(schemaToSave = {}) {
     let retFileName
     try {
       // TODO
       this.S3Parameters.ValidateOutputFiles()
-      const schema = await this.getDBSchema()
+      let schema = schemaToSave
+      if (!schemaToSave || isEmpty(schemaToSave)) {
+        schema = await this.getDBScriptFromS3Schema()
+      }
       if (schema) {
         const { S3OutputBucket, S3OutputKey } = this.S3Parameters.getOutputParams()
         this.logger.log('info', `S3Path: s3://${S3OutputBucket}/${S3OutputKey}`)
@@ -214,7 +231,7 @@ export class JsonSchemaToDBSchema {
           AppendDateTimeToFileName: false,
         })
       } else {
-        throw new Error('getDBSchema didnt throw error or return a schema.')
+        throw new Error('No DB Schema to save. Check S3Path or the Schema passed in')
       }
     } catch (err) {
       // TODO
@@ -226,7 +243,6 @@ export class JsonSchemaToDBSchema {
   }
 
   ValidateParams() {
-    this.S3Parameters.ValidateInputFiles()
     // validate the rest of parameters
     if (!IsValidString(this.TableNamePrefix)) {
       throw new Error('Invalid Param. TableName Prefix is required.')

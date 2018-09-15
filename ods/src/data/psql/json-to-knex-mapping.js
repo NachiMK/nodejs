@@ -8,7 +8,7 @@ import {
   addObject,
   addString,
   addText,
-} from '../../data/psql/table'
+} from './table'
 
 export const JsonToKnexDataTypeEnum = {
   number: {
