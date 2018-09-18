@@ -1,10 +1,11 @@
+import isArray from 'lodash/isArray'
 import { format as _format, transports as _transports, createLogger } from 'winston'
 import { isObject } from 'util'
 import { IsValidString, CleanUpString } from '../../utils/string-utils/index'
 import { CleanUpBool } from '../../utils/bool-utils/index'
 import { CSVToJsonSchema } from '../csv-to-json-schema'
 import { JsonSchemaToDBSchema } from '../json-schema-to-db-schema'
-import { executeCommand } from '../../data/psql/index'
+import { executeCommand, executeQueryRS } from '../../data/psql/index'
 import { KnexTable } from '../../data/psql/knexTable'
 
 export class CsvToPostgres {
@@ -32,7 +33,7 @@ export class CsvToPostgres {
   }
 
   get CSVFilePath() {
-    return this._csvFilePath
+    return this._CSVFilePath
   }
   get DBConnection() {
     return this._dBConnection
@@ -58,14 +59,20 @@ export class CsvToPostgres {
   get OutputTableName() {
     return this._outputTableName
   }
+  get OutputTableSchema() {
+    return this._outputTableSchema
+  }
+  get OutputTableWithSchema() {
+    return `${this.OutputTableSchema}.${this.OutputTableName}`
+  }
 
   setDBOptions(opts = {}) {
     const retOpts = {
-      tableSchema: 'public',
-      dataTypeKey: 'type',
-      appendDateTimeToTable: true,
-      appendBatchId: true,
-      dropTableIfExists: true,
+      _tableSchema: 'public',
+      _dataTypeKey: 'type',
+      _appendDateTimeToTable: true,
+      _appendBatchId: true,
+      _dropTableIfExists: true,
     }
     let ignoreColumns = []
     if (opts.IgnoreColumns && isArray(opts.IgnoreColumns) && opts.IgnoreColumns.length > 0) {
@@ -74,11 +81,14 @@ export class CsvToPostgres {
     this._dbOptions = {
       ...retOpts,
 
-      tableSchema: CleanUpString(opts.TableSchema, retOpts.tableSchema),
-      ignoreColumns: ignoreColumns,
-      appendDateTimeToTable: CleanUpBool(opts.AppendDateTimeToTable, retOpts.appendDateTimeToTable),
-      appendBatchId: CleanUpBool(opts.AppendBatchId, retOpts.appendBatchId),
-      dropTableIfExists: CleanUpBool(opts.DropTableIfExists, retOpts.dropTableIfExists),
+      _tableSchema: CleanUpString(opts.TableSchema, retOpts._tableSchema),
+      _ignoreColumns: ignoreColumns,
+      _appendDateTimeToTable: CleanUpBool(
+        opts.AppendDateTimeToTable,
+        retOpts._appendDateTimeToTable
+      ),
+      _appendBatchId: CleanUpBool(opts.AppendBatchId, retOpts._appendBatchId),
+      _dropTableIfExists: CleanUpBool(opts.DropTableIfExists, retOpts._dropTableIfExists),
     }
   }
 
@@ -109,25 +119,27 @@ export class CsvToPostgres {
       Output.S3JsonSchemaFilePath = await this.getJsonSchema()
       // get db script and save to this._dbScript
       Output.S3DBSchemaFilePath = await this.getDBScript()
-      Output.TableName = this.OutputTableName
+      Output.TableName = this.OutputTableWithSchema
       // create table or throw error
       await this.CreateTable()
       Output.TableCreated = true
       // copy data and return row count or throw error
       Output.RowCount = await this.CopyDataToTable()
     } catch (err) {
-      await this.DropTable(this.DBConnection, this.OutputTableName)
+      await DropTable(this.DBConnection, this.OutputTableSchema, this.OutputTableName)
       const e = new Error(`Error in loading data, ${err.message} to table: ${Output.TableName}`)
       this.logger.log('error', e.message)
       throw e
     }
+    return Output
 
-    async function DropTable(connString, tableName) {
+    async function DropTable(connString, schemaName, tableName) {
       const blnDropped = false
       try {
         const tbl = new KnexTable({
           ConnectionString: connString,
           TableName: tableName,
+          SchemaName: schemaName,
         })
         blnDropped = await tbl.DropTableIfExists()
       } catch (err) {
@@ -176,6 +188,7 @@ export class CsvToPostgres {
       BatchId: this.BatchId,
       DBOptions: {
         TableSchema: this.DBOptions._tableSchema,
+        DataTypeKey: this.DBOptions._dataTypeKey,
         IgnoreColumns: this.DBOptions._ignoreColumns,
         AppendDateTimeToTable: this.DBOptions._appendDateTimeToTable,
         AppendBatchId: this.DBOptions._appendBatchId,
@@ -185,9 +198,11 @@ export class CsvToPostgres {
     if (this.S3Options._saveIntermediatFilesToS3) {
       objParams.S3DataFilePath = ''
       objParams.S3OutputBucket = this.S3Options._s3OutputBucket
-      objParams.S3OutputKeyPrefix = `${this.S3Options._s3OutputKeyPrefix}-dbschema-`
-      objParams.FileExtension = '.sql'
-      objParams.AppendDateTimeToFileName = true
+      objParams.S3OutputKeyPrefix = `${this.S3Options._s3OutputKeyPrefix}-dbschema-raw-`
+      objParams.Options = {
+        FileExtension: '.sql',
+        AppendDateTimeToFileName: true,
+      }
     }
 
     const objDBScriptGen = new JsonSchemaToDBSchema(objParams)
@@ -195,17 +210,22 @@ export class CsvToPostgres {
     this._dbScript = await objDBScriptGen.getDBScriptFromJsonSchema({
       JsonSchema: this.Jsonschema,
     })
+    this._outputTableSchema = objDBScriptGen.TableSchema
     this._outputTableName = objDBScriptGen.OutputTableName
     // save file
     if (this.S3Options._saveIntermediatFilesToS3) {
-      const s3filepath = await objDBScriptGen.saveDBSchema(this.Jsonschema)
+      const s3filepath = await objDBScriptGen.saveDBSchema(this._dbScript)
       return s3filepath
     }
   }
 
   async CreateTable() {
     if (this.OutputTableName && this.DBScript) {
-      const dbResp = executeCommand({ Query: this.DBScript, ConnectionString: this.DBConnection })
+      const dbResp = await executeCommand({
+        Query: this.DBScript,
+        ConnectionString: this.DBConnection,
+        BatchKey: this.BatchId,
+      })
       if (!dbResp.completed || isObject(dbResp.error)) {
         throw new Error(
           `Error creating SQL Table: ${this.OutputTableName}, error: ${dbResp.error.message}`
@@ -220,21 +240,22 @@ export class CsvToPostgres {
 
   async CopyDataToTable() {
     let rowCnt = -1
-    if (this.CSVFilePath && this.OutputTableName) {
+    if (this.CSVFilePath && this.OutputTableWithSchema) {
       const tbl = new KnexTable({
         ConnectionString: this.DBConnection,
         TableName: this.OutputTableName,
+        TableSchema: this.OutputTableSchema,
       })
       const blnTblExists = await tbl.TableExists()
       if (blnTblExists) {
         //copy
         rowCnt = await tbl.UploadDataFromS3(this.CSVFilePath)
       } else {
-        throw new Error(`Table: ${this.OutputTableName} does not exists in DB`)
+        throw new Error(`Table: ${this.OutputTableWithSchema} does not exists in DB`)
       }
     } else {
       throw new Errror(
-        `Invalid Param: ${this.OutputTableName} or CSVFilePath: ${this.CSVFilePath} is empty.`
+        `Invalid Param: ${this.OutputTableWithSchema} or CSVFilePath: ${this.CSVFilePath} is empty.`
       )
     }
     return rowCnt

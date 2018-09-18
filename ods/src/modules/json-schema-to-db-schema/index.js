@@ -212,7 +212,7 @@ export class JsonSchemaToDBSchema {
     return tblName
   }
 
-  async saveDBSchema(schemaToSave = {}) {
+  async saveDBSchema(schemaToSave = '') {
     let retFileName
     try {
       // TODO
@@ -229,6 +229,7 @@ export class JsonSchemaToDBSchema {
           S3OutputKey,
           StringData: schema,
           AppendDateTimeToFileName: false,
+          FileExtension: this.S3Parameters.FileExtension,
         })
       } else {
         throw new Error('No DB Schema to save. Check S3Path or the Schema passed in')

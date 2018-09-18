@@ -139,7 +139,7 @@ export const logSQLCommand = async (params = {}, commandType = 'UNKNOWN') => {
     ODSLogger.log('debug', 'About to Log Query details: %j', Query)
     const resp1 = await localKnex.raw('SELECT udf_insert_commandlog(?,?,?,?)', [
       BatchKey,
-      DBName,
+      DBName || '',
       Query,
       commandType,
     ])
