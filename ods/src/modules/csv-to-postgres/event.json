@@ -1,13 +1,13 @@
 {
-    "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/csv/test-clients-CSVFile-1-CurrentHealthPlanDesigns-20180906_132226229.csv",
-    "TableNamePrefix" : "clients_current_healthplandesigns_raw",
+    "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/csv/test-clients-CSVFile-0-clients.csv",
+    "TableNamePrefix" : "clients_raw",
     "DBConnection": "",
     "BatchId" : 44,
     "LogLevel": "info",
     "S3Options": {
         "SaveIntermediatFilesToS3": true,
         "S3OutputBucket": "dev-ods-data",
-        "S3OutputKeyPrefix": "unit-test/clients/dbschema/clients-currenthealthplandesigns-"
+        "S3OutputKeyPrefix": "unit-test/clients/dbschema/clients-"
     },
     "DBOptions" : {
         "TableSchema" : "raw",

@@ -7,8 +7,8 @@ import { DataPipeLineTaskQueue } from '../../../modules/ODSConfig/DataPipeLineTa
  *  JSON History to Flat JSON
  *  Flat JSON to CSV
  *  CSV to Pre-stage
- *  Pre-Stage to RAW
- *  RAW to Clean
+ *  Pre-Stage to Stage
+ *  Stage to Clean
  *
  * Parameter:
  *  Source Entity (Dynamo Table Name)
@@ -30,7 +30,9 @@ import {
 import { DoTaskSaveJsonSchema } from '../json-to-json-schema'
 import { DoTaskJsonToJsonNormalize } from '../json-to-json-normalize'
 import { DoTaskJsonToCSV } from '../json-to-csv'
-import { PreStagetoRAW, CsvToPreStage } from '../csv-to-pre-stage-psql'
+import { DoTaskCsvToPreStage } from '../csv-to-pre-stage'
+import { DoTaskPreStageToStage } from '../psql-pre-stage-to-stage'
+import { DoTaskStageToClean } from '../psql-stage-to-clean'
 import { ODSPipeLineFactory } from '../PipeLineTaskFactory/index'
 
 const ChildTaskFunctions = {
@@ -38,8 +40,9 @@ const ChildTaskFunctions = {
   [TaskConfigEnum.JSONHistoryDataToJSONSchema.name]: ODSPipeLineFactory(DoTaskSaveJsonSchema),
   [TaskConfigEnum.JSONHistoryToFlatJSON.name]: ODSPipeLineFactory(DoTaskJsonToJsonNormalize),
   [TaskConfigEnum.FlatJSONToCSV.name]: ODSPipeLineFactory(DoTaskJsonToCSV),
-  [TaskConfigEnum.CSVToPrestage.name]: ODSPipeLineFactory(CsvToPreStage),
-  [TaskConfigEnum.PreStagetoRAW.name]: ODSPipeLineFactory(PreStagetoRAW),
+  [TaskConfigEnum.CSVToPrestage.name]: ODSPipeLineFactory(DoTaskCsvToPreStage),
+  [TaskConfigEnum.PreStagetoStage.name]: ODSPipeLineFactory(DoTaskPreStageToStage),
+  [TaskConfigEnum.StageToClean.name]: ODSPipeLineFactory(DoTaskStageToClean),
   default: defaultNotImplementedFunction,
 }
 

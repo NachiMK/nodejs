@@ -204,12 +204,12 @@ export class JsonSchemaToDBSchema {
 
   getTableName() {
     const batch = this.AppendBatchId && isNumber(this.BatchId) ? `_${this.BatchId}` : ''
-    const timestamp = this.AppendDateTimeToTable ? `_${moment().format('YYYYMMDD_HHmmssSSS')}` : ''
+    const timestamp = this.AppendDateTimeToTable ? `_${moment().format('YYMMDD_HHmmss')}` : ''
     const tblName = `${this.TableNamePrefix}${batch}${timestamp}`
       .toLocaleLowerCase()
       .replace(/[\W]+/g, '')
       .replace('__', '_')
-    return tblName
+    return tblName.substring(0, 63)
   }
 
   async saveDBSchema(schemaToSave = '') {

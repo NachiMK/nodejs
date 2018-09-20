@@ -82,7 +82,7 @@ INSERT INTO
     )
 SELECT   DPT."DataPipeLineTaskId"
         ,TCA."AttributeId"
-        ,'{Id}_stage_' || REPLACE(lower(Tbls."CleanTableName"), '-', '_') || '_' AS "AttributeValue"
+        ,REPLACE(lower(Tbls."CleanTableName"), '-', '_') || '{My.Id}_' AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
 JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"

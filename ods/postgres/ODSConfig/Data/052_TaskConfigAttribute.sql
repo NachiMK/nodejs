@@ -32,13 +32,15 @@ VALUES
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'Prefix.CSVFile')
 
     ,('CSV to Pre-stage', 'Process JSON to Postgres', 'S3CSVFile#')
+    ,('CSV to Pre-stage', 'Process JSON to Postgres', 'S3SchemaFileBucketName')
+    ,('CSV to Pre-stage', 'Process JSON to Postgres', 'Prefix.SchemaFile')
     ,('CSV to Pre-stage', 'Process JSON to Postgres', 'psql.PreStageTable.Prefix')
 
-    ,('Pre-Stage to RAW', 'Process JSON to Postgres', 'psql.TableName.PreStage')
-    ,('Pre-Stage to RAW', 'Process JSON to Postgres', 'psql.TableName.Raw')
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'psql.TableName.PreStage')
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'psql.TableName.Raw')
 
-    ,('RAW to Clean', 'Process JSON to Postgres', 'psql.TableName.Raw')
-    ,('RAW to Clean', 'Process JSON to Postgres', 'psql.TableName.Clean')
+    ,('Stage to Clean', 'Process JSON to Postgres', 'psql.TableName.Raw')
+    ,('Stage to Clean', 'Process JSON to Postgres', 'psql.TableName.Clean')
 ;
 
 UPDATE TCAttributeTemp AS T

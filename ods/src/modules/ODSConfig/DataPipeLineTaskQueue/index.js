@@ -1,3 +1,5 @@
+import isUndefined from 'lodash/isUndefined'
+import isArray from 'lodash/isArray'
 import {
   UpdatePipeLineTaskStatus as dataUpdatePipeLineTaskStatus,
   GetPipeLineTaskQueueAttribute as dataGetTaskQueueAttribute,
@@ -7,25 +9,25 @@ import { TaskStatusEnum } from '../../ODSConstants'
 
 export class DataPipeLineTaskQueue {
   constructor(task = {}) {
-    this.dataPipeLineTaskQueueId = task.DataPipeLineTaskQueueId || -1
-    this.taskConfigName = task.TaskConfigName || '~UNKNOWN.1'
-    this.runSequence = task.RunSequence
-    this.taskStatus = task.Status
-    this.taskQueueAttributes = {}
-    Object.assign(this.taskQueueAttributes, task.attributes)
+    this._dataPipeLineTaskQueueId = task.DataPipeLineTaskQueueId || -1
+    this._taskConfigName = task.TaskConfigName || '~UNKNOWN.1'
+    this._runSequence = task.RunSequence
+    this._taskStatus = task.Status
+    this._taskQueueAttributes = {}
+    Object.assign(this._taskQueueAttributes, task.attributes)
     this.taskError = {}
   }
   get DataPipeLineTaskQueueId() {
-    return this.dataPipeLineTaskQueueId
+    return this._dataPipeLineTaskQueueId
   }
   get TaskConfigName() {
-    return this.taskConfigName
+    return this._taskConfigName
   }
   get TaskStatus() {
-    return this.taskStatus
+    return this._taskStatus
   }
   get RunSequence() {
-    return this.runSequence
+    return this._runSequence
   }
   set TaskError(err) {
     this.taskError = err
@@ -34,20 +36,21 @@ export class DataPipeLineTaskQueue {
     return this.taskError
   }
   set TaskQueueAttributes(attributes = {}) {
-    if (attributes && attributes instanceof Array) {
+    if (!isUndefined(attributes) && isArray(attributes)) {
       attributes.forEach((item) => {
-        this.taskQueueAttributes[item.AttributeName] = item.AttributeValue
+        this._taskQueueAttributes[item.AttributeName] = item.AttributeValue
       })
     }
-    // Object.assign(this.taskQueueAttributes, attributes);
   }
   get TaskQueueAttributes() {
-    return this.taskQueueAttributes
+    return this._taskQueueAttributes
   }
   getTaskAttributeValue(attributeName) {
     let retVal
-    if (this.taskQueueAttributes) {
-      if (this.taskQueueAttributes[attributeName]) retVal = this.taskQueueAttributes[attributeName]
+    if (this.TaskQueueAttributes) {
+      if (this.TaskQueueAttributes[attributeName]) {
+        retVal = this.TaskQueueAttributes[attributeName]
+      }
     }
     return retVal
   }
@@ -80,16 +83,16 @@ export class DataPipeLineTaskQueue {
       Error: err,
     }
     Object.assign(updateparams, attributes)
-    await dataUpdatePipeLineTaskStatus(this.dataPipeLineTaskQueueId, updateparams)
+    await dataUpdatePipeLineTaskStatus(this.DataPipeLineTaskQueueId, updateparams)
     // if successfully updated then update my status.
-    this.taskStatus = status
+    this._taskStatus = status
     this.TaskError = err
   }
 
   async loadAttributes() {
     // do something
-    const resp = await dataGetTaskQueueAttribute(this.dataPipeLineTaskQueueId)
-    if (resp && resp instanceof Object) {
+    const resp = await dataGetTaskQueueAttribute(this.DataPipeLineTaskQueueId)
+    if (!isUndefined(resp)) {
       this.TaskQueueAttributes = resp
     }
   }

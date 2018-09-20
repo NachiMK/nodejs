@@ -52,7 +52,7 @@ export const UploadS3FileToDB = async (params = {}) => {
     retResp.status = 'error'
     throw new Error(`Error in UploadS3FileToDB, ${err.message}`)
   }
-  }
+}
 
 const getRowCnt = async (psqlClient, tableName) => {
   let rowCntResp

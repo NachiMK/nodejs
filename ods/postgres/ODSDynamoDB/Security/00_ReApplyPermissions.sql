@@ -2,7 +2,7 @@ CREATE ROLE odsddb_role;
 
 CREATE USER odsddb_user WITH ENCRYPTED PASSWORD 'H!xme_ddb_ah_dev1' ;
 
-GRANT odsdbb_role TO odsddb_user, hixme_root;
+GRANT odsddb_role TO odsddb_user, hixme_root;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA raw
    GRANT ALL ON TABLES TO odsddb_role;

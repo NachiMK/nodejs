@@ -16,7 +16,10 @@ BEGIN
     -- Result
     FOR retRecord in 
         SELECT   Q."DataPipeLineTaskQueueId"
-                ,A."AttributeName"
+                ,CASE   WHEN UPPER(A."AttributeName") = upper('S3CSVFile#') 
+                        THEN L."AttributeName"
+                        ELSE A."AttributeName"
+                 END
                 ,L."AttributeValue"
         FROM    ods."DataPipeLineTaskQueue"     AS Q
         INNER
@@ -29,8 +32,13 @@ BEGIN
         JOIN    ods."Attribute"                 AS  A   ON  A."AttributeId" = TA."AttributeId"
         INNER
         JOIN    ods."TaskQueueAttributeLog"     AS  L   ON  L."DataPipeLineTaskQueueId" IN (PrevTaskId, ParentTaskId)
-                                                        AND upper(L."AttributeName")   =   upper(A."AttributeName")
+                                                        
         WHERE   (Q."DataPipeLineTaskQueueId" = DataPipeLineTaskQueueId) --  OR Q."ParentTaskId" = DataPipeLineTaskQueueId
+        AND     (
+                    (upper(L."AttributeName") = upper(A."AttributeName"))
+                    OR
+                    (upper(L."AttributeName") ~ REPLACE(upper(A."AttributeName"), '#', '\d+'))
+                )
     LOOP
         RETURN NEXT retRecord;
     END LOOP;

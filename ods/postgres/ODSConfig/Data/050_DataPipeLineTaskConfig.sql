@@ -19,8 +19,8 @@ VALUES
     ,(2020, 'JSON History to Flat JSON', 'Process JSON to Postgres', 'S3/JSON', 'S3/JSON', 'Child')
     ,(2030, 'Flat JSON to CSV', 'Process JSON to Postgres', 'S3/JSON', 'S3/CSV', 'Child')
     ,(2040, 'CSV to Pre-stage', 'Process JSON to Postgres', 'S3/CSV', 'postgres/pre-stage', 'Child')
-    ,(2050, 'Pre-Stage to RAW', 'Process JSON to Postgres', 'postgres/pre-stage', 'postgres/raw', 'Child')
-    ,(2060, 'RAW to Clean', 'Process JSON to Postgres', 'postgres/raw', 'postgres/clean', 'Child')
+    ,(2050, 'Pre-Stage to Stage', 'Process JSON to Postgres', 'postgres/pre-stage', 'postgres/raw', 'Child')
+    ,(2060, 'Stage to Clean', 'Process JSON to Postgres', 'postgres/raw', 'postgres/clean', 'Child')
     ,(2070, 'Verification Process', 'Process JSON to Postgres', 'postgres/clean', 'postgres/clean', 'Child')
 ;
 

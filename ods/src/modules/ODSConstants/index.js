@@ -25,13 +25,18 @@ export const DataPipeLineTaskConfigNameEnum = {
     Parent: 1,
     ParentName: 'ProcessJSONToPostgres',
   },
-  PreStagetoRAW: {
+  PreStagetoStage: {
     value: 6,
-    name: 'Pre-Stage to RAW',
+    name: 'Pre-Stage to Stage',
     Parent: 1,
     ParentName: 'ProcessJSONToPostgres',
   },
-  RAWToClean: { value: 7, name: 'RAW to Clean', Parent: 1, ParentName: 'ProcessJSONToPostgres' },
+  StageToClean: {
+    value: 7,
+    name: 'Stage to Clean',
+    Parent: 1,
+    ParentName: 'ProcessJSONToPostgres',
+  },
 }
 
 export function getTaskConfigParent(TaskConfigName) {

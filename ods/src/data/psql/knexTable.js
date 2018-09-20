@@ -91,7 +91,7 @@ export class KnexTable {
 
   async UploadDataFromS3(s3FilePath) {
     const uploadResp = await UploadS3FileToDB({
-      TableName: this.TableNameWithSchema,
+      TableName: `"${this.TableSchema}"."${this.TableName}"`.replace('""', '"'),
       S3FilePath: s3FilePath,
       ConnectionString: this.DBConnection,
     })

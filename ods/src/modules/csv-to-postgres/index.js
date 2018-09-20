@@ -139,7 +139,7 @@ export class CsvToPostgres {
         const tbl = new KnexTable({
           ConnectionString: connString,
           TableName: tableName,
-          SchemaName: schemaName,
+          TableSchema: schemaName,
         })
         blnDropped = await tbl.DropTableIfExists()
       } catch (err) {
@@ -168,7 +168,7 @@ export class CsvToPostgres {
     }
     if (this.S3Options._saveIntermediatFilesToS3) {
       objParams.S3OutputBucket = this.S3Options._s3OutputBucket
-      objParams.S3OutputKeyPrefix = `${this.S3Options._s3OutputKeyPrefix}-schema-bycsv-`
+      objParams.S3OutputKeyPrefix = `${this.S3Options._s3OutputKeyPrefix}-json-bycsv-`
       objParams.FileExtension = '.json'
       objParams.AppendDateTimeToFileName = true
     }
@@ -198,7 +198,7 @@ export class CsvToPostgres {
     if (this.S3Options._saveIntermediatFilesToS3) {
       objParams.S3DataFilePath = ''
       objParams.S3OutputBucket = this.S3Options._s3OutputBucket
-      objParams.S3OutputKeyPrefix = `${this.S3Options._s3OutputKeyPrefix}-dbschema-raw-`
+      objParams.S3OutputKeyPrefix = `${this.S3Options._s3OutputKeyPrefix}-db-raw-`
       objParams.Options = {
         FileExtension: '.sql',
         AppendDateTimeToFileName: true,
