@@ -1,6 +1,7 @@
 import odsLogger from '../../../modules/log/ODSLogger'
 import JsonSchemaSaver from '../../../modules/ods-schema-builder'
-import { TaskStatusEnum } from '../../../modules/ODSConstants'
+import { TaskStatusEnum } from '../../../modules/ODSConstants/index'
+import { PreDefinedAttributeEnum } from '../../../modules/ODSConstants/AttributeNames'
 
 export async function DoTaskSaveJsonSchema(dataPipeLineTaskQueue) {
   const taskResp = {}
@@ -40,7 +41,7 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
       // save file
       taskResponse.Status = TaskStatusEnum.Completed.name
       taskResponse.error = undefined
-      task.TaskQueueAttributes.S3SchemaFile = moduleResponse.file
+      task.TaskQueueAttributes[PreDefinedAttributeEnum.S3SchemaFile.value] = moduleResponse.file
     } else {
       taskResponse.Status = TaskStatusEnum.Error.name
       taskResponse.error = new Error(
@@ -59,12 +60,14 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
 function getInput(task) {
   const input = {
     Datafile: task
-      .getTaskAttributeValue('S3DataFile')
+      .getTaskAttributeValue(PreDefinedAttributeEnum.S3DataFile.value)
       .replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
-    S3RAWJsonSchemaFile: task.getTaskAttributeValue('S3RAWJsonSchemaFile'),
+    S3RAWJsonSchemaFile: task.getTaskAttributeValue(
+      PreDefinedAttributeEnum.S3RAWJsonSchemaFile.value
+    ),
     Output: `s3://${task.getTaskAttributeValue(
-      'S3SchemaFileBucketName'
-    )}/${task.getTaskAttributeValue('Prefix.SchemaFile')}`,
+      PreDefinedAttributeEnum.S3SchemaFileBucketName.value
+    )}/${task.getTaskAttributeValue(PreDefinedAttributeEnum.PrefixSchemaFile.value)}`,
     Overwrite: 'yes',
   }
 

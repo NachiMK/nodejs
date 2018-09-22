@@ -1,14 +1,15 @@
 import _ from 'lodash'
 import odsLogger from '../../../modules/log/ODSLogger'
-import { TaskStatusEnum } from '../../../modules/ODSConstants'
+import { TaskStatusEnum } from '../../../modules/ODSConstants/index'
+import { DynamicAttributeEnum } from '../../../modules/ODSConstants/AttributeNames'
 import { OdsCsvToPreStage } from '../../../controller/ods-csv-to-prestage'
 
 export async function DoTaskCsvToPreStage(dataPipeLineTaskQueue) {
   const taskResp = {}
   if (dataPipeLineTaskQueue) {
+    const objCsvToPostgresRaw = new OdsCsvToPreStage(dataPipeLineTaskQueue)
     try {
       odsLogger.log('info', 'About to call CSV To Postgres RAW:', dataPipeLineTaskQueue)
-      const objCsvToPostgresRaw = new OdsCsvToPreStage(dataPipeLineTaskQueue)
       const loadresp = await objCsvToPostgresRaw.SaveFilesToDatabase()
 
       odsLogger.log('debug', 'Response for saving to postgres:', loadresp)
@@ -37,16 +38,21 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
       // save file
       taskResponse.Status = TaskStatusEnum.Completed.name
       taskResponse.error = undefined
-      _.forEach(fileList, (saveFileResult, fileIndexKey) => {
-        console.log('fileOutput forloop:', JSON.stringify(saveFileResult, null, 2))
-        console.log('fileIndexKey forloop:', fileIndexKey)
-        task.TaskQueueAttributes[`${fileIndexKey}.S3JsonSchemaFilePath`] =
-          saveFileResult.S3JsonSchemaFilePath
-        task.TaskQueueAttributes[`${fileIndexKey}.S3DBSchemaFilePath`] =
-          saveFileResult.S3DBSchemaFilePath
-        task.TaskQueueAttributes[`${fileIndexKey}.TableName`] = saveFileResult.TableName
-        task.TaskQueueAttributes[`${fileIndexKey}.TableCreated`] = saveFileResult.TableCreated
-        task.TaskQueueAttributes[`${fileIndexKey}.RowCount`] = saveFileResult.RowCount
+      _.forEach(fileList, (item) => {
+        const csvFileKey = Object.keys(item)[0]
+        const saveFileResult = item[csvFileKey]
+        task.TaskQueueAttributes[
+          `${csvFileKey}.${DynamicAttributeEnum.S3JsonSchemaFilePath.value}`
+        ] = saveFileResult[DynamicAttributeEnum.S3JsonSchemaFilePath.value]
+        task.TaskQueueAttributes[
+          `${csvFileKey}..${DynamicAttributeEnum.S3DBSchemaFilePath.value}`
+        ] = saveFileResult[DynamicAttributeEnum.S3DBSchemaFilePath.value]
+        task.TaskQueueAttributes[`${csvFileKey}.${DynamicAttributeEnum.TableName.value}`] =
+          saveFileResult[DynamicAttributeEnum.TableName.value]
+        task.TaskQueueAttributes[`${csvFileKey}.${DynamicAttributeEnum.TableCreated.value}`] =
+          saveFileResult[DynamicAttributeEnum.TableCreated.value]
+        task.TaskQueueAttributes[`${csvFileKey}.${DynamicAttributeEnum.RowCount.value}`] =
+          saveFileResult[DynamicAttributeEnum.RowCount.value]
       })
     } else {
       taskResponse.Status = TaskStatusEnum.Error.name

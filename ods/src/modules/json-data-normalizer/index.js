@@ -1,6 +1,7 @@
 import _isEmpty from 'lodash/isEmpty'
 import { JsonMissingKeyFiller } from '../json-missing-key-filler/index'
 import { JsonToJsonFlattner } from '../json-to-json-flattner/JsonToJsonFlattner'
+import { PreDefinedAttributeEnum } from '../../modules/ODSConstants/AttributeNames'
 
 export const JsonDataNormalizer = async (params = {}) => {
   const resp = {
@@ -15,14 +16,19 @@ export const JsonDataNormalizer = async (params = {}) => {
   console.log(`Parameters for JsonDataNormalier: ${JSON.stringify(params)}`)
 
   ValidateParams(params)
+  const s3UniformJsonFileEnum = PreDefinedAttributeEnum.S3UniformJsonFile.value
+  const s3FlatJsonFileEnum = PreDefinedAttributeEnum.S3FlatJsonFile.value
 
   try {
     objMissingKeyFiller = new JsonMissingKeyFiller(getParamsForFillingMissedKeys(params))
     await objMissingKeyFiller.getUniformJsonData()
-    if (!objMissingKeyFiller.S3UniformJsonFile || _isEmpty(objMissingKeyFiller.S3UniformJsonFile)) {
+    if (
+      !objMissingKeyFiller[s3UniformJsonFileEnum] ||
+      _isEmpty(objMissingKeyFiller[s3UniformJsonFileEnum])
+    ) {
       throw new Error('JsonMissingKeyFiller didnt throw error but didnt return a file.')
     }
-    resp.S3UniformJsonFile = objMissingKeyFiller.S3UniformJsonFile
+    resp[s3UniformJsonFileEnum] = objMissingKeyFiller[s3UniformJsonFileEnum]
   } catch (err) {
     resp.status.message = 'error'
     resp.error = new Error(`Error in getting Uniform Json Data, ${err.message}`)
@@ -31,16 +37,16 @@ export const JsonDataNormalizer = async (params = {}) => {
 
   // did we create a file successfully? if so let us flaten it.
   try {
-    if (resp.S3UniformJsonFile) {
+    if (resp[s3UniformJsonFileEnum]) {
       // let us flatten the data
       const flatParams = getParamsToFlattenJson(params)
-      flatParams.S3DataFilePath = resp.S3UniformJsonFile
+      flatParams.S3DataFilePath = resp[s3UniformJsonFileEnum]
       const objJsonFlatner = new JsonToJsonFlattner(flatParams)
       await objJsonFlatner.SaveNormalizedData()
       if (!objJsonFlatner.Output.NormalizedS3Path) {
         throw new Error('JsonToJsonFlattner didnt throw error but didnt return a file.')
       }
-      resp.S3FlatJsonFile = objJsonFlatner.Output.NormalizedS3Path
+      resp[s3FlatJsonFileEnum] = objJsonFlatner.Output.NormalizedS3Path
       resp.status.message = 'success'
     }
   } catch (err) {

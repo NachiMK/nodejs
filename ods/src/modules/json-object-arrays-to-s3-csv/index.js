@@ -3,6 +3,7 @@ import { format as _format, transports as _transports, createLogger } from 'wins
 import { GetJSONFromS3Path, getFileName } from '../s3ODS/index'
 import { JsonToS3CSV } from '../json-to-s3-csv'
 import { CleanUpString, StringLength } from '../../utils/string-utils/index'
+import { DynamicAttributeEnum } from '../ODSConstants/AttributeNames'
 
 /**
  * @class JsobObjectArrayToS3CSV
@@ -102,6 +103,23 @@ export class JsonObjectArrayToS3CSV {
   get KeysToProcess() {
     return this.options.keysToProcess
   }
+
+  ProcessedKeyAndFiles(prefix = 'S3CSVFile') {
+    let retArray = []
+    if (this.Output && this.Output.keyStatus) {
+      this.Output.keyStatus
+        .filter((keystat) => keystat.status === 'success')
+        .forEach((filestat, idx) => {
+          const csvFileKey = `${prefix}${idx}`
+          const jkey = `${csvFileKey}.${DynamicAttributeEnum.JsonObjectName.value}`
+          const csvKey = `${csvFileKey}.${DynamicAttributeEnum.csvFileName.value}`
+          retArray.push({ [jkey]: filestat.KeyProcessed })
+          retArray.push({ [csvKey]: filestat.csvFileName })
+        })
+    }
+    return retArray
+  }
+
   get S3CSVFiles() {
     let fileList = []
     if (this.Output && this.Output.keyStatus)

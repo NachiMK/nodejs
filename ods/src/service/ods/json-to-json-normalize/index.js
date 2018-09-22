@@ -1,6 +1,7 @@
 import odsLogger from '../../../modules/log/ODSLogger'
 import { JsonDataNormalizer } from '../../../modules/json-data-normalizer'
-import { TaskStatusEnum } from '../../../modules/ODSConstants'
+import { TaskStatusEnum } from '../../../modules/ODSConstants/index'
+import { PreDefinedAttributeEnum } from '../../../modules/ODSConstants/AttributeNames'
 
 export async function DoTaskJsonToJsonNormalize(dataPipeLineTaskQueue) {
   const taskResp = {}
@@ -34,12 +35,14 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
   if (IsStatusSuccess(moduleResponse)) {
     // completed successfully
     // get file as well
-    if (moduleResponse.S3FlatJsonFile) {
+    if (moduleResponse[PreDefinedAttributeEnum.S3FlatJsonFile.value]) {
       // save file
       taskResponse.Status = TaskStatusEnum.Completed.name
       taskResponse.error = undefined
-      task.TaskQueueAttributes.S3UniformJsonFile = moduleResponse.S3UniformJsonFile
-      task.TaskQueueAttributes.S3FlatJsonFile = moduleResponse.S3FlatJsonFile
+      task.TaskQueueAttributes.S3UniformJsonFile =
+        moduleResponse[PreDefinedAttributeEnum.S3UniformJsonFile.value]
+      task.TaskQueueAttributes.S3FlatJsonFile =
+        moduleResponse[PreDefinedAttributeEnum.S3FlatJsonFile.value]
     } else {
       taskResponse.Status = TaskStatusEnum.Error.name
       taskResponse.error = new Error(
@@ -58,15 +61,19 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
 function getInput(task) {
   const input = {
     S3DataFile: task
-      .getTaskAttributeValue('S3DataFile')
+      .getTaskAttributeValue(PreDefinedAttributeEnum.S3DataFile.value)
       .replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
     Overwrite: 'yes',
     S3SchemaFile: task
-      .getTaskAttributeValue('S3SchemaFile')
+      .getTaskAttributeValue(PreDefinedAttributeEnum.S3SchemaFile.value)
       .replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
-    S3OutputBucket: task.getTaskAttributeValue('S3UniformJSONBucketName'),
-    S3UniformJsonPrefix: task.getTaskAttributeValue('Prefix.UniformJSONFile'),
-    S3FlatJsonPrefix: task.getTaskAttributeValue('Prefix.FlatJSONFile'),
+    S3OutputBucket: task.getTaskAttributeValue(
+      PreDefinedAttributeEnum.S3UniformJSONBucketName.value
+    ),
+    S3UniformJsonPrefix: task.getTaskAttributeValue(
+      PreDefinedAttributeEnum.PrefixUniformJSONFile.value
+    ),
+    S3FlatJsonPrefix: task.getTaskAttributeValue(PreDefinedAttributeEnum.PrefixFlatJSONFile.value),
     TableName: task.TableName,
     BatchId: task.DataPipeLineTaskQueueId,
     LogLevel: 'info',

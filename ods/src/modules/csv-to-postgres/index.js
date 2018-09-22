@@ -3,6 +3,7 @@ import { format as _format, transports as _transports, createLogger } from 'wins
 import { isObject } from 'util'
 import { IsValidString, CleanUpString } from '../../utils/string-utils/index'
 import { CleanUpBool } from '../../utils/bool-utils/index'
+import { DynamicAttributeEnum } from '../../modules/ODSConstants/AttributeNames'
 import { CSVToJsonSchema } from '../csv-to-json-schema'
 import { JsonSchemaToDBSchema } from '../json-schema-to-db-schema'
 import { executeCommand, executeQueryRS } from '../../data/psql/index'
@@ -116,15 +117,15 @@ export class CsvToPostgres {
     this.ValidateParam()
     try {
       // get json schema and save to this._jsonschema
-      Output.S3JsonSchemaFilePath = await this.getJsonSchema()
+      Output[DynamicAttributeEnum.S3JsonSchemaFilePath.value] = await this.getJsonSchema()
       // get db script and save to this._dbScript
-      Output.S3DBSchemaFilePath = await this.getDBScript()
-      Output.TableName = this.OutputTableWithSchema
+      Output[DynamicAttributeEnum.S3DBSchemaFilePath.value] = await this.getDBScript()
+      Output[DynamicAttributeEnum.TableName.value] = this.OutputTableWithSchema
       // create table or throw error
       await this.CreateTable()
-      Output.TableCreated = true
+      Output[DynamicAttributeEnum.TableCreated.value] = true
       // copy data and return row count or throw error
-      Output.RowCount = await this.CopyDataToTable()
+      Output[DynamicAttributeEnum.RowCount.value] = await this.CopyDataToTable()
     } catch (err) {
       await DropTable(this.DBConnection, this.OutputTableSchema, this.OutputTableName)
       const e = new Error(`Error in loading data, ${err.message} to table: ${Output.TableName}`)

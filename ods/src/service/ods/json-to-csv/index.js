@@ -1,5 +1,6 @@
 import odsLogger from '../../../modules/log/ODSLogger'
 import { TaskStatusEnum } from '../../../modules/ODSConstants'
+import { PreDefinedAttributeEnum } from '../../../modules/ODSConstants/AttributeNames'
 import { JsonObjectArrayToS3CSV } from '../../../modules/json-object-arrays-to-s3-csv'
 
 export async function DoTaskJsonToCSV(dataPipeLineTaskQueue) {
@@ -37,14 +38,15 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
   if (IsStatusSuccess(moduleResponse.Output)) {
     // completed successfully
     // get file as well
-    const fileList = moduleResponse.S3CSVFiles
-    if (fileList && fileList.length > 0) {
+    const fileAndObjectNames = moduleResponse.ProcessedKeyAndFiles()
+    if (fileAndObjectNames && fileAndObjectNames.length > 0) {
       // save file
       taskResponse.Status = TaskStatusEnum.Completed.name
       taskResponse.error = undefined
       let idx = 0
-      fileList.forEach((element) => {
-        task.TaskQueueAttributes[`S3CSVFile${idx}`] = element
+      fileAndObjectNames.forEach((element) => {
+        Object.assign(task.TaskQueueAttributes, element)
+        // task.TaskQueueAttributes[`S3CSVFile${idx}`] = element
         idx += 1
       })
     } else {
@@ -65,14 +67,14 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
 function getInput(task) {
   const input = {
     S3DataFilePath: task
-      .getTaskAttributeValue('S3FlatJsonFile')
+      .getTaskAttributeValue(PreDefinedAttributeEnum.S3DataFile.value)
       .replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
     Overwrite: 'yes',
     S3SchemaFile: task
-      .getTaskAttributeValue('S3SchemaFile')
+      .getTaskAttributeValue(PreDefinedAttributeEnum.S3SchemaFile.value)
       .replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
-    S3OutputBucket: task.getTaskAttributeValue('S3CSVFilesBucketName'),
-    S3OutputKeyPrefix: task.getTaskAttributeValue('Prefix.CSVFile'),
+    S3OutputBucket: task.getTaskAttributeValue(PreDefinedAttributeEnum.S3CSVFilesBucketName.value),
+    S3OutputKeyPrefix: task.getTaskAttributeValue(PreDefinedAttributeEnum.PrefixCSVFile.value),
     TableName: task.TableName,
     BatchId: task.DataPipeLineTaskQueueId,
     LogLevel: 'info',

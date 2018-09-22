@@ -2,6 +2,10 @@ import pickBy from 'lodash/pickBy'
 import odsLogger from '../../modules/log/ODSLogger'
 import { CsvToPostgres } from '../../modules/csv-to-postgres'
 import { getConnectionString } from '../../data/psql'
+import {
+  DynamicAttributeEnum,
+  PreDefinedAttributeEnum,
+} from '../../modules/ODSConstants/AttributeNames'
 
 export class OdsCsvToPreStage {
   constructor(dataPipeLineTask) {
@@ -13,14 +17,25 @@ export class OdsCsvToPreStage {
   get TaskAttributes() {
     return this.DataPipeLineTask.TaskQueueAttributes
   }
-  get S3CSVFileList() {
+  get S3CSVFileObjects() {
     if (this.TaskAttributes) {
       const filtered = pickBy(this.TaskAttributes, function(attvalue, attkey) {
-        return attkey.match(/S3CSVFile\d+/gi)
+        // Attribute name should in format: S3CSVFile1.CSVFileName or S3CSVFile1.JsonObjectName
+        return attkey.match(/S3CSVFile\d+\.{1}.*/gi)
       })
-      return filtered
+      // Every file has two different information, File name and Json
+      // we are going to combine that into one object
+      const retCollection = {}
+      Object.keys(filtered).map((item) => {
+        const [fileCommonKey, AttributeName] = item.split('.')
+        if (!retCollection[`${fileCommonKey}`]) {
+          retCollection[`${fileCommonKey}`] = {}
+        }
+        retCollection[`${fileCommonKey}`][`${AttributeName}`] = filtered[item]
+      })
+      return retCollection
     }
-    return []
+    return {}
   }
 
   async SaveFilesToDatabase() {
@@ -33,14 +48,14 @@ export class OdsCsvToPreStage {
     }
     try {
       // get list of files
-      const fileList = this.S3CSVFileList
-      if (fileList && Object.keys(fileList).length > 0) {
-        odsLogger.log('debug', `CSV File count to process: ${Object.keys(fileList).length}`)
+      const s3CSVFileObjects = this.S3CSVFileObjects
+      if (s3CSVFileObjects && Object.keys(s3CSVFileObjects).length > 0) {
+        odsLogger.log('debug', `CSV File count to process: ${Object.keys(s3CSVFileObjects).length}`)
         // Load data (in Parallel, could cause DB issue, need to monitor)
         retSaveFileStatus.fileList = await Promise.all(
-          Object.keys(fileList).map(async (fileKey) => {
+          Object.keys(s3CSVFileObjects).map(async (fileKey) => {
             const output = {}
-            output[fileKey] = await this.saveFile(fileList[fileKey])
+            output[fileKey] = await this.saveFile(s3CSVFileObjects[fileKey])
             return output
           })
         )
@@ -80,9 +95,11 @@ export class OdsCsvToPreStage {
     }
   }
 
-  async saveFile(csvFile) {
-    odsLogger.log('debug', `CSV to Postgres File: ${csvFile}`)
-    const event = this.getCsvToPostgresInput(csvFile)
+  async saveFile(csvFileAndKey) {
+    const csvFile = csvFileAndKey[DynamicAttributeEnum.csvFileName.value]
+    const jsonkey = csvFileAndKey[DynamicAttributeEnum.JsonObjectName.value]
+    odsLogger.log('debug', `CSV to Postgres File: ${csvFile}, Json Key: ${{ jsonkey }}`)
+    const event = this.getCsvToPostgresInput(csvFile, jsonkey.replace('-', '_'))
     const objCsvToPsql = new CsvToPostgres(event)
     const resp = await objCsvToPsql.LoadData()
     resp.FileName = csvFile
@@ -90,15 +107,13 @@ export class OdsCsvToPreStage {
     return resp
   }
 
-  getCsvToPostgresInput(csvS3FilePath) {
-    // strip few parts of CSV file to get the right table name
-    // expected file name: 50-53-clients-CSV-2-HixmeAccidentCompositePrices.csv
-    const subTableName = csvS3FilePath
-      .replace(/(.*)(\d+)-(\d+)-(.+)(-CSV)-/, '')
-      .replace('.csv', '')
-      .replace('-', '_')
-    let tablePrefix = `${this.TaskAttributes['psql.PreStageTable.Prefix']}${subTableName}`
-    let s3FilePrefix = `${this.TaskAttributes['Prefix.SchemaFile']}${subTableName}-`
+  getCsvToPostgresInput(csvS3FilePath, prefix) {
+    let tablePrefix = `${
+      this.TaskAttributes[PreDefinedAttributeEnum.psqlPreStageTablePrefix.value]
+    }${prefix}`
+    let s3FilePrefix = `${
+      this.TaskAttributes[PreDefinedAttributeEnum.PrefixSchemaFile.value]
+    }${prefix}-`
     return {
       S3DataFilePath: csvS3FilePath,
       TableNamePrefix: tablePrefix,
@@ -110,7 +125,7 @@ export class OdsCsvToPreStage {
       LogLevel: process.env.odsloglevel || 'warn',
       S3Options: {
         SaveIntermediatFilesToS3: true,
-        S3OutputBucket: this.TaskAttributes['S3SchemaFileBucketName'],
+        S3OutputBucket: this.TaskAttributes[PreDefinedAttributeEnum.S3SchemaFileBucketName.value],
         S3OutputKeyPrefix: s3FilePrefix,
       },
       DBOptions: {

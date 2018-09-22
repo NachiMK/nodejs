@@ -2,5 +2,6 @@
     "DataPipeLineTaskQueueId": 54,
     "TaskConfigName": "CSV to Pre-stage",
     "RunSequence": 2040,
-    "Status": "On Hold"
+    "Status": "On Hold",
+    "TableName": "clients"
 }
