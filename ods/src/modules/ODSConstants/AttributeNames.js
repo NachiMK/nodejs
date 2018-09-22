@@ -1,0 +1,41 @@
+export const PreDefinedAttributeEnum = {
+  DynamoTableName: { value: 'Dynamo.TableName', Prefix: '', HasRunningIndex: false },
+  PrefixCSVFile: { value: 'Prefix.CSVFile', Prefix: '', HasRunningIndex: false },
+  PrefixDataFile: { value: 'Prefix.DataFile', Prefix: '', HasRunningIndex: false },
+  PrefixFlatJSONFile: { value: 'Prefix.FlatJSONFile', Prefix: '', HasRunningIndex: false },
+  PrefixSchemaFile: { value: 'Prefix.SchemaFile', Prefix: '', HasRunningIndex: false },
+  PrefixUniformJSONFile: { value: 'Prefix.UniformJSONFile', Prefix: '', HasRunningIndex: false },
+  psqlPreStageTablePrefix: {
+    value: 'psql.PreStageTable.Prefix',
+    Prefix: '',
+    HasRunningIndex: false,
+  },
+  psqlTableNameClean: { value: 'psql.TableName.Clean', Prefix: '', HasRunningIndex: false },
+  psqlTableNamePreStage: { value: 'psql.TableName.PreStage', Prefix: '', HasRunningIndex: false },
+  psqlTableNameRaw: { value: 'psql.TableName.Raw', Prefix: '', HasRunningIndex: false },
+  S3CSVFile: { value: 'S3CSVFile#', Prefix: '', HasRunningIndex: true },
+  S3CSVFilesBucketName: { value: 'S3CSVFilesBucketName', Prefix: '', HasRunningIndex: false },
+  S3DataFile: { value: 'S3DataFile', Prefix: '', HasRunningIndex: false },
+  S3DataFileBucketName: { value: 'S3DataFileBucketName', Prefix: '', HasRunningIndex: false },
+  S3FlatJsonFile: { value: 'S3FlatJsonFile', Prefix: '', HasRunningIndex: false },
+  S3RAWJsonSchemaFile: { value: 'S3RAWJsonSchemaFile', Prefix: '', HasRunningIndex: false },
+  S3SchemaFile: { value: 'S3SchemaFile', Prefix: '', HasRunningIndex: false },
+  S3SchemaFileBucketName: { value: 'S3SchemaFileBucketName', Prefix: '', HasRunningIndex: false },
+  S3UniformJSONBucketName: { value: 'S3UniformJSONBucketName', Prefix: '', HasRunningIndex: false },
+  S3UniformJSONFile: { value: 'S3UniformJSONFile', Prefix: '', HasRunningIndex: false },
+}
+
+export const DynamicAttributeEnum = {
+  PreviousTaskId: { value: 'PreviousTaskId', Prefix: '', HasRunningIndex: false },
+  csvFileName: { value: 'csvFileName', Prefix: 'S3CSVFile', HasRunningIndex: true },
+  JsonObjectName: { value: 'JsonObjectName', Prefix: 'S3CSVFile', HasRunningIndex: true },
+  RowCount: { value: 'RowCount', Prefix: 'S3CSVFile', HasRunningIndex: true },
+  S3DBSchemaFilePath: { value: 'S3DBSchemaFilePath', Prefix: 'S3CSVFile', HasRunningIndex: true },
+  S3JsonSchemaFilePath: {
+    value: 'S3JsonSchemaFilePath',
+    Prefix: 'S3CSVFile',
+    HasRunningIndex: true,
+  },
+  TableCreated: { value: 'TableCreated', Prefix: 'S3CSVFile', HasRunningIndex: true },
+  TableName: { value: 'TableName', Prefix: 'S3CSVFile', HasRunningIndex: true },
+}
