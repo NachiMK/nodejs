@@ -39,8 +39,8 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
       // save file
       taskResponse.Status = TaskStatusEnum.Completed.name
       taskResponse.error = undefined
-      task.TaskQueueAttributes.S3UniformJsonFile =
-        moduleResponse[PreDefinedAttributeEnum.S3UniformJsonFile.value]
+      task.TaskQueueAttributes.S3UniformJSONFile =
+        moduleResponse[PreDefinedAttributeEnum.S3UniformJSONFile.value]
       task.TaskQueueAttributes.S3FlatJsonFile =
         moduleResponse[PreDefinedAttributeEnum.S3FlatJsonFile.value]
     } else {

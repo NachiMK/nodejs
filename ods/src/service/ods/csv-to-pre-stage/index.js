@@ -47,8 +47,8 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
         task.TaskQueueAttributes[
           `${csvFileKey}..${DynamicAttributeEnum.S3DBSchemaFilePath.value}`
         ] = saveFileResult[DynamicAttributeEnum.S3DBSchemaFilePath.value]
-        task.TaskQueueAttributes[`${csvFileKey}.${DynamicAttributeEnum.TableName.value}`] =
-          saveFileResult[DynamicAttributeEnum.TableName.value]
+        task.TaskQueueAttributes[`${csvFileKey}.${DynamicAttributeEnum.PreStageTableName.value}`] =
+          saveFileResult[DynamicAttributeEnum.PreStageTableName.value]
         task.TaskQueueAttributes[`${csvFileKey}.${DynamicAttributeEnum.TableCreated.value}`] =
           saveFileResult[DynamicAttributeEnum.TableCreated.value]
         task.TaskQueueAttributes[`${csvFileKey}.${DynamicAttributeEnum.RowCount.value}`] =

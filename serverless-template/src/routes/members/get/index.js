@@ -12,8 +12,7 @@ export const get = ware(
   isRoleAuthorized([ROLE_PLATFORM_HIXME_ADMIN]),
   initKnexAsync,
   async (event) => {
-    const memberGraph =
-    {
+    const memberGraph = {
       FirstName: 'John',
       LastName: 'Doe',
       DateOfBirth: '1980-01-01',
@@ -49,5 +48,5 @@ export const get = ware(
     event.result = member;
   },
   destroyKnexAsync,
-  after,
+  after
 );

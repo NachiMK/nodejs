@@ -11,8 +11,8 @@ export const get = ware(
   isRoleAuthorized([ROLE_PLATFORM_HIXME_ADMIN]),
   queryDynamo({
     tableName: 'services',
-    key: event => ({ Domain: event.queryStringParameters.Domain }),
+    key: (event) => ({ Domain: event.queryStringParameters.Domain }),
     indexName: 'Domain-index',
   }),
-  after,
+  after
 );

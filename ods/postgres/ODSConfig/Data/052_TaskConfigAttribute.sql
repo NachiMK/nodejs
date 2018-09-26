@@ -25,22 +25,29 @@ VALUES
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'Prefix.FlatJSONFile')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3DataFile')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3SchemaFile')
+    ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'LogLevel')
 
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3SchemaFile')
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3FlatJsonFile')
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'S3CSVFilesBucketName')
     ,('Flat JSON to CSV', 'Process JSON to Postgres', 'Prefix.CSVFile')
+    ,('Flat JSON to CSV', 'Process JSON to Postgres', 'LogLevel')
 
-    ,('CSV to Pre-stage', 'Process JSON to Postgres', 'S3CSVFile#')
     ,('CSV to Pre-stage', 'Process JSON to Postgres', 'S3SchemaFileBucketName')
     ,('CSV to Pre-stage', 'Process JSON to Postgres', 'Prefix.SchemaFile')
     ,('CSV to Pre-stage', 'Process JSON to Postgres', 'psql.PreStageTable.Prefix')
+    ,('CSV to Pre-stage', 'Process JSON to Postgres', 'LogLevel')
+    ,('CSV to Pre-stage', 'Process JSON to Postgres', 'S3CSVFile#') -- Dynamic (For copying from Previous Step)
 
-    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'psql.TableName.PreStage')
-    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'psql.TableName.Raw')
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'LogLevel')
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'psql.StageTable.Prefix')
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3SchemaFileBucketName')
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3SchemaFile') -- This is a Json Schema file
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3CSVFile#.PreStageTableName') -- Dynamic (For copying from Previous Step)
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3CSVFile#.JsonObjectName') -- Dynamic (For copying from Previous Step)
 
-    ,('Stage to Clean', 'Process JSON to Postgres', 'psql.TableName.Raw')
-    ,('Stage to Clean', 'Process JSON to Postgres', 'psql.TableName.Clean')
+    ,('Stage to Clean', 'Process JSON to Postgres', 'S3CSVFile#.StageTableName') -- Dynamic  (For copying from Previous Step)
+    ,('Stage to Clean', 'Process JSON to Postgres', 'S3CSVFile#.CleanTableName')
 ;
 
 UPDATE TCAttributeTemp AS T

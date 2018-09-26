@@ -1,20 +1,18 @@
-
 import { transaction } from 'objection';
 import Member from './models/member';
 
 export async function upsertMemberGraph(member) {
-  const upsertedGraph = await transaction(Member.knex(), trx => (
+  const upsertedGraph = await transaction(Member.knex(), (trx) =>
     Member.query(trx)
       .allowUpsert('[Phones, Children.[Phones], Parent]')
       .upsertGraph(member)
-  ));
+  );
 
   return upsertedGraph;
 }
 
 export async function getMember(memberID, eager) {
-  const member = await Member
-    .query()
+  const member = await Member.query()
     .eager(eager)
     .findById(memberID);
 
@@ -41,4 +39,3 @@ export async function getMemberPhones(memberID) {
 
   return phones;
 }
-

@@ -1,3 +1,6 @@
+# We want the latest-stable version of Node 'v9.x.x'
+# (Helpful list of versions here: https://github.com/nodejs/Release)
+# As of Feb 27, 2018 the latest version is 'v9.6.1'
 image: node:8.6.0
 
 pipelines:
@@ -22,8 +25,8 @@ pipelines:
             - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
             - npm install
             - npm run lint
-            - npm test
             - npm run deploy:prod
+            - ./scripts/slack_deployment_status.sh
 
     develop:
       - step:
@@ -34,5 +37,5 @@ pipelines:
             - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
             - npm install
             - npm run lint
-            - npm test
             - npm run deploy:int
+            - ./scripts/slack_deployment_status.sh

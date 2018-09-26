@@ -9,26 +9,23 @@ export const JsonDataNormalizer = async (params = {}) => {
       message: 'processing',
     },
     error: undefined,
-    S3UniformJsonFile: undefined,
+    S3UniformJSONFile: undefined,
     S3FlatJsonFile: undefined,
   }
   let objMissingKeyFiller
   console.log(`Parameters for JsonDataNormalier: ${JSON.stringify(params)}`)
 
   ValidateParams(params)
-  const s3UniformJsonFileEnum = PreDefinedAttributeEnum.S3UniformJsonFile.value
+  const s3UniformJsonFileEnum = PreDefinedAttributeEnum.S3UniformJSONFile.value
   const s3FlatJsonFileEnum = PreDefinedAttributeEnum.S3FlatJsonFile.value
 
   try {
     objMissingKeyFiller = new JsonMissingKeyFiller(getParamsForFillingMissedKeys(params))
     await objMissingKeyFiller.getUniformJsonData()
-    if (
-      !objMissingKeyFiller[s3UniformJsonFileEnum] ||
-      _isEmpty(objMissingKeyFiller[s3UniformJsonFileEnum])
-    ) {
+    if (!objMissingKeyFiller.S3UniformJsonFile || _isEmpty(objMissingKeyFiller.S3UniformJsonFile)) {
       throw new Error('JsonMissingKeyFiller didnt throw error but didnt return a file.')
     }
-    resp[s3UniformJsonFileEnum] = objMissingKeyFiller[s3UniformJsonFileEnum]
+    resp[s3UniformJsonFileEnum] = objMissingKeyFiller.S3UniformJsonFile
   } catch (err) {
     resp.status.message = 'error'
     resp.error = new Error(`Error in getting Uniform Json Data, ${err.message}`)

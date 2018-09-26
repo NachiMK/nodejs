@@ -9,7 +9,13 @@
     "Chad Bumstead <chad.bumstead@hixme.com> (https://hixme.com)",
     "Greg Cardoni <greg@cardoni.net> (https://cardoni.net)",
     "Matthew Drake <matthew.drake@hixme.com> (https://hixme.com)",
-    "Rodrigo Munoz <rodrigo.munoz@hixme.com> (https://hixme.com)"
+    "Rodrigo Munoz <rodrigo.munoz@hixme.com> (https://hixme.com)",
+    "Billy Montgomery <billy.montgomery@hixme.com> (https://hixme.com)",
+    "Shahab Dogar <shahab.dogar@hixme.com> (https://hixme.com)",
+    "Nachi Muthukumar<nachi.muthukumar@hixme.com> (https://hixme.com)",
+    "Scott Shin<scott.shin@hixme.com> (https://hixme.com)",
+    "Joel Iniguez<joel.iniguez@hixme.com> (https://hixme.com)",
+    "Calvin Cieslak<calvin.cieslak@hixme.com> (https://hixme.com)"
   ],
   "homepage": "https://hixme.com",
   "license": "MIT",
@@ -40,9 +46,9 @@
     "deploy:function:int": "npm run build:min && cross-env STAGE=int SLS_DEBUG=* sls deploy --aws-s3-accelerate --stage int -r $npm_package_config_region function -f",
     "deploy:function:prod": "npm run build:min && cross-env STAGE=prod SLS_DEBUG=* sls deploy --aws-s3-accelerate --stage prod -r $npm_package_config_region function -f",
     "deploy:function": "npm run deploy:function:$npm_package_config_stage",
-    "deploy:dev": "npm run build && cross-env STAGE=dev SLS_DEBUG=* sls deploy --aws-s3-accelerate -v --stage dev -r $npm_package_config_region",
-    "deploy:int": "npm run build:min && cross-env STAGE=int sls deploy --aws-s3-accelerate --stage int -r $npm_package_config_region",
-    "deploy:prod": "npm run build:min && cross-env STAGE=prod sls deploy --aws-s3-accelerate --stage prod -r $npm_package_config_region",
+    "deploy:dev": "STAGE=dev ./scripts/deploy_service.sh",
+    "deploy:int": "STAGE=int ./scripts/deploy_service.sh",
+    "deploy:prod": "STAGE=prod ./scripts/deploy_service.sh",
     "deploy": "npm run deploy:$npm_package_config_stage",
     "fullstart:80": "npm run package && npm run start:80",
     "fullstart": "npm run package && npm start",
@@ -73,7 +79,12 @@
     "knex:prod": "knex --env prod",
     "knex:migrate:dev": "babel-node node_modules/.bin/knex migrate:latest --env dev",
     "knex:migrate:int": "babel-node node_modules/.bin/knex migrate:latest --env int",
-    "knex:migrate:prod": "babel-node node_modules/.bin/knex migrate:latest --env prod"
+    "knex:migrate:prod": "babel-node node_modules/.bin/knex migrate:latest --env prod",
+    
+    "release:major": "TYPE=major ./scripts/release.sh",
+    "release:minor": "TYPE=minor ./scripts/release.sh",
+    "release:patch": "TYPE=patch ./scripts/release.sh",
+    "hotfix": "./scripts/hotfix.sh"
   },
   "dependencies": {
     "@hixme/before-after-middleware": "^2.2.1",
@@ -101,6 +112,7 @@
     "warewolf": "2.0.6"
   },
   "devDependencies": {
+    "@hixme/pull-request-docs": "0.6.0",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.0",
     "babel-eslint": "8.2.2",
@@ -121,12 +133,13 @@
     "dotenv": "5.0.0",
     "eslint": "4.18.1",
     "eslint-config-airbnb-base": "12.1.0",
+    "eslint-config-prettier": "3.0.1",
     "eslint-plugin-import": "2.9.0",
     "jest-cli": "22.4.2",
-    "make-sync": "0.2.0",
     "merge-yaml-cli": "1.1.1",
+    "prettier": "1.14.2",
     "rimraf": "2.6.2",
-    "serverless": "1.29.2",
+    "serverless": "1.30.3",
     "serverless-aws-documentation": "1.0.0",
     "serverless-domain-manager": "2.3.2",
     "serverless-offline": "3.18.0",

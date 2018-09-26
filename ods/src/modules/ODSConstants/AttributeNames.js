@@ -10,9 +10,6 @@ export const PreDefinedAttributeEnum = {
     Prefix: '',
     HasRunningIndex: false,
   },
-  psqlTableNameClean: { value: 'psql.TableName.Clean', Prefix: '', HasRunningIndex: false },
-  psqlTableNamePreStage: { value: 'psql.TableName.PreStage', Prefix: '', HasRunningIndex: false },
-  psqlTableNameRaw: { value: 'psql.TableName.Raw', Prefix: '', HasRunningIndex: false },
   S3CSVFile: { value: 'S3CSVFile#', Prefix: '', HasRunningIndex: true },
   S3CSVFilesBucketName: { value: 'S3CSVFilesBucketName', Prefix: '', HasRunningIndex: false },
   S3DataFile: { value: 'S3DataFile', Prefix: '', HasRunningIndex: false },
@@ -23,6 +20,13 @@ export const PreDefinedAttributeEnum = {
   S3SchemaFileBucketName: { value: 'S3SchemaFileBucketName', Prefix: '', HasRunningIndex: false },
   S3UniformJSONBucketName: { value: 'S3UniformJSONBucketName', Prefix: '', HasRunningIndex: false },
   S3UniformJSONFile: { value: 'S3UniformJSONFile', Prefix: '', HasRunningIndex: false },
+  SaveIntermediateResults: { value: 'SaveIntermediateResults', Prefix: '', HasRunningIndex: false },
+  LogLevel: { value: 'LogLevel', Prefix: '', HasRunningIndex: false },
+  SaveIntermediateResults: {
+    value: 'SaveIntermediateResults',
+    Prefix: '',
+    HasRunningIndex: false,
+  },
 }
 
 export const DynamicAttributeEnum = {
@@ -37,5 +41,7 @@ export const DynamicAttributeEnum = {
     HasRunningIndex: true,
   },
   TableCreated: { value: 'TableCreated', Prefix: 'S3CSVFile', HasRunningIndex: true },
-  TableName: { value: 'TableName', Prefix: 'S3CSVFile', HasRunningIndex: true },
+  PreStageTableName: { value: 'PreStageTableName', Prefix: 'S3CSVFile', HasRunningIndex: true },
+  StageTableName: { value: 'StageTableName', Prefix: 'S3CSVFile', HasRunningIndex: true },
+  CleanTableName: { value: 'CleanTableName', Prefix: 'S3CSVFile', HasRunningIndex: true },
 }

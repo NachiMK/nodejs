@@ -37,46 +37,22 @@ BEGIN
     FROM    "AxeneBatch" AS AB 
     WHERE   1 = 1
     AND     (
-                (("Event"->'query'->>'Year' = CAST(Year AS VARCHAR)) AND (Year IS NOT NULL))
+                (("Event"->>'Year' = CAST(Year AS VARCHAR)) AND (Year IS NOT NULL))
             )
     AND     (
-                (("Event"->'query'->>'State' = State) AND (LENGTH(State) > 0))
+                (("Event"->>'State' = State) AND (LENGTH(State) > 0))
                 OR
                 (
-                    ((LENGTH(PlanID) > 0) AND ("Event"->'query'->>'State' IS NULL))
+                    ((LENGTH(PlanID) > 0) AND ("Event"->>'State' IS NULL))
                     OR
-                    ((LENGTH(State) = 0) AND ("Event"->'query'->>'State' IS NOT NULL))
+                    ((LENGTH(State) = 0) AND ("Event"->>'State' IS NOT NULL))
                 )
             )
     AND     (
-                (("Event"->'query'->>'PlanID' = PlanId) AND (LENGTH(PlanID) > 0))
+                (("Event"->>'PlanID' = PlanId) AND (LENGTH(PlanID) > 0))
                 OR
-                ((LENGTH(PlanID) = 0) AND ("Event"->'query'->>'PlanID' IS NULL))
+                ((LENGTH(PlanID) = 0) AND ("Event"->>'PlanID' IS NULL))
             );
-
-    IF BatchIDs IS NULL THEN
-        SELECT  string_agg(CAST(AB."ID" AS VARCHAR), ',')
-        INTO    BatchIDs
-        FROM    "AxeneBatch" AS AB 
-        WHERE   1 = 1
-        AND     (
-                    (("Event"->'body'->>'Year' = CAST(Year AS VARCHAR)) AND (Year IS NOT NULL))
-                )
-        AND     (
-                    (("Event"->'body'->>'State' = State) AND (LENGTH(State) > 0))
-                    OR
-                    (
-                        ((LENGTH(PlanID) > 0) AND ("Event"->'body'->>'State' IS NULL))
-                        OR
-                        ((LENGTH(State) = 0) AND ("Event"->'body'->>'State' IS NOT NULL))
-                    )
-                )
-        AND     (
-                    (("Event"->'body'->>'PlanID' = PlanId) AND (LENGTH(PlanID) > 0))
-                    OR
-                    ((LENGTH(PlanID) = 0) AND ("Event"->'body'->>'PlanID' IS NULL))
-                );
-    END IF;
 
     BatchIDs := COALESCE(BatchIDs, '-1');
     raise notice '%',BatchIDs;
@@ -86,9 +62,9 @@ BEGIN
         AS
         (
             SELECT   AB."ID"
-                ,COALESCE("Event"->''query''->>''Year'', "Event"->''body''->>''Year'')   AS "Year"
-                ,COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'')  AS "State"
-                ,COALESCE("Event"->''query''->>''PlanID'', "Event"->''body''->>''PlanID'') AS "PlanId"
+                ,"Event"->>''Year''   AS "Year"
+                ,"Event"->>''State''  AS "State"
+                ,"Event"->>''PlanID'' AS "PlanId"
                 ,COUNT(*) AS "NumberOfPlansSubmitted"
                 ,SUM(CASE WHEN "EndDate" IS NOT NULL THEN 1 ELSE 0 END) as "NumberOfPlansReceived"
                 ,(SELECT COUNT(*) FROM "AxeneOutputValues" AS AO WHERE AO."BatchID" = CAST(AB."ID" AS VARCHAR)) as "NumberOfPlansWithAV"
@@ -96,9 +72,9 @@ BEGIN
                 ,MIN("StartDate") as "LastSubmissionTime"
                 ,MAX("EndDate") as "LastSubmissionEndTime"
                 ,ROW_NUMBER() OVER (PARTITION BY 
-                                     COALESCE("Event"->''query''->>''Year'', "Event"->''body''->>''Year'')
-                                    ,COALESCE("Event"->''query''->>''PlanID'', "Event"->''body''->>''PlanID'')
-                                    ,COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'')
+                                     "Event"->>''Year''
+                                    ,"Event"->>''PlanID''
+                                    ,"Event"->>''State''
                                     ORDER BY MIN(AF1."StartDate") DESC) as RowNbr
             FROM    "AxeneBatch" AS AB 
             INNER
@@ -107,9 +83,9 @@ BEGIN
             AND     AB."ID" IN (' || BatchIDs || ')
             GROUP   BY
                 AB."ID"
-                ,COALESCE("Event"->''query''->>''Year'', "Event"->''body''->>''Year'')
-                ,COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'')
-                ,COALESCE("Event"->''query''->>''PlanID'', "Event"->''body''->>''PlanID'')
+                ,"Event"->>''Year''
+                ,"Event"->>''State''
+                ,"Event"->>''PlanID''
 
             UNION
 
@@ -131,10 +107,10 @@ BEGIN
             AND     LENGTH(''' || PlanID || ''') = 0
             AND     "State" NOT IN 
                     (
-                        SELECT  DISTINCT COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'')
+                        SELECT  DISTINCT COALESCE("Event"->>''State'', "Event"->''body''->>''State'')
                         FROM    "AxeneBatch" AB
                         WHERE   AB."ID" IN (' || BatchIDs || ')
-                        AND     COALESCE("Event"->''query''->>''State'', "Event"->''body''->>''State'') IS NOT NULL
+                        AND     COALESCE("Event"->>''State'', "Event"->''body''->>''State'') IS NOT NULL
                     )
         )
         SELECT   "ID" as "BatchID"
@@ -143,7 +119,8 @@ BEGIN
                 ,"PlanId"
                 ,"NumberOfPlansSubmitted"
                 ,"NumberOfPlansReceived"
-                ,CASE 
+                ,CASE
+                    WHEN "NumberOfPlansSubmitted" = 0 THEN ''Not Submitted'' 
                     WHEN "NumberOfPlansSubmitted" = "NumberOfPlansWithAV" THEN ''Completed''
                     WHEN ("NumberOfPlansSubmitted" = "NumberOfPlansReceived") AND ("NumberOfPlansWithErrors" > 0) THEN ''Completed with Errors''
                     WHEN ("NumberOfPlansSubmitted" = "NumberOfPlansReceived") AND ("NumberOfPlansWithAV" != "NumberOfPlansSubmitted") THEN ''Completed with Errors''
@@ -154,7 +131,8 @@ BEGIN
                 ,"NumberOfPlansWithErrors"
                 ,"LastSubmissionTime"
                 ,"LastSubmissionEndTime"
-                ,CASE 
+                ,CASE
+                    WHEN "NumberOfPlansSubmitted" = 0 THEN TRUE 
                     WHEN "NumberOfPlansSubmitted" = "NumberOfPlansWithAV" THEN TRUE
                     WHEN ("NumberOfPlansSubmitted" = "NumberOfPlansReceived") AND ("NumberOfPlansWithErrors" > 0) THEN TRUE
                     WHEN ("NumberOfPlansSubmitted" = "NumberOfPlansReceived") AND ("NumberOfPlansWithAV" != "NumberOfPlansSubmitted") THEN TRUE

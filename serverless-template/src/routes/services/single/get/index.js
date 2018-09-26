@@ -11,7 +11,7 @@ export const get = ware(
   isRoleAuthorized([ROLE_PLATFORM_HIXME_ADMIN]),
   getDynamoItem({
     tableName: 'services',
-    key: event => event.pathParameters.ServicePublicKey,
+    key: (event) => event.pathParameters.ServicePublicKey,
   }),
-  after,
+  after
 );

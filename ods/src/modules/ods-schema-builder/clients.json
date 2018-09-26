@@ -1,157 +1,226 @@
 [
   {
-    "Item": {
-      "HistoryId": "11e00e9a3d239640ecefa80830a6d926",
-      "HistoryAction": "MODIFY",
-      "HistoryDate": "20180717",
-      "HistoryCreated": "2018-07-17T23:12:06.129Z",
-      "Rowkey": "d40d9949-bc94-3a47-a29e-110b29d03b47",
-      "SourceTable": "clients",
-      "RecordSeqNumber": "3039088400000000037516109879",
-      "ApproximateCreationDateTime": "2018-07-17T23:12:00.000Z",
-      "SalesDirectorFirstName": "Brian",
-      "ContactPhoneNumber": "6502332750",
-      "IsActive": true,
-      "SalesDirectorPublicKey": "7611638f-01ed-bd3a-2b73-517923f2b466",
-      "PostalCode": "91406",
-      "BenefitsEffectivePolicyUnit": "Days",
-      "County": "Unknown",
-      "ClientServicesRepPublicKey": "e3d9c569-1be4-4320-9a33-05b9747365c2",
-      "MigrationYear": 2017,
-      "CompanyName": "Kleiner Perkins Caufield & Byers",
-      "CurrentHealthPlanDesigns": [],
-      "ShowNewExperience": true,
-      "HixmeAccidentCompositePrices": [
-        {
-          "Price": 10.85,
-          "Relationship": "Employee"
-        },
-        {
-          "Price": 11.49,
-          "Relationship": "Spouse"
-        },
-        {
-          "Price": 11.49,
-          "Relationship": "Child"
-        }
-      ],
-      "EnrollmentEndDate": "2017-12-31",
-      "ContactFirstName": "Unknown",
-      "BenefitsEffectivePolicy": 60,
-      "ClientServicesRepFirstName": "Tammy",
-      "EnrollmentStartDate": "2017-01-01",
-      "SalesDirectorLastName": "Finster",
-      "CustomerServicePhoneNumber": "8669362854",
-      "StateProvince": "OH",
-      "City": "Menlo Park",
-      "ContactLastName": "Unknown",
-      "IsProspect": true,
-      "HixmeConnectCompositePrices": [
-        {
-          "Price": 109.6,
-          "Relationship": "Employee",
-          "MetalLevel": "Bronze"
-        },
-        {
-          "Price": 116.17,
-          "Relationship": "Spouse",
-          "MetalLevel": "Bronze"
-        },
-        {
-          "Price": 151.19,
-          "Relationship": "Child",
-          "MetalLevel": "Bronze"
-        },
-        {
-          "Price": 100.6,
-          "Relationship": "Employee",
-          "MetalLevel": "Silver"
-        },
-        {
-          "Price": 105.99,
-          "Relationship": "Spouse",
-          "MetalLevel": "Silver"
-        },
-        {
-          "Price": 145.13,
-          "Relationship": "Child",
-          "MetalLevel": "Silver"
-        },
-        {
-          "Price": 80.4,
-          "Relationship": "Employee",
-          "MetalLevel": "Gold"
-        },
-        {
-          "Price": 83.36,
-          "Relationship": "Spouse",
-          "MetalLevel": "Gold"
-        },
-        {
-          "Price": 134.71,
-          "Relationship": "Child",
-          "MetalLevel": "Gold"
-        },
-        {
-          "Price": 77.6,
-          "Relationship": "Employee",
-          "MetalLevel": "Platinum"
-        },
-        {
-          "Price": 79.37,
-          "Relationship": "Spouse",
-          "MetalLevel": "Platinum"
-        },
-        {
-          "Price": 130.72,
-          "Relationship": "Child",
-          "MetalLevel": "Platinum"
-        }
-      ],
-      "StreetAddress": "61 S. Sandusky Street",
-      "ContactEmailAddress": "unknown",
-      "HixmeBundleConfig": [
-        {
-          "IsGapSeparate": true,
-          "TierStrategy": "FourTier",
-          "CompositeAgeFactor": 1.2538,
-          "MaxNumberOfChildren": 1,
-          "MaxNumberOfDependents": null,
-          "MinimumContribution": -7000,
-          "StateProvince": "*",
-          "Relationship": "Employee",
-          "AllowNegativePersonRates": true,
-          "CompositeBankingFee": 12.97
-        },
-        {
-          "IsGapSeparate": true,
-          "TierStrategy": "FourTier",
-          "CompositeAgeFactor": 1.4451,
-          "MaxNumberOfChildren": 1,
-          "MaxNumberOfDependents": null,
-          "MinimumContribution": -7000,
-          "StateProvince": "*",
-          "Relationship": "Spouse",
-          "AllowNegativePersonRates": true,
-          "CompositeBankingFee": 12.97
-        },
-        {
-          "IsGapSeparate": true,
-          "TierStrategy": "FourTier",
-          "CompositeAgeFactor": 0.9937,
-          "MaxNumberOfChildren": 1,
-          "MaxNumberOfDependents": null,
-          "MinimumContribution": -7000,
-          "StateProvince": "*",
-          "Relationship": "Child",
-          "AllowNegativePersonRates": true,
-          "CompositeBankingFee": 25.94
-        }
-      ],
-      "Id": "d40d9949-bc94-3a47-a29e-110b29d03b47",
-      "BenefitsEffectiveDate": "2017-01-01",
-      "ClientServicesRepLastName": "Olson",
-      "CompanyLogoUrl": "https://www.hixme.com/images/logo-1.png"
-    }
+    "HistoryId": "5c398f9f8fb74de41cf3dcf825daac20",
+    "HistoryAction": "MODIFY",
+    "HistoryDate": "20180821",
+    "HistoryCreated": "2018-08-21T02:11:30.642Z",
+    "Rowkey": "8054383a-d947-4d28-952b-5f512ef9d7d7",
+    "SourceTable": "clients",
+    "RecordSeqNumber": "3201277100000000012147767018",
+    "ApproximateCreationDateTime": "2018-08-21T02:11:00.000Z",
+    "SalesDirectorFirstName": "Tammy",
+    "ContactPhoneNumber": "1231231234",
+    "IsActive": true,
+    "SalesDirectorPublicKey": "b2c72013-2264-4a87-88f0-6716fe70134b",
+    "PostalCode": "91304",
+    "BenefitsEffectivePolicyUnit": "Days",
+    "County": "Santa Barbara",
+    "ClientServicesRepPublicKey": "67cd2c5c-e668-482a-b795-b0c01d90fce7",
+    "MigrationYear": 2016,
+    "CompanyName": "ABC Company",
+    "CurrentHealthPlanDesigns": [],
+    "BenefitPolicyDays": 30,
+    "HixmeAccidentCompositePrices": [
+      {
+        "Price": 10.85,
+        "Relationship": "Employee"
+      },
+      {
+        "Price": 5.75,
+        "Relationship": "Spouse"
+      },
+      {
+        "Price": 5.75,
+        "Relationship": "Child with spouse"
+      },
+      {
+        "Price": 5.75,
+        "Relationship": "Child without spouse"
+      },
+      {
+        "Price": 5.75,
+        "Relationship": "Child"
+      }
+    ],
+    "ContactFirstName": "Santa",
+    "BenefitsEffectivePolicy": 30,
+    "ClientServicesRepFirstName": "Tammy",
+    "SalesDirectorLastName": "Olson",
+    "CustomerServicePhoneNumber": "8004564826",
+    "StateProvince": "CA",
+    "BenefitPolicyName": "30 Days of Employment",
+    "City": "Santa Barbara",
+    "ContactLastName": "Clause",
+    "IsProspect": false,
+    "HixmeConnectCompositePrices": [
+      {
+        "Price": 50,
+        "Relationship": "Employee",
+        "MetalLevel": "Bronze"
+      },
+      {
+        "Price": 56.57,
+        "Relationship": "Spouse",
+        "MetalLevel": "Bronze"
+      },
+      {
+        "Price": 36.98,
+        "Relationship": "Child with spouse",
+        "MetalLevel": "Bronze"
+      },
+      {
+        "Price": 36.98,
+        "Relationship": "Child without spouse",
+        "MetalLevel": "Bronze"
+      },
+      {
+        "Price": 36.98,
+        "Relationship": "Child",
+        "MetalLevel": "Bronze"
+      },
+      {
+        "Price": 41,
+        "Relationship": "Employee",
+        "MetalLevel": "Silver"
+      },
+      {
+        "Price": 46.39,
+        "Relationship": "Spouse",
+        "MetalLevel": "Silver"
+      },
+      {
+        "Price": 30.25,
+        "Relationship": "Child with spouse",
+        "MetalLevel": "Silver"
+      },
+      {
+        "Price": 30.25,
+        "Relationship": "Child without spouse",
+        "MetalLevel": "Silver"
+      },
+      {
+        "Price": 30.25,
+        "Relationship": "Child",
+        "MetalLevel": "Silver"
+      },
+      {
+        "Price": 21,
+        "Relationship": "Employee",
+        "MetalLevel": "Gold"
+      },
+      {
+        "Price": 23.76,
+        "Relationship": "Spouse",
+        "MetalLevel": "Gold"
+      },
+      {
+        "Price": 15.5,
+        "Relationship": "Child with spouse",
+        "MetalLevel": "Gold"
+      },
+      {
+        "Price": 15.5,
+        "Relationship": "Child without spouse",
+        "MetalLevel": "Gold"
+      },
+      {
+        "Price": 15.5,
+        "Relationship": "Child",
+        "MetalLevel": "Gold"
+      },
+      {
+        "Price": 18,
+        "Relationship": "Employee",
+        "MetalLevel": "Platinum"
+      },
+      {
+        "Price": 20.36,
+        "Relationship": "Spouse",
+        "MetalLevel": "Platinum"
+      },
+      {
+        "Price": 13.28,
+        "Relationship": "Child with spouse",
+        "MetalLevel": "Platinum"
+      },
+      {
+        "Price": 13.28,
+        "Relationship": "Child without spouse",
+        "MetalLevel": "Platinum"
+      },
+      {
+        "Price": 13.28,
+        "Relationship": "Child",
+        "MetalLevel": "Platinum"
+      }
+    ],
+    "StreetAddress": "1234 Candy Cane ln",
+    "ContactEmailAddress": "sclause@northpole.co",
+    "HixmeBundleConfig": [
+      {
+        "IsGapSeparate": true,
+        "TierStrategy": "FourTier",
+        "CompositeAgeFactor": 1.45,
+        "MaxNumberOfChildren": 1,
+        "MaxNumberOfDependents": null,
+        "MinimumContribution": 0,
+        "StateProvince": "*",
+        "Relationship": "Employee",
+        "AllowNegativePersonRates": false,
+        "CompositeBankingFee": 15.4
+      },
+      {
+        "IsGapSeparate": true,
+        "TierStrategy": "FourTier",
+        "CompositeAgeFactor": 1.6,
+        "MaxNumberOfChildren": 1,
+        "MaxNumberOfDependents": null,
+        "MinimumContribution": 0,
+        "StateProvince": "*",
+        "Relationship": "Spouse",
+        "AllowNegativePersonRates": false,
+        "CompositeBankingFee": 15.4
+      },
+      {
+        "IsGapSeparate": true,
+        "TierStrategy": "FourTier",
+        "CompositeAgeFactor": 1.248818413,
+        "MaxNumberOfChildren": 1,
+        "MaxNumberOfDependents": null,
+        "MinimumContribution": 0,
+        "StateProvince": "*",
+        "Relationship": "Child with spouse",
+        "AllowNegativePersonRates": false,
+        "CompositeBankingFee": 30.81
+      },
+      {
+        "IsGapSeparate": true,
+        "TierStrategy": "FourTier",
+        "CompositeAgeFactor": 1.248818413,
+        "MaxNumberOfChildren": 1,
+        "MaxNumberOfDependents": null,
+        "MinimumContribution": 0,
+        "StateProvince": "*",
+        "Relationship": "Child without spouse",
+        "AllowNegativePersonRates": false,
+        "CompositeBankingFee": 30.81
+      },
+      {
+        "IsGapSeparate": true,
+        "TierStrategy": "FourTier",
+        "CompositeAgeFactor": 1.248818413,
+        "MaxNumberOfChildren": 1,
+        "MaxNumberOfDependents": null,
+        "MinimumContribution": 0,
+        "StateProvince": "*",
+        "Relationship": "Child",
+        "AllowNegativePersonRates": false,
+        "CompositeBankingFee": 30.81
+      }
+    ],
+    "Id": "8054383a-d947-4d28-952b-5f512ef9d7d7",
+    "HixmeAccidentGroupId": "G000036000",
+    "BenefitsEffectiveDate": "2017-01-01",
+    "ClientServicesRepLastName": "Olson"
   }
 ]

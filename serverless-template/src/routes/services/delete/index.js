@@ -9,6 +9,6 @@ export const deleteService = ware(
   before,
   validateBody(require('./request.schema.json')), // eslint-disable-line
   isRoleAuthorized([ROLE_PLATFORM_HIXME_ADMIN]),
-  inactivateDynamoItem({ tableName: 'services', key: event => event.body.ServicePublicKey }),
-  after,
+  inactivateDynamoItem({ tableName: 'services', key: (event) => event.body.ServicePublicKey }),
+  after
 );

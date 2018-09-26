@@ -33,53 +33,79 @@ function pluralize(count = 0) {
   return '';
 }
 
-module.exports.getAndSetVarsFromEnvFile = (shouldPrint = true) => new Promise((resolve) => {
-  const taskDescription = 'Locating ".env" Config File';
-  const { parsed: environmentVariables = {} } = dotenv.config();
-  const envVariableCount = Object.keys(environmentVariables).length;
-  // in this case, if we don't have any env variables, we don't want to reject;
-  // instead, we want to resolve with a single environment variable: "STAGE"
-  const taskSuccessInfo = `Exported ${green(envVariableCount)} Variable${pluralize(envVariableCount)}`;
-  if (shouldPrint) success(taskDescription, taskSuccessInfo);
-  resolve(Object.assign({}, environmentVariables, { STAGE }));
-});
+module.exports.getAndSetVarsFromEnvFile = (shouldPrint = true) =>
+  new Promise((resolve) => {
+    const taskDescription = 'Locating ".env" Config File';
+    const { parsed: environmentVariables = {} } = dotenv.config();
+    // in this case, if we don't have any env variables, we don't want to reject;
+    // instead, we want to resolve with a single environment variable: "STAGE"
 
-module.exports.getStage = (shouldPrint = true) => new Promise((resolve, reject) => {
-  const taskDescription = 'Setting API / Service Stage';
-  // check for "STAGE" having been set; rejects if not
-  if (typeof STAGE === 'undefined' || STAGE == null) reject(new (Error(taskDescription))());
-  // print success message(s) and resolve value to caller
-  const taskSuccessInfo = `${green(STAGE)}`;
-  if (shouldPrint) success(taskDescription, taskSuccessInfo);
-  resolve(STAGE);
-});
+    // CAUTION! - Will remove environment variables that are not the current stage
+    const stages = ['dev', 'int', 'prod'];
+    const stagesToRemove = stages.filter(s => s !== STAGE.toLowerCase());
 
-module.exports.getStageUppercase = (shouldPrint = true) => new Promise((resolve, reject) => {
-  const taskDescription = 'Setting API / Service Stage';
-  // check for "STAGE" having been set; rejects if not
-  if (typeof STAGE === 'undefined' || STAGE == null) reject(new (Error(taskDescription))());
-  // print success message(s) and resolve value to caller
-  const taskSuccessInfo = `${green(STAGE.toUpperCase())}`;
-  if (shouldPrint) success(taskDescription, taskSuccessInfo);
-  resolve(STAGE.toUpperCase());
-});
+    Object.keys(environmentVariables).forEach((key) => {
+      if (
+        stagesToRemove.some(stageToRemove =>
+          key.toUpperCase().startsWith(`${stageToRemove.toUpperCase()}_`))
+      ) {
+        delete environmentVariables[key];
+      }
+    });
 
-module.exports.getAPIBasePath = (shouldPrint = true) => new Promise((resolve) => {
-  const taskDescription = 'Setting API Path';
-  const serviceNameFromPackageJSONFile = get(pkg, 'name', 'untitled-project');
-  // removes the "service" text at the end, if any!
-  const apiBasePath = serviceNameFromPackageJSONFile.replace(/-service/igm, '').trim();
-  const taskSuccessInfo = `Path: "${green(`/${apiBasePath}`)}"`;
-  if (shouldPrint) success(taskDescription, taskSuccessInfo);
-  resolve(apiBasePath);
-});
+    const envVariableCount = Object.keys(environmentVariables).length;
 
-module.exports.getHostname = (shouldPrint = true) => new Promise((resolve) => {
-  const taskDescription = 'Setting API Hostname';
-  const hostname = `${getSubdomainPrefix('api', STAGE)}.hixme.com`;
-  // the function "getSubdomainPrefix()" will ALWAYS return a value;
-  // as such, we only ever need to resolve
-  const taskSuccessInfo = `${green(hostname)}`;
-  if (shouldPrint) success(taskDescription, taskSuccessInfo);
-  resolve(hostname);
-});
+    const taskSuccessInfo = `Exported ${green(envVariableCount)} Variable${pluralize(envVariableCount)}`;
+    if (shouldPrint) success(taskDescription, taskSuccessInfo);
+    resolve(Object.assign({}, environmentVariables, { STAGE }));
+  });
+
+module.exports.getStage = (shouldPrint = true) =>
+  new Promise((resolve, reject) => {
+    const taskDescription = 'Setting API / Service Stage';
+    // check for "STAGE" having been set; rejects if not
+    if (typeof STAGE === 'undefined' || STAGE == null) {
+      reject(new (Error(taskDescription))());
+    }
+    // print success message(s) and resolve value to caller
+    const taskSuccessInfo = `${green(STAGE)}`;
+    if (shouldPrint) success(taskDescription, taskSuccessInfo);
+    resolve(STAGE);
+  });
+
+module.exports.getStageUppercase = (shouldPrint = true) =>
+  new Promise((resolve, reject) => {
+    const taskDescription = 'Setting API / Service Stage';
+    // check for "STAGE" having been set; rejects if not
+    if (typeof STAGE === 'undefined' || STAGE == null) {
+      reject(new (Error(taskDescription))());
+    }
+    // print success message(s) and resolve value to caller
+    const taskSuccessInfo = `${green(STAGE.toUpperCase())}`;
+    if (shouldPrint) success(taskDescription, taskSuccessInfo);
+    resolve(STAGE.toUpperCase());
+  });
+
+module.exports.getAPIBasePath = (shouldPrint = true) =>
+  new Promise((resolve) => {
+    const taskDescription = 'Setting API Path';
+    const serviceNameFromPackageJSONFile = get(pkg, 'name', 'untitled-project');
+    // removes the "service" text at the end, if any!
+    const apiBasePath = serviceNameFromPackageJSONFile
+      .replace(/-service/gim, '')
+      .trim();
+    const taskSuccessInfo = `Path: "${green(`/${apiBasePath}`)}"`;
+    if (shouldPrint) success(taskDescription, taskSuccessInfo);
+    resolve(apiBasePath);
+  });
+
+module.exports.getHostname = (shouldPrint = true) =>
+  new Promise((resolve) => {
+    const taskDescription = 'Setting API Hostname';
+    const hostname = `${getSubdomainPrefix('api', STAGE)}.hixme.com`;
+    // the function "getSubdomainPrefix()" will ALWAYS return a value;
+    // as such, we only ever need to resolve
+    const taskSuccessInfo = `${green(hostname)}`;
+    if (shouldPrint) success(taskDescription, taskSuccessInfo);
+    resolve(hostname);
+  });

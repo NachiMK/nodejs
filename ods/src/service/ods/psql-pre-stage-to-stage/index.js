@@ -5,17 +5,17 @@ import { OdsPreStageToStage } from '../../../controller/ods-prestage-to-stage/in
 export async function DoTaskPreStageToStage(dataPipeLineTaskQueue) {
   const taskResp = {}
   if (dataPipeLineTaskQueue) {
+    odsLogger.log('info', 'About to call Pre-Stage To Stage:', dataPipeLineTaskQueue)
+    const objPreStageToStage = new OdsPreStageToStage(dataPipeLineTaskQueue)
     try {
-      odsLogger.log('info', 'About to call Pre-Stage To Stage:', dataPipeLineTaskQueue)
-      const objPreStageToStage = new OdsPreStageToStage(dataPipeLineTaskQueue)
       const stgResp = await objPreStageToStage.StageData()
 
       odsLogger.log('debug', 'Response for saving to postgres stage:', stgResp)
       extractStatusAndAttributes(stgResp, dataPipeLineTaskQueue, taskResp)
     } catch (err) {
       taskResp.Status = TaskStatusEnum.Error.name
-      taskResp.error = objCsvToPostgresRaw.error
-        ? objCsvToPostgresRaw.error
+      taskResp.error = objPreStageToStage.error
+        ? objPreStageToStage.error
         : new Error(`Unknown Error: ${err.message}`)
       odsLogger.log('error', taskResp.error.message)
     }

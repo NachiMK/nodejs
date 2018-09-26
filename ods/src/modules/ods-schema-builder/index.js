@@ -1,6 +1,5 @@
 // Generate JSON Schema
 import _merge from 'lodash/merge'
-
 import { s3FileParser } from '../s3'
 import { generateSchema } from './generateJsonSchema'
 import odsLogger from '../log/ODSLogger'

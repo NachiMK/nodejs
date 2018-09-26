@@ -67,7 +67,7 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
 function getInput(task) {
   const input = {
     S3DataFilePath: task
-      .getTaskAttributeValue(PreDefinedAttributeEnum.S3DataFile.value)
+      .getTaskAttributeValue(PreDefinedAttributeEnum.S3FlatJsonFile.value)
       .replace('https://s3-us-west-2.amazonaws.com/', 's3://'),
     Overwrite: 'yes',
     S3SchemaFile: task

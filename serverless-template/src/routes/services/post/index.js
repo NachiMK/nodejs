@@ -13,9 +13,9 @@ export const post = ware(
   addUpdatedByToBody,
   saveDynamoItem({
     tableName: 'services',
-    item: event => event.body,
-    key: event => event.body.Id,
+    item: (event) => event.body,
+    key: (event) => event.body.Id,
     schema: 'request.schema.json',
   }),
-  after,
+  after
 );

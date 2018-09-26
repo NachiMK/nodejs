@@ -25,14 +25,17 @@ FROM    (
             UNION   SELECT 'S3CSVFile#' as "AttributeName" --Output/Input
             
             UNION   SELECT 'psql.PreStageTable.Prefix' as "AttributeName"
-            UNION   SELECT 'psql.TableName.PreStage' as "AttributeName"
-            UNION   SELECT 'psql.TableName.Raw' as "AttributeName"
-            UNION   SELECT 'psql.TableName.Clean' as "AttributeName"
+            UNION   SELECT 'psql.StageTable.Prefix' as "AttributeName"
+
+            UNION   SELECT 'S3CSVFile#.PreStageTableName' as "AttributeName"
+            UNION   SELECT 'S3CSVFile#.JsonObjectName' as "AttributeName"
+            UNION   SELECT 'S3CSVFile#.StageTableName' as "AttributeName"
 
             UNION   SELECT 'Dynamo.TableName' as "AttributeName"
             UNION   SELECT 'Dynamo.Table.Index' as "AttributeName"
 
             UNION   SELECT 'aws.region' as "AttributeName"
+            UNION   SELECT 'LogLevel' as "AttributeName"
         ) as S
 WHERE   NOT EXISTS (SELECT 1 FROM ods."Attribute" AS T WHERE S."AttributeName" = T."AttributeName")
 ORDER BY

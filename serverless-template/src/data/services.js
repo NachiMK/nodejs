@@ -13,7 +13,7 @@ export async function getServicesByDomain(domain) {
 
   const domains = await serviceTable.queryByKeys({ Domain: domain });
 
-  return orderBy(domains.filter(f => f.IsActive), 'Name');
+  return orderBy(domains.filter((f) => f.IsActive), 'Name');
 }
 
 export async function saveService(service) {

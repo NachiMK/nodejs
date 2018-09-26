@@ -120,7 +120,7 @@ export class CsvToPostgres {
       Output[DynamicAttributeEnum.S3JsonSchemaFilePath.value] = await this.getJsonSchema()
       // get db script and save to this._dbScript
       Output[DynamicAttributeEnum.S3DBSchemaFilePath.value] = await this.getDBScript()
-      Output[DynamicAttributeEnum.TableName.value] = this.OutputTableWithSchema
+      Output[DynamicAttributeEnum.PreStageTableName.value] = this.OutputTableWithSchema
       // create table or throw error
       await this.CreateTable()
       Output[DynamicAttributeEnum.TableCreated.value] = true

@@ -82,6 +82,19 @@ BEGIN
             ,"UpdatedDtTm" = CURRENT_TIMESTAMP
         WHERE A."AttributeValue" != EXCLUDED."AttributeValue";
 
+    INSERT  INTO ods."TaskQueueAttributeLog" AS A
+    (
+        "DataPipeLineTaskQueueId"
+        ,"AttributeName"
+        ,"AttributeValue"
+    )
+    SELECT  "DataPipeLineTaskQueueId"
+            ,"AttributeName"
+            ,"AttributeValue"
+    FROM    ods."udf_GetAttributesFromSiblings"(DataPipeLineTaskQueueId)
+    ON  CONFLICT ON CONSTRAINT UNQ_TaskQueueAttributeLog
+    DO  NOTHING;
+
 END;
 $$ LANGUAGE plpgsql;
 

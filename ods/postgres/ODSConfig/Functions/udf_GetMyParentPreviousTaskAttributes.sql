@@ -16,7 +16,7 @@ BEGIN
     -- Result
     FOR retRecord in 
         SELECT   Q."DataPipeLineTaskQueueId"
-                ,CASE   WHEN UPPER(A."AttributeName") = upper('S3CSVFile#') 
+                ,CASE   WHEN upper(L."AttributeName") ~ REPLACE(upper(A."AttributeName"), '#', '\d+')
                         THEN L."AttributeName"
                         ELSE A."AttributeName"
                  END
@@ -37,7 +37,7 @@ BEGIN
         AND     (
                     (upper(L."AttributeName") = upper(A."AttributeName"))
                     OR
-                    (upper(L."AttributeName") ~ REPLACE(upper(A."AttributeName"), '#', '\d+'))
+                    (upper(L."AttributeName") ~ REPLACE(upper(A."AttributeName"), '#', '\d+') AND upper(A."AttributeName") LIKE '%#%')
                 )
     LOOP
         RETURN NEXT retRecord;

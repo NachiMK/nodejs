@@ -1,10 +1,7 @@
 import ware from 'warewolf';
 import { before, after } from '@hixme/before-after-middleware';
 import { showEvent } from '../../modules/show-event-middleware';
-import {
-  isProd,
-  queryStringIsTrue,
-} from '../../modules/serverless-utils';
+import { isProd, queryStringIsTrue } from '../../modules/serverless-utils';
 
 export const ping = ware(
   before,
@@ -27,7 +24,8 @@ export const ping = ware(
     const { showENV } = event.params;
 
     const eventHeadersHost = event.headers && event.headers.Host;
-    const HTTPRequestPassingThroughHixmeDomain = eventHeadersHost && eventHeadersHost.includes('hixme.com');
+    const HTTPRequestPassingThroughHixmeDomain =
+      eventHeadersHost && eventHeadersHost.includes('hixme.com');
     const serviceIsRuningLocally = !HTTPRequestPassingThroughHixmeDomain || event.isOffline;
     // NOTE: `event.isOffline` is a serverless-added boolean and it's quite helpful
     const isSafeToDisplayEnvVariables = !isProd && serviceIsRuningLocally;
@@ -38,5 +36,5 @@ export const ping = ware(
     }
   },
   showEvent,
-  after,
+  after
 );

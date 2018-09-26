@@ -12,5 +12,5 @@ export const get = ware(
 
     event.result = fortune;
   },
-  after,
+  after
 );
