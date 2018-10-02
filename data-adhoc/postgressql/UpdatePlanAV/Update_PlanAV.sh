@@ -34,7 +34,7 @@ psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_roo
 psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "SELECT udf_check_plan_av_upload();"
 
 if [ "${stagename}" != "prod" ]; then 
-    psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "SELECT udf_update_plan_av_batchname('$batch');"
+    psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "SELECT udf_update_plan_av('$batch');"
 fi
 
 echo "Apply Changes to PROD (Type YES to apply)?"
@@ -42,11 +42,11 @@ read applytoprod
 
 if [ "${applytoprod}" = "YES" ]; then 
     echo "Applying in Prod..."    
-    psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "SELECT udf_update_plan_av_batchname('$batch');"
+    psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "SELECT udf_update_plan_av('$batch');"
     psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "\copy (SELECT * FROM vw_plans_av) TO $csvDataFileAU WITH DELIMITER ',' null as '' CSV HEADER"
 else
     echo "Run below command if all is good:"
-    echo "psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -W -d plans_${stagename} -c \"SELECT udf_update_plan_av_batchname('$batch');\""
+    echo "psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -W -d plans_${stagename} -c \"SELECT udf_update_plan_av('$batch');\""
     echo "psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -W -d plans_${stagename} -c \"\copy (SELECT * FROM vw_plans_av) TO $csvDataFileAU WITH DELIMITER ',' null as '' CSV HEADER\""
 fi
 

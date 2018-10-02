@@ -14,6 +14,8 @@ CREATE TYPE public.AxeneStatusReturnType as (
     ,"LastSubmissionEndTime"    TIMESTAMP
     ,"AllowNewRun"              BOOLEAN
     ,"RunMode"                  VARCHAR(30) -- (Single Plan, State, Carier(for future))
+    ,"AllowDownload"            BOOLEAN
+    ,"AllowApprove"             BOOLEAN
 );
 
 CREATE OR REPLACE FUNCTION public.udf_get_AxeneStatus(Year int, State VARCHAR(20) default null, PlanId VARCHAR(40) default null) 
@@ -23,10 +25,12 @@ DECLARE
     retRecord public.AxeneStatusReturnType%rowtype;
     sql_code VARCHAR;
     BatchIDs VARCHAR(1000);
+    CutOffDays INT;
 BEGIN
 
     State := COALESCE(State, '');
     PlanId := COALESCE(PlanId, '');
+    CutOffDays := 5;
 
     IF Year is null THEN
         Year := date_part('year', CURRENT_DATE);
@@ -137,11 +141,23 @@ BEGIN
                     WHEN ("NumberOfPlansSubmitted" = "NumberOfPlansReceived") AND ("NumberOfPlansWithErrors" > 0) THEN TRUE
                     WHEN ("NumberOfPlansSubmitted" = "NumberOfPlansReceived") AND ("NumberOfPlansWithAV" != "NumberOfPlansSubmitted") THEN TRUE
                     WHEN "NumberOfPlansSubmitted" = "NumberOfPlansReceived" THEN TRUE
+                    WHEN "NumberOfPlansSubmitted" > "NumberOfPlansReceived" 
+                            AND "LastSubmissionTime" IS NOT NULL
+                            AND EXTRACT(DAYS FROM CURRENT_TIMESTAMP - "LastSubmissionTime") > ' || CAST(CutOffDays AS VARCHAR) || ' THEN TRUE
                     ELSE FALSE
                 END AS "AllowNewRun"
                 ,CASE WHEN "PlanId" IS NOT NULL THEN ''SinglePlan'' 
                     WHEN "State" IS NOT NULL THEN ''State'' 
                     ELSE ''Batch'' END AS "RunMode"
+                ,CASE
+                    WHEN ("NumberOfPlansSubmitted" > 0) AND "NumberOfPlansSubmitted" = "NumberOfPlansWithAV" THEN TRUE
+                    WHEN ("NumberOfPlansSubmitted" > 0) AND ("NumberOfPlansSubmitted" = "NumberOfPlansReceived") THEN TRUE
+                    ELSE FALSE
+                END AS "AllowDownload"
+                ,CASE
+                    WHEN ("NumberOfPlansSubmitted" > 0) AND "NumberOfPlansSubmitted" = "NumberOfPlansWithAV" THEN TRUE
+                    ELSE FALSE
+                END AS "AllowApprove"
         FROM    AxeneBatchStatus
         WHERE   RowNbr = 1
     ;';

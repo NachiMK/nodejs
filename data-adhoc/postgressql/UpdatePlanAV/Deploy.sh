@@ -35,8 +35,8 @@ if [ "${deleteFlag}" = "true" ]; then
     echo "psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -W -d plans_${stagename} -c DROP FUNCTION IF EXISTS udf_check_plan_av_upload();"
     psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "DROP FUNCTION IF EXISTS udf_check_plan_av_upload();"
 
-    echo "psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -W -d plans_${stagename} -c DROP FUNCTION IF EXISTS udf_update_plan_av_batchname(varchar(255));"
-    psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "DROP FUNCTION IF EXISTS udf_update_plan_av_batchname(varchar(255));"
+    echo "psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -W -d plans_${stagename} -c DROP FUNCTION IF EXISTS udf_update_plan_av(varchar(255));"
+    psql -h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root -d plans_${stagename} -c "DROP FUNCTION IF EXISTS udf_update_plan_av(varchar(255));"
 fi
 
 for filename in *.sql; do

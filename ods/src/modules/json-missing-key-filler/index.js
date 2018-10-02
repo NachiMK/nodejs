@@ -85,7 +85,7 @@ export class JsonMissingKeyFiller {
         )
       }
 
-      this.defaultSchema = ExtractMatchingKeyFromSchema(schemaFromS3, null, 'default')
+      this.defaultSchema = ExtractMatchingKeyFromSchema(schemaFromS3, 'default')
       this.logger.log('debug', '---------------- DEFAULT SCHEMA ----------')
       this.logger.log('debug', JSON.stringify(this.DefaultSchema, null, 2))
       this.logger.log('debug', '---------------- DEFAULT SCHEMA ----------')

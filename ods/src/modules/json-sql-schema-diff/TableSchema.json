@@ -1,0 +1,38 @@
+[
+  {
+    "Name": "RowId",
+    "Definition": {
+      "Position": 1,
+      "IsNullable": false,
+      "DataType": "integer",
+      "DataLength": -1,
+      "precision": 32,
+      "scale": 0,
+      "datetimePrecision": -1
+    }
+  },
+  {
+    "Name": "CreatedDtTm",
+    "Definition": {
+      "Position": 2,
+      "IsNullable": true,
+      "DataType": "date",
+      "DataLength": -1,
+      "precision": -1,
+      "scale": -1,
+      "datetimePrecision": 0
+    }
+  },
+  {
+    "Name": "ShowNewExperience",
+    "Definition": {
+      "Position": 3,
+      "IsNullable": true,
+      "DataType": "boolean",
+      "DataLength": -1,
+      "precision": -1,
+      "scale": -1,
+      "datetimePrecision": -1
+    }
+  }
+]

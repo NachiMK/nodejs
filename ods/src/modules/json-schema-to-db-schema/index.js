@@ -9,7 +9,7 @@ import { S3Params } from '../s3-params/index'
 import { IsValidString, CleanUpString } from '../../utils/string-utils/index'
 import { CleanUpBool } from '../../utils/bool-utils/index'
 import { ExtractMatchingKeyFromSchema } from '../json-extract-matching-keys'
-import { JsonToKnexDataTypeEnum } from '../../data/psql/json-to-knex-mapping'
+import { JsonToKnexDataTypeEnum } from '../../data/psql/table/json-to-knex-mapping'
 import { knexNoDB } from '../../data/psql/index'
 
 export class JsonSchemaToDBSchema {
@@ -88,14 +88,18 @@ export class JsonSchemaToDBSchema {
     }
   }
 
-  async getDBScriptFromJsonSchema({ JsonSchema, DataTypeKey = 'type' }) {
+  async createTableScriptByJsonSchema({ JsonSchema, DataTypeKey = 'type' }) {
     if (JsonSchema) {
       // get columns and types.
       const colsAndTypes = await getColumnsAndType(JsonSchema, DataTypeKey)
       this.logger.log('debug', `Cols and Types:${colsAndTypes}`)
       // get script
       this._outputTableName = this.getTableName()
-      const dbScript = await getCreateTableSQL(this.TableSchema, this.OutputTableName, colsAndTypes)
+      const dbScript = await this.getCreateTableSQL(
+        this.TableSchema,
+        this.OutputTableName,
+        colsAndTypes
+      )
       this.logger.log('debug', `SQL Script:${dbScript}`)
       return dbScript
     }
@@ -103,7 +107,7 @@ export class JsonSchemaToDBSchema {
     async function getColumnsAndType(jsonSchema, dataTypeKey) {
       if (jsonSchema && jsonSchema.items && dataTypeKey) {
         // extract all columns and types based on type column\
-        const matchingSchema = ExtractMatchingKeyFromSchema(jsonSchema.items, '', dataTypeKey)
+        const matchingSchema = ExtractMatchingKeyFromSchema(jsonSchema.items, dataTypeKey)
         // console.log(`Matching schema: ${JSON.stringify(matchingSchema)}`)
         // if we didnt find any columns, throw error
         if (matchingSchema && isObject(matchingSchema) && Object.keys(matchingSchema).length > 0) {
@@ -120,67 +124,67 @@ export class JsonSchemaToDBSchema {
         )
       }
     } // end of getSchema
+  }
 
-    async function getCreateTableSQL(tableSchema, tableName, colsAndTypes) {
-      let knex
-      let dbScript
-      if (tableName && colsAndTypes) {
-        // find the postgres DB Type whic is equivalent of the given JSON type
-        // loop through objects
-        const colNames = Object.keys(colsAndTypes)
-        if (colNames && colNames.length > 0) {
-          try {
-            // get knex type
-            knex = knexNoDB()
-            // create table
-            dbScript = await knex.schema
-              .withSchema(tableSchema)
-              .createTable(tableName, function(table) {
-                // preserve the order of column creation
-                for (const colIndex in colNames) {
-                  try {
-                    // find what action to take
-                    const objEnum = JsonToKnexDataTypeEnum[colsAndTypes[colNames[colIndex]]]
-                    // create column by calling appropriate function
-                    objEnum.AddColFunction(table, colNames[colIndex], objEnum.opts || {})
-                  } catch (err) {
-                    const e = new Error(
-                      `Error in adding column: ${colIndex} to Table: ${tableName}, error: ${
-                        err.message
-                      }`
-                    )
-                    console.log(e.message)
-                    throw e
-                  }
+  async getCreateTableSQL(tableSchema, tableName, colsAndTypes) {
+    let knex
+    let dbScript
+    if (tableName && colsAndTypes) {
+      // find the postgres DB Type whic is equivalent of the given JSON type
+      // loop through objects
+      const colNames = Object.keys(colsAndTypes)
+      if (colNames && colNames.length > 0) {
+        try {
+          // get knex type
+          knex = knexNoDB()
+          // create table
+          dbScript = await knex.schema
+            .withSchema(tableSchema)
+            .createTable(tableName, function(table) {
+              // preserve the order of column creation
+              for (const colIndex in colNames) {
+                try {
+                  // find what action to take
+                  const objEnum = JsonToKnexDataTypeEnum[colsAndTypes[colNames[colIndex]]]
+                  // create column by calling appropriate function
+                  objEnum.AddColFunction(table, colNames[colIndex], objEnum.opts || {})
+                } catch (err) {
+                  const e = new Error(
+                    `Error in adding column: ${colIndex} to Table: ${tableName}, error: ${
+                      err.message
+                    }`
+                  )
+                  console.log(e.message)
+                  throw e
                 }
-              })
-              .toSQL()
-          } catch (err) {
-            throw new Error(`Error in adding cols to Table: ${tableName}, error: ${err.message}`)
-          } finally {
-            if (knex) {
-              knex.destroy()
-            }
+              }
+            })
+            .toSQL()
+        } catch (err) {
+          throw new Error(`Error in adding cols to Table: ${tableName}, error: ${err.message}`)
+        } finally {
+          if (knex) {
+            knex.destroy()
           }
-        } else {
-          throw new Error('colsAndTypes is empty. Cannot get Create Table SQL Statement')
         }
-        // throw error in case of invalid script object
-        if (!(dbScript && dbScript.length && dbScript.length > 0 && dbScript[0].sql)) {
-          throw new Error(
-            `Create Table script failed with unknown error. sql attribute missing. dbScript: ${dbScript}`
-          )
-        }
-        return dbScript[0].sql
       } else {
+        throw new Error('colsAndTypes is empty. Cannot get Create Table SQL Statement')
+      }
+      // throw error in case of invalid script object
+      if (!(dbScript && dbScript.length && dbScript.length > 0 && dbScript[0].sql)) {
         throw new Error(
-          `Invalid Parameter. tableName: ${tableName} or colsAndTypes: ${colsAndTypes} is null.`
+          `Create Table script failed with unknown error. sql attribute missing. dbScript: ${dbScript}`
         )
       }
+      return dbScript[0].sql
+    } else {
+      throw new Error(
+        `Invalid Parameter. tableName: ${tableName} or colsAndTypes: ${colsAndTypes} is null.`
+      )
     }
   }
 
-  async getDBScriptFromS3Schema() {
+  async createTableScriptByS3SchemaFile() {
     this.ValidateParams()
     this.S3Parameters.ValidateInputFiles()
     try {
@@ -189,7 +193,7 @@ export class JsonSchemaToDBSchema {
       // object has any items
       if (inputdata) {
         // get script
-        const dbScript = await this.getDBScriptFromJsonSchema({
+        const dbScript = await this.createTableScriptByJsonSchema({
           JsonSchema: inputdata,
           DataTypeKey: this.DataTypeKey,
         })
@@ -206,7 +210,6 @@ export class JsonSchemaToDBSchema {
     const batch = this.AppendBatchId && isNumber(this.BatchId) ? `_${this.BatchId}` : ''
     const timestamp = this.AppendDateTimeToTable ? `_${moment().format('YYMMDD_HHmmss')}` : ''
     const tblName = `${this.TableNamePrefix}${batch}${timestamp}`
-      .toLocaleLowerCase()
       .replace(/[\W]+/g, '')
       .replace('__', '_')
     return tblName.substring(0, 63)
@@ -219,7 +222,7 @@ export class JsonSchemaToDBSchema {
       this.S3Parameters.ValidateOutputFiles()
       let schema = schemaToSave
       if (!schemaToSave || isEmpty(schemaToSave)) {
-        schema = await this.getDBScriptFromS3Schema()
+        schema = await this.createTableScriptByS3SchemaFile()
       }
       if (schema) {
         const { S3OutputBucket, S3OutputKey } = this.S3Parameters.getOutputParams()

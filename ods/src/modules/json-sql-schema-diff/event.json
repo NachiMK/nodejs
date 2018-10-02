@@ -1,0 +1,7 @@
+{
+    "JsonSchema": "", 
+    "TableName": "clients", 
+    "TableSchema": "stg",
+    "DataTypeKey": "db_type",
+    "DBConnection": "" 
+}

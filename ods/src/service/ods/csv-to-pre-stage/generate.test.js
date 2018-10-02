@@ -12,6 +12,7 @@ describe('DoTaskCsvToPreStage - Unit Tests', () => {
       // get connection string
       const dpTask = new DataPipeLineTaskQueue(task)
       dpTask.TableName = task.TableName
+      expect.assertions(1)
       const resp = await ODSPipeLineFactory(DoTaskCsvToPreStage)(dpTask)
       console.log('resp', JSON.stringify(resp, null, 2))
       expect(resp).toBeDefined()
