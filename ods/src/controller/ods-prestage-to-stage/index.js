@@ -1,8 +1,9 @@
 //@ts-check
 import pickBy from 'lodash/pickBy'
+import toLength from 'lodash/toLength'
+import isUndefined from 'lodash/isUndefined'
 import mapLimit from 'async/mapLimit'
 import odsLogger from '../../modules/log/ODSLogger'
-import { JsonSchemaToDBSchema } from '../../modules/json-schema-to-db-schema/index'
 import {
   DynamicAttributeEnum,
   PreDefinedAttributeEnum,
@@ -14,13 +15,15 @@ import {
 } from '../../modules/ODSErrors/StageError'
 import { IsValidString } from '../../utils/string-utils/index'
 import { SchemaDiff } from '../../modules/json-sql-schema-diff'
+import { executeCommand, getConnectionString } from '../../data/psql'
+import { KnexTable } from '../../data/psql/table/knexTable'
 
 const JsonObjectNameEnum = DynamicAttributeEnum.JsonObjectName.value
 const PreStageTableEnum = DynamicAttributeEnum.PreStageTableName.value
 const S3SchemaFileBucketName = PreDefinedAttributeEnum.S3SchemaFileBucketName.value
 const StageTablePrefix = 'StageTablePrefix'
 const S3SchemaFileEnum = PreDefinedAttributeEnum.S3SchemaFile.value
-
+const StgTblS3PrefixEnum = PreDefinedAttributeEnum.StageSchemaFile.value
 /**
  * @class: OdsPreStageToStage
  * @description: This class takes a pipeline task, gets Schema details,
@@ -49,6 +52,7 @@ export class OdsPreStageToStage {
   get TablesToStage() {
     const regExJ = new RegExp(JsonObjectNameEnum, 'gi')
     const regExT = new RegExp(PreStageTableEnum, 'gi')
+    const s3Prefix = this.TaskAttributes[StgTblS3PrefixEnum] || ''
     if (this.TaskAttributes) {
       const filtered = pickBy(this.TaskAttributes, function(attvalue, attkey) {
         // Attribute name should in format: S3CSVFile1.CSVFileName or S3CSVFile1.JsonObjectName
@@ -61,13 +65,17 @@ export class OdsPreStageToStage {
       const retCollection = {}
       Object.keys(filtered).map((item) => {
         const [fileCommonKey, AttributeName] = item.split('.')
-        if (!retCollection[`${fileCommonKey}`]) {
-          retCollection[`${fileCommonKey}`] = {}
+        if (!retCollection[fileCommonKey]) {
+          retCollection[fileCommonKey] = {}
         }
         if (AttributeName.match(regExJ)) {
-          retCollection[`${fileCommonKey}`][`${StageTablePrefix}`] = filtered[item]
+          retCollection[fileCommonKey][JsonObjectNameEnum] = filtered[item]
+          const [idx, tblname] = filtered[item].split('-')
+          retCollection[fileCommonKey][StageTablePrefix] = tblname
+          retCollection[fileCommonKey]['Index'] = parseInt(idx)
+          retCollection[fileCommonKey]['S3OuputPrefix'] = `${s3Prefix}-${filtered[item]}-db-`
         } else if (AttributeName.match(regExT)) {
-          retCollection[`${fileCommonKey}`][`${PreStageTableEnum}`] = filtered[item]
+          retCollection[fileCommonKey][PreStageTableEnum] = filtered[item]
         }
       })
       return retCollection
@@ -82,6 +90,10 @@ export class OdsPreStageToStage {
     odsLogger.log(this.LogLevel, jsonMsg)
   }
 
+  get DBConnection() {
+    return getConnectionString('odsdynamodb', process.env.STAGE)
+  }
+
   /**
    * @function : StageData
    * It creates stage tables if needed,
@@ -93,7 +105,7 @@ export class OdsPreStageToStage {
    * IF stage table is missing then - InvalidSTageTableError is thrown
    * IF stage table schema couldnt be synced with PreStage then StageSchemaUpdateError is thrown
    */
-  async StageData(parallelRuns = 2) {
+  async StageData(parallelRuns = 1) {
     this.ValidateParam()
     const retResp = {
       status: {
@@ -104,32 +116,59 @@ export class OdsPreStageToStage {
       const tables = this.TablesToStage
       this.LogMsgToODSLogger(`Staging Data, No Of Tables to Stage: ${tables.length}`)
       // get JSON data from the S3 File
-      if (this._JsonFroms3SchemaFile) {
+      if (isUndefined(this._JsonFroms3SchemaFile)) {
         this._JsonFroms3SchemaFile = await GetJSONFromS3Path(this.TaskAttributes[S3SchemaFileEnum])
       }
-      const tableResults = await Promise.all(
-        mapLimit(tables, parallelRuns, async (table) => {
-          const retVal = {}
-          retVal[`${table.StageTablePrefix}`] = {}
-          // get SQL script from JSON
-          const tblDiff = await this.GetTableDiffScript(table)
+      const tableResults = []
+      for (const item of Object.keys(tables)) {
+        const table = tables[item]
+        const retVal = {}
+        retVal[`${table.StageTablePrefix}`] = {}
+        // get SQL script from JSON
+        const tblDiff = await this.GetTableDiffScript(table)
 
-          if (tblDiff.HasDifference && tblDiff.DiffScript) {
-            retVal[`${table.StageTablePrefix}`].TableDiffExists = true
-            retVal[`${table.StageTablePrefix}`].TableDiffScript = tblDiff.DiffScript
-            retVal[`${table.StageTablePrefix}`].S3ScriptFilePath = tblDiff.S3FilePath || ''
+        if (toLength(tblDiff.DBScript) > 0) {
+          retVal[`${table.StageTablePrefix}`].TableDiffExists = true
+          retVal[`${table.StageTablePrefix}`].TableDiffScript = tblDiff.DBScript
+          retVal[`${table.StageTablePrefix}`].S3ScriptFilePath = tblDiff.S3FilePath || ''
 
-            // Create the Tables/Apply difference in DB
-            const tblName = await this.ApplyScriptsToDB(table)
-            retVal[`${table.StageTablePrefix}`].TableSchemaUpdated = true
-          }
+          // Create the Tables/Apply difference in DB
+          const tblName = await this.ApplyScriptsToDB(table, retVal[`${table.StageTablePrefix}`])
+          retVal[`${table.StageTablePrefix}`].TableSchemaUpdated = true
+        }
 
-          // Copy data from PreStage to Stage.
-          const RowCount = await this.CopyDataToStage(table)
-          retVal[`${table.StageTablePrefix}`].DataCopied = true
-          return retVal
-        })
-      )
+        // Copy data from PreStage to Stage.
+        const RowCount = await this.CopyDataToStage(table)
+        retVal[`${table.StageTablePrefix}`].DataCopied =
+          !isUndefined(RowCount) && RowCount > 0 ? true : false
+        retVal[`${table.StageTablePrefix}`].RowCount = RowCount
+        tableResults.push(retVal)
+      }
+      // const tableResults = await Promise.all(
+      //   mapLimit(tables, parallelRuns, async (table) => {
+      //     const retVal = {}
+      //     retVal[`${table.StageTablePrefix}`] = {}
+      //     // get SQL script from JSON
+      //     const tblDiff = await this.GetTableDiffScript(table)
+
+      //     if (toLength(tblDiff.DBScript) > 0) {
+      //       retVal[`${table.StageTablePrefix}`].TableDiffExists = true
+      //       retVal[`${table.StageTablePrefix}`].TableDiffScript = tblDiff.DBScript
+      //       retVal[`${table.StageTablePrefix}`].S3ScriptFilePath = tblDiff.S3FilePath || ''
+
+      //       // Create the Tables/Apply difference in DB
+      //       const tblName = await this.ApplyScriptsToDB(table, retVal[`${table.StageTablePrefix}`])
+      //       retVal[`${table.StageTablePrefix}`].TableSchemaUpdated = true
+      //     }
+
+      //     // Copy data from PreStage to Stage.
+      //     const RowCount = await this.CopyDataToStage(table)
+      //     retVal[`${table.StageTablePrefix}`].DataCopied =
+      //       !isUndefined(RowCount) && RowCount > 0 ? true : false
+      //     retVal[`${table.StageTablePrefix}`].RowCount = RowCount
+      //     return retVal
+      //   })
+      // )
 
       if (tableResults && tableResults.length > 0) {
         retResp.status.message = 'success'
@@ -145,15 +184,15 @@ export class OdsPreStageToStage {
 
   async GetTableDiffScript(table) {
     const output = {}
-    const stgTblPrefix = table[StageTablePrefix].replace('-', '_')
+    const stgTblPrefix = table[StageTablePrefix]
     try {
-      const jsonschema = await this.getTableJsonSchema(stgTblPrefix)
+      const jsonschema = await this.getTableJsonSchema(stgTblPrefix, table.Index)
       const objSchemaDiff = new SchemaDiff({
         JsonSchema: jsonschema,
         TableName: stgTblPrefix,
         TableSchema: 'stg',
         DataTypeKey: 'db_type',
-        DBConnection: '',
+        DBConnection: this.DBConnection,
       })
       // get script
       output.DBScript = await objSchemaDiff.SQLScript()
@@ -163,7 +202,7 @@ export class OdsPreStageToStage {
       if (IsValidString(this.TaskAttributes[S3SchemaFileBucketName])) {
         output.S3FilePath = await SaveStringToS3File({
           S3OutputBucket: this.TaskAttributes[S3SchemaFileBucketName],
-          S3OutputKey: `${stgTblPrefix}-db-stg-`,
+          S3OutputKey: table.S3OuputPrefix,
           StringData: output.DBScript,
           AppendDateTimeToFileName: true,
           Overwrite: 'yes',
@@ -176,42 +215,74 @@ export class OdsPreStageToStage {
     return output
   }
 
-  async getTableJsonSchema(stageTablePrefix) {
-    debugger
-    const cleanTblPrefix = stageTablePrefix.replace(/^\d+_{1}/gi, '')
+  async getTableJsonSchema(stgTblPrefix, index) {
+    const rootItem = index === 0
     // extract the schema for given object
-    if (this._JsonFroms3SchemaFile && cleanTblPrefix) {
-      const intKeyIndex = Object.keys(this._JsonFroms3SchemaFile.properties).indexOf(cleanTblPrefix)
-      this.LogMsgToODSLogger(
-        `Stage Table Prefix: ${stageTablePrefix}, Clean Table: ${cleanTblPrefix}, Found in Schema: ${intKeyIndex}`
-      )
+    if (this._JsonFroms3SchemaFile && stgTblPrefix) {
+      if (rootItem) {
+        return this._JsonFroms3SchemaFile
+      }
+      const intKeyIndex = Object.keys(this._JsonFroms3SchemaFile.properties).indexOf(stgTblPrefix)
+      this.LogMsgToODSLogger(`Stage Table Prefix: ${stgTblPrefix}, Found in Schema: ${intKeyIndex}`)
       if (intKeyIndex > 0) {
-        return this._JsonFroms3SchemaFile.properties[intKeyIndex].items
+        return this._JsonFroms3SchemaFile.properties[stgTblPrefix].items
       } else {
-        debugger
-        throw new Error(`Table: ${cleanTblPrefix} is not Found in JSON Schema`)
+        throw new Error(`Table: ${stgTblPrefix} is not Found in JSON Schema`)
       }
     } else {
-      debugger
       throw new Error(
         `Either No JSON in file: ${
           this.TaskAttributes[S3SchemaFileEnum]
-        } or TablePrefix is empty: ${{ cleanTblPrefix }}`
+        } or TablePrefix is empty: ${stgTblPrefix}`
       )
     }
   }
 
-  async ApplyScriptsToDB(table) {
+  async ApplyScriptsToDB(table, schemaDiffResult) {
     try {
-      // do something
+      if (schemaDiffResult && schemaDiffResult.TableDiffScript) {
+        const dbResp = await executeCommand({
+          Query: schemaDiffResult.TableDiffScript,
+          ConnectionString: this.DBConnection,
+          BatchKey: this.DataPipeLineTask.DataPipeLineTaskQueueId,
+        })
+        if (!dbResp.completed || !isUndefined(dbResp.error)) {
+          throw new Error(
+            `Error updating SQL Table: ${table.StageTablePrefix}, error: ${dbResp.error.message}`
+          )
+        }
+      } else {
+        throw new Error('Invalid Parameters to Apply scripts.')
+      }
     } catch (err) {
       throw new InvalidStageTableError(`Error in ApplyScriptsToDB: ${err.message}`)
     }
   }
 
   async CopyDataToStage(table) {
+    let rowCnt = 0
     try {
-      // do something
+      const knexTable = new KnexTable({
+        TableName: table.StageTablePrefix,
+        TableSchema: 'stg',
+        DBConnection: this.DBConnection,
+      })
+      const blnExists = await knexTable.TableExists()
+      if (blnExists) {
+        rowCnt = await knexTable.CopyDataFromPreStage({
+          PreStageTableName: table.PreStageTableEnum,
+          DataPipeLineTaskQueueId: this.DataPipeLineTask.DataPipeLineTaskQueueId,
+        })
+        if (!isUndefined(rowCnt) && rowCnt > 0) {
+          return rowCnt
+        } else {
+          throw new Error(
+            `Data Load to Table: ${table.stageTablePrefix} completed but didn't load data!`
+          )
+        }
+      } else {
+        throw new Error(`Table: ${table.stageTablePrefix} does not exists in DBConnection`)
+      }
     } catch (err) {
       throw new InvalidPreStageDataError(`Error in CopyDataToState script: ${err.message}`)
     }

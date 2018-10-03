@@ -95,7 +95,7 @@ export const executeScalar = async (params = {}) => {
 
 export const executeCommand = async (params = {}) => {
   const ret = {
-    error: '',
+    error: undefined,
     completed: false,
   }
 

@@ -1,0 +1,7 @@
+{
+    "DataPipeLineTaskQueueId": 51,
+    "TaskConfigName": "JSON History Data to JSON Schema",
+    "RunSequence": 2010,
+    "Status": "On Hold",
+    "TableName": "clients"
+}

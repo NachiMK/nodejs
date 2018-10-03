@@ -7,7 +7,7 @@ import { DynamicAttributeEnum } from '../../modules/ODSConstants/AttributeNames'
 import { CSVToJsonSchema } from '../csv-to-json-schema'
 import { JsonSchemaToDBSchema } from '../json-schema-to-db-schema'
 import { executeCommand, executeQueryRS } from '../../data/psql/index'
-import { KnexTable } from '../../data/psql/knexTable'
+import { KnexTable } from '../../data/psql/table/knexTable'
 
 export class CsvToPostgres {
   logger = createLogger({
@@ -208,7 +208,7 @@ export class CsvToPostgres {
 
     const objDBScriptGen = new JsonSchemaToDBSchema(objParams)
     // get script
-    this._dbScript = await objDBScriptGen.getDBScriptFromJsonSchema({
+    this._dbScript = await objDBScriptGen.createTableScriptByJsonSchema({
       JsonSchema: this.Jsonschema,
     })
     this._outputTableSchema = objDBScriptGen.TableSchema

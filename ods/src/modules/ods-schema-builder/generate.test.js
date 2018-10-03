@@ -6,8 +6,7 @@ describe('ods-schema-builder - Integration Tests', () => {
       Datafile: 's3://dev-ods-data/dynamodb/clients/49/49-clients-Data-20180823_183955032.json',
       Output: 's3://dev-ods-data/unit-test/clients/test-clients-Schema-',
       Overwrite: 'yes',
-      S3RAWJsonSchemaFile:
-        's3://dev-ods-data/unit-test/dynamotableschema/clients-raw-schame-debug.json',
+      S3RAWJsonSchemaFile: 's3://dev-ods-data/dynamotableschema/clients-20180906_132212919.json',
     })
     expect(resp.status.message).toBe('success')
     expect(resp.file).toBeDefined()

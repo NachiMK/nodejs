@@ -54,6 +54,7 @@ if [ "${create}" = "CreateDB:TRUE" ]; then
     psql ${dbhostname} -d odsdynamodb_${stagename} -c "CREATE SCHEMA IF NOT EXISTS raw;"
     psql ${dbhostname} -d odsdynamodb_${stagename} -c "CREATE SCHEMA IF NOT EXISTS stg;"
     psql ${dbhostname} -d odsdynamodb_${stagename} -c "CREATE EXTENSION tablefunc;"
+    psql ${dbhostname} -d odsdynamodb_${stagename} -c "CREATE EXTENSION ""uuid-ossp"";"
     resetdata="RunPostScripts:TRUE"
 
     for filename in Security/*.sql; do

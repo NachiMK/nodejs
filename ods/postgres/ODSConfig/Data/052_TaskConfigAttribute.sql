@@ -40,6 +40,7 @@ VALUES
     ,('CSV to Pre-stage', 'Process JSON to Postgres', 'S3CSVFile#') -- Dynamic (For copying from Previous Step)
 
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'LogLevel')
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'Prefix.StageSchemaFile')
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'psql.StageTable.Prefix')
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3SchemaFileBucketName')
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3SchemaFile') -- This is a Json Schema file

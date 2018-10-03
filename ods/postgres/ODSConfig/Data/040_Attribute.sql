@@ -24,6 +24,7 @@ FROM    (
             UNION   SELECT 'Prefix.CSVFile' as "AttributeName"
             UNION   SELECT 'S3CSVFile#' as "AttributeName" --Output/Input
             
+            UNION   SELECT 'Prefix.StageSchemaFile' as "AttributeName"
             UNION   SELECT 'psql.PreStageTable.Prefix' as "AttributeName"
             UNION   SELECT 'psql.StageTable.Prefix' as "AttributeName"
 

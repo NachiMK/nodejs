@@ -1,27 +1,6 @@
 //@ts-check
 import isUndefined from 'lodash/isUndefined'
 import { isNumber } from 'util'
-import {
-  addSmallInt,
-  addBool,
-  addDate,
-  addDateTime,
-  addInteger,
-  addDecimal,
-  addObject,
-  addString,
-  addText,
-  addBigInteger,
-  addReal,
-  addNumeric,
-  addDouble,
-  addJson,
-  addSerial,
-  addBigSerial,
-  addTime,
-  addTimeStampTz,
-  addArray,
-} from './table/knexAddColumn'
 
 export const FallBackTypeEnum = {
   'character varying': {
@@ -53,7 +32,6 @@ export const DataTypeTransferEnum = {
       precision: 32,
       scale: 0,
     },
-    AddColFunction: addInteger,
     postgresType: 'int',
   },
   smallint: {
@@ -63,7 +41,6 @@ export const DataTypeTransferEnum = {
       precision: 16,
       scale: 0,
     },
-    AddColFunction: addSmallInt,
     postgresType: 'smallint',
   },
   bigint: {
@@ -73,7 +50,6 @@ export const DataTypeTransferEnum = {
       precision: 64,
       scale: 0,
     },
-    AddColFunction: addBigInteger,
     postgresType: 'bigint',
   },
   smallserial: {
@@ -83,7 +59,6 @@ export const DataTypeTransferEnum = {
       precision: 10,
       scale: 0,
     },
-    AddColFunction: addSerial,
     postgresType: 'smallserial',
   },
   serial: {
@@ -93,7 +68,6 @@ export const DataTypeTransferEnum = {
       precision: 32,
       scale: 0,
     },
-    AddColFunction: addSerial,
     postgresType: 'serial',
   },
   bigserial: {
@@ -103,7 +77,6 @@ export const DataTypeTransferEnum = {
       precision: 64,
       scale: 0,
     },
-    AddColFunction: addBigSerial,
     postgresType: 'bigserial',
   },
   real: {
@@ -113,7 +86,6 @@ export const DataTypeTransferEnum = {
       precision: 24,
       scale: 6,
     },
-    AddColFunction: addReal,
     postgresType: 'real',
   },
   'double precision': {
@@ -123,19 +95,16 @@ export const DataTypeTransferEnum = {
       precision: 53,
       scale: 15,
     },
-    AddColFunction: addDouble,
     postgresType: 'double precision',
   },
   numeric: {
     HigherTypes: ['numeric', 'decimal'],
     FallbackHigherType: FallBackTypeEnum['character varying'],
-    AddColFunction: addNumeric,
     postgresType: 'numeric',
   },
   decimal: {
     HigherTypes: ['decimal', 'numeric'],
     FallbackHigherType: FallBackTypeEnum['character varying'],
-    AddColFunction: addDecimal,
     postgresType: 'decimal',
   },
   date: {
@@ -144,7 +113,6 @@ export const DataTypeTransferEnum = {
     'character varying': {
       DataLength: 12,
     },
-    AddColFunction: addDate,
     postgresType: 'date',
   },
   timestamp: {
@@ -153,7 +121,6 @@ export const DataTypeTransferEnum = {
     'character varying': {
       DataLength: 29,
     },
-    AddColFunction: addDateTime,
     postgresType: 'timestamp',
   },
   'timestamp without time zone': {
@@ -162,7 +129,6 @@ export const DataTypeTransferEnum = {
     'character varying': {
       DataLength: 29,
     },
-    AddColFunction: addDateTime,
     postgresType: 'timestamp',
   },
   timestamptz: {
@@ -171,7 +137,6 @@ export const DataTypeTransferEnum = {
     'character varying': {
       DataLength: 29,
     },
-    AddColFunction: addTimeStampTz,
     postgresType: 'timestamptz',
   },
   'timestamp with time zone': {
@@ -180,7 +145,6 @@ export const DataTypeTransferEnum = {
     'character varying': {
       DataLength: 30,
     },
-    AddColFunction: addTimeStampTz,
     postgresType: 'timestamptz',
   },
   time: {
@@ -189,14 +153,12 @@ export const DataTypeTransferEnum = {
     'character varying': {
       DataLength: 10,
     },
-    AddColFunction: addTime,
     postgresType: 'time',
   },
   char: {
     HigherTypes: ['text', 'character varying'],
     AllowHigerLength: true,
     FallbackHigherType: FallBackTypeEnum['character varying'],
-    AddColFunction: addString,
     'character varying': {
       DataLength: 256,
     },
@@ -206,7 +168,6 @@ export const DataTypeTransferEnum = {
     HigherTypes: ['text', 'character varying'],
     AllowHigerLength: true,
     FallbackHigherType: FallBackTypeEnum['character varying'],
-    AddColFunction: addString,
     'character varying': {
       DataLength: 256,
     },
@@ -216,14 +177,12 @@ export const DataTypeTransferEnum = {
     HigherTypes: ['text'],
     AllowHigerLength: true,
     FallbackHigherType: FallBackTypeEnum['character varying'],
-    AddColFunction: addText,
     postgresType: 'text',
   },
   varchar: {
     HigherTypes: ['text', 'character varying'],
     AllowHigerLength: true,
     FallbackHigherType: FallBackTypeEnum['character varying'],
-    AddColFunction: addString,
     'character varying': {
       DataLength: 512,
     },
@@ -233,11 +192,19 @@ export const DataTypeTransferEnum = {
     HigherTypes: ['text', 'character varying'],
     AllowHigerLength: true,
     FallbackHigherType: FallBackTypeEnum['character varying'],
-    AddColFunction: addString,
     'character varying': {
       DataLength: 512,
     },
     postgresType: 'character varying',
+  },
+  uuid: {
+    HigherTypes: ['text', 'character varying'],
+    AllowHigerLength: false,
+    FallbackHigherType: FallBackTypeEnum['character varying'],
+    'character varying': {
+      DataLength: 36,
+    },
+    postgresType: 'uuid',
   },
   integer: {
     HigherTypes: ['bigint', 'real', 'double precision', 'numeric'],
@@ -246,7 +213,6 @@ export const DataTypeTransferEnum = {
       precision: 32,
       scale: 0,
     },
-    AddColFunction: addInteger,
     postgresType: 'int',
   },
   datetime: {
@@ -255,7 +221,6 @@ export const DataTypeTransferEnum = {
     'character varying': {
       DataLength: 29,
     },
-    AddColFunction: addTimeStampTz,
     postgresType: 'timestamptz',
   },
   boolean: {
@@ -264,7 +229,6 @@ export const DataTypeTransferEnum = {
     'character varying': {
       DataLength: 5,
     },
-    AddColFunction: addBool,
     postgresType: 'boolean',
   },
   bool: {
@@ -273,19 +237,16 @@ export const DataTypeTransferEnum = {
     'character varying': {
       DataLength: 5,
     },
-    AddColFunction: addBool,
     postgresType: 'bool',
   },
   json: {
     HigherTypes: ['json', 'text'],
     FallbackHigherType: 'text',
-    AddColFunction: addJson,
     postgresType: 'json',
   },
   jsonb: {
     HigherTypes: ['jsonb', 'text'],
     FallbackHigherType: 'text',
-    AddColFunction: addObject,
     postgresType: 'jsonb',
   },
 }
@@ -352,6 +313,19 @@ export const JsonPostgreTypeMappingEnum = {
     Value: 90,
     postgres: {
       dataType: 'timestamptz',
+    },
+  },
+  'date-time': {
+    Value: 100,
+    postgres: {
+      dataType: 'timestamptz',
+    },
+  },
+  null: {
+    Value: 110,
+    postgres: {
+      dataType: 'character varying',
+      defaultLength: 512,
     },
   },
 }

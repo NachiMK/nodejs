@@ -53,6 +53,8 @@ if [ "${create}" = "CreateDB:TRUE" ]; then
     psql ${dbhostname} -d postgres -c "CREATE DATABASE odsconfig_${stagename} WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';"
     psql ${dbhostname} -d odsconfig_${stagename} -c "CREATE SCHEMA IF NOT EXISTS ods;"
     psql ${dbhostname} -d odsconfig_${stagename} -c "CREATE EXTENSION tablefunc;"
+    psql ${dbhostname} -d odsconfig_${stagename} -c "CREATE EXTENSION ""uuid-ossp"";"
+    
     resetdata="ResetData:TRUE"
 
     for filename in Tables/*.sql; do

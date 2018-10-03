@@ -182,11 +182,11 @@ export default async ({
 async function getCombinedSchema(schemaFromData, S3RAWJsonSchemaFile) {
   const resp = {}
   let rawJsonSchema
-  if (schemaFromData && schemaFromData.items && S3RAWJsonSchemaFile) {
+  if (schemaFromData && schemaFromData.schema && S3RAWJsonSchemaFile) {
     try {
       rawJsonSchema = await GetJSONFromS3Path(S3RAWJsonSchemaFile)
       if (rawJsonSchema) {
-        rawJsonSchema = _merge(rawJsonSchema, schemaFromData.items.properties.Item)
+        rawJsonSchema = _merge(rawJsonSchema, schemaFromData.schema)
         // rawJsonSchema = Object.assign(rawJsonSchema, schemaFromData.items.properties.Item);
         resp.Status = 'success'
         resp.CombineSchema = rawJsonSchema
@@ -223,7 +223,7 @@ async function generateRawSchemaFromData({ Datafile, SaveDataSchemaToS3 = true, 
       if (SaveDataSchemaToS3 && Output && rawSchemaResp.Schema) {
         // save file
         const saveFileParams = s3FileParser(Output)
-        rawSchemaResp.file = await SaveJsonToS3File(rawSchemaResp, {
+        rawSchemaResp.file = await SaveJsonToS3File(rawSchemaResp.Schema.schema, {
           S3OutputBucket: saveFileParams.Bucket,
           S3OutputKey: `${saveFileParams.Key}-bydata`,
         })

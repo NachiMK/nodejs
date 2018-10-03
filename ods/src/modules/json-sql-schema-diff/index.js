@@ -1,11 +1,11 @@
 //@ts-check
 import isEmpty from 'lodash/isEmpty'
 import forEach from 'lodash/forEach'
+import isUndefined from 'lodash/isUndefined'
 import size from 'lodash/size'
 import { ExtractMatchingKeyFromSchema } from '../json-extract-matching-keys/index'
 import { KnexTable } from '../../data/psql/table/knexTable'
 import { IsValidString } from '../../utils/string-utils'
-import { isUndefined } from 'util'
 import {
   GetNewType,
   DataTypeTransferEnum,
@@ -133,27 +133,35 @@ export class SchemaDiff {
    *  }
    */
   async JsonSchemaToDBSchema() {
-    // get json schema
-    const colsAndTypesJson = this.JsonColumnsAndTypes()
-    // convert to DB Schema
     const dbSchema = {}
-    if (colsAndTypesJson) {
-      let idx = 0
-      forEach(colsAndTypesJson, (colType, colName) => {
-        const psqlTypeEnum = JsonPostgreTypeMappingEnum[colType.type]
-        dbSchema[colName] = {
-          Position: idx,
-          IsNullable: true,
-          DataType: psqlTypeEnum.postgres.dataType,
-          DataLength: colType.maxLength || psqlTypeEnum.postgres.defaultLength || -1,
-          precision: psqlTypeEnum.postgres.defaultPrecision || -1,
-          scale: psqlTypeEnum.postgres.defaultScale || -1,
-          datatimePrecision: -1,
-        }
-        idx += 1
-      })
+    try {
+      // get json schema
+      const colsAndTypesJson = this.JsonColumnsAndTypes()
+      // convert to DB Schema
+      if (colsAndTypesJson) {
+        let idx = 0
+        forEach(colsAndTypesJson, (colType, colName) => {
+          const psqlTypeEnum = JsonPostgreTypeMappingEnum[colType.type]
+          if (isUndefined(psqlTypeEnum)) {
+            throw new Error(
+              `No Postgres Type available for Column: ${colName} and Type: ${colType.type}`
+            )
+          }
+          dbSchema[colName] = {
+            Position: idx,
+            IsNullable: true,
+            DataType: psqlTypeEnum.postgres.dataType,
+            DataLength: colType.maxLength || psqlTypeEnum.postgres.defaultLength || -1,
+            precision: psqlTypeEnum.postgres.defaultPrecision || -1,
+            scale: psqlTypeEnum.postgres.defaultScale || -1,
+            datatimePrecision: -1,
+          }
+          idx += 1
+        })
+      }
+    } catch (err) {
+      throw new Error(`Error coverting Json to Psql Schema. ${err.message}`)
     }
-
     return dbSchema
   }
 
@@ -270,7 +278,7 @@ export class SchemaDiff {
         const objtbl = new KnexTable({ TableName: this.TableName, TableSchema: this.TableSchema })
         if (!isUndefined(jsonDiff.NewTable) && size(jsonDiff.NewTable) > 0) {
           // create new table with all columns
-          dbScript = await objtbl.getCreateTableSQL(jsonDiff.NewTable)
+          dbScript = await objtbl.getCreateTableSQL(jsonDiff.NewTable, true)
         } else if (
           (!isUndefined(jsonDiff.AddedColumns) && size(jsonDiff.AddedColumns) > 0) ||
           !isUndefined(jsonDiff.AlteredColumns && size(jsonDiff.AlteredColumns) > 0)

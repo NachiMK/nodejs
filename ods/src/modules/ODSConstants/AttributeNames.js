@@ -4,6 +4,7 @@ export const PreDefinedAttributeEnum = {
   PrefixDataFile: { value: 'Prefix.DataFile', Prefix: '', HasRunningIndex: false },
   PrefixFlatJSONFile: { value: 'Prefix.FlatJSONFile', Prefix: '', HasRunningIndex: false },
   PrefixSchemaFile: { value: 'Prefix.SchemaFile', Prefix: '', HasRunningIndex: false },
+  StageSchemaFile: { value: 'Prefix.StageSchemaFile', Prefix: '', HasRunningIndex: false },
   PrefixUniformJSONFile: { value: 'Prefix.UniformJSONFile', Prefix: '', HasRunningIndex: false },
   psqlPreStageTablePrefix: {
     value: 'psql.PreStageTable.Prefix',

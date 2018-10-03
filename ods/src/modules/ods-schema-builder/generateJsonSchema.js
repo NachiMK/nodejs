@@ -6,6 +6,6 @@ export async function generateSchema(name, data) {
     maxEnumValues: 0,
     generateLengths: false,
   })
-  console.log('info', `Schema:${JSON.stringify(resp, null, 2)}`)
-  return resp
+  // console.log('info', `Schema:${JSON.stringify(resp, null, 2)}`)
+  return { name, schema: { $schema: resp.$schema, ...resp.items } }
 }

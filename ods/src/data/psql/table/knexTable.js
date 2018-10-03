@@ -1,7 +1,7 @@
 //@ts-check
 import forEach from 'lodash/forEach'
 import isUndefined from 'lodash/isUndefined'
-import { knexByConnectionString } from '..'
+import { knexByConnectionString, executeScalar } from '..'
 import { UploadS3FileToDB } from '../bulkload'
 import { IsValidString, CleanUpString } from '../../../utils/string-utils'
 import { knexNoDB } from '..'
@@ -35,6 +35,29 @@ export class KnexTable {
     }
     if (!IsValidString(this.TableSchema)) {
       throw new Error('Invalid Param. TableSchema is required.')
+    }
+  }
+
+  NewTableValidation() {
+    if (!IsValidString(this.TableName)) {
+      throw new Error('Invalid Param. TableName is required')
+    }
+    if (this.TableName.length > 63 || this.TableName.length < 1) {
+      throw new Error(
+        `Invalid Param. TableName:${this.TableName}, Len: ${
+          this.TableName.length
+        } should be between 1 than 63`
+      )
+    }
+    const tblRegEx = /[^a-z\d]+/gi
+    if (tblRegEx.test(this.TableName)) {
+      throw new Error(
+        `Invalid Param. TableName:${this.TableName} should contain only Alpha Numeric chars`
+      )
+    }
+    const tblRegExStart = /^[a-z]+/gi
+    if (!tblRegExStart.test(this.TableName)) {
+      throw new Error(`Invalid Param. TableName:${this.TableName} should start with Alphabhet`)
     }
   }
 
@@ -175,12 +198,13 @@ export class KnexTable {
    * }
    *
    */
-  async getCreateTableSQL(columnSchema) {
+  async getCreateTableSQL(columnSchema, addDefaultCols = false) {
     let knex
     let dbScript
     const tableSchema = this.TableSchema
     const tableName = this.TableName
     this.ValidateParams(false)
+    this.NewTableValidation()
     // loop through columns
     const colNames = Object.keys(columnSchema)
     if (colNames && colNames.length > 0) {
@@ -191,6 +215,9 @@ export class KnexTable {
         dbScript = await knex.schema
           .withSchema(tableSchema)
           .createTable(tableName, (table) => {
+            if (addDefaultCols === true) {
+              AddStgDefaultCols(table, tableName)
+            }
             forEach(columnSchema, (column, colName) => {
               try {
                 // is data type defined
@@ -232,6 +259,24 @@ export class KnexTable {
       return dbScript[0].sql
     } else {
       throw new Error('columnSchema is empty. Cannot get Create Table SQL Statement')
+    }
+
+    function AddStgDefaultCols(knextable, tblName) {
+      knextable
+        .specificType(`${tblName}StgId`, DataTypeTransferEnum.serial.postgresType)
+        .notNullable()
+      knextable
+        .specificType(`StgRowCreatedDtTm`, DataTypeTransferEnum.timestamptz.postgresType)
+        .defaultTo(knex.fn.now())
+        .notNullable()
+      knextable
+        .specificType(`StgRowDeleted`, DataTypeTransferEnum.boolean.postgresType)
+        .defaultTo(false)
+        .notNullable()
+      knextable
+        .specificType(`DataPipeLineTaskQueueId`, DataTypeTransferEnum.bigint.postgresType)
+        .default(-1)
+        .notNullable()
     }
   }
 
@@ -304,6 +349,45 @@ export class KnexTable {
       throw new Error('columnSchema is empty. Cannot get Create Table SQL Statement')
     }
   }
+
+  async CopyDataFromPreStage(params = {}) {
+    let rowCount
+    const { PreStageTableName, DataPipeLineTaskQueueId } = params
+    if (!isUndefined(PreStageTableName) && !isUndefined(DataPipeLineTaskQueueId)) {
+      try {
+        const qParams = {
+          Query: getCopyDataQuery(
+            PreStageTableName,
+            this.TableName,
+            this.TableSchema,
+            DataPipeLineTaskQueueId
+          ),
+          ConnectionString: this.DBConnection,
+          BatcId: DataPipeLineTaskQueueId,
+        }
+        const retRS = await executeScalar(params)
+        if (retRS && retRS.completed) {
+          rowCount = isNaN(parseInt(retRS.scalarValue)) ? -1 : parseInt(retRS.scalarValue)
+        } else {
+          throw new Error(
+            `Copy Data for BatchId :${DataPipeLineTaskQueueId} completed but did not load data. Response:${retRS}`
+          )
+        }
+      } catch (err) {
+        const e = new Error(
+          `Error copying data to Table: ${this.TableName} from PreStage: ${PreStageTableName}, ${
+            err.message
+          }`
+        )
+        throw e
+      }
+    } else {
+      throw new Error(
+        `Invalid Parameter. Either ${PreStageTableName} is undefined or ${DataPipeLineTaskQueueId} is empty.`
+      )
+    }
+    return rowCount
+  }
 }
 
 function getTableDefinitionQuery(tableName, tableschema = 'public') {
@@ -336,4 +420,12 @@ function getTableDefinitionQuery(tableName, tableschema = 'public') {
   FROM    INFORMATION_SCHEMA.COLUMNS I1
   WHERE   I1.table_name = '${tableName}'
   AND     I1.table_schema = '${tableschema}'`
+}
+
+function getCopyDataQuery(preStageTableName, tableName, tableSchema, dataPipeLineTaskQueueId) {
+  return `SELECT TOP 1 * 
+  FROM public."udf_CopyPreStageToStage"('${tableSchema}'
+  , '${tableName}'
+  , '${preStageTableName}'
+  , '${dataPipeLineTaskQueueId}')`
 }
