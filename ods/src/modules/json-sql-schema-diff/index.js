@@ -279,20 +279,23 @@ export class SchemaDiff {
         if (!isUndefined(jsonDiff.NewTable) && size(jsonDiff.NewTable) > 0) {
           // create new table with all columns
           dbScript = await objtbl.getCreateTableSQL(jsonDiff.NewTable, true)
-        } else if (
-          (!isUndefined(jsonDiff.AddedColumns) && size(jsonDiff.AddedColumns) > 0) ||
-          !isUndefined(jsonDiff.AlteredColumns && size(jsonDiff.AlteredColumns) > 0)
-        ) {
-          // alter table
-          dbScript = await objtbl.getAlterTableSQL(jsonDiff.AddedColumns, true)
-          dbScript = dbScript + (await objtbl.getAlterTableSQL(jsonDiff.AlteredColumns))
+        } else {
+          // alter table - ADD columns
+          if (!isUndefined(jsonDiff.AddedColumns) && size(jsonDiff.AddedColumns) > 0) {
+            dbScript = await objtbl.getAlterTableSQL(jsonDiff.AddedColumns, true)
+          }
+          // alter table - modify columns
+          if (!isUndefined(jsonDiff.AlteredColumns && size(jsonDiff.AlteredColumns) > 0)) {
+            dbScript = dbScript + (await objtbl.getAlterTableSQL(jsonDiff.AlteredColumns))
+          }
         }
       }
     } catch (err) {
       console.log('error', `Error creating script for Table: ${this.TableName}, ${err.message}`)
+      throw new Error(`Error creating script for Table: ${this.TableName}, ${err.message}`)
     }
     // create alter script
-    console.log('info', dbScript)
+    // console.log('info', dbScript)
     return dbScript
   }
 

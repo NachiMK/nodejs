@@ -1,8 +1,7 @@
 //@ts-check
 import pickBy from 'lodash/pickBy'
-import toLength from 'lodash/toLength'
 import isUndefined from 'lodash/isUndefined'
-import mapLimit from 'async/mapLimit'
+// import mapLimit from 'async/mapLimit'
 import odsLogger from '../../modules/log/ODSLogger'
 import {
   DynamicAttributeEnum,
@@ -127,7 +126,7 @@ export class OdsPreStageToStage {
         // get SQL script from JSON
         const tblDiff = await this.GetTableDiffScript(table)
 
-        if (toLength(tblDiff.DBScript) > 0) {
+        if (IsValidString(tblDiff.DBScript)) {
           retVal[`${table.StageTablePrefix}`].TableDiffExists = true
           retVal[`${table.StageTablePrefix}`].TableDiffScript = tblDiff.DBScript
           retVal[`${table.StageTablePrefix}`].S3ScriptFilePath = tblDiff.S3FilePath || ''
@@ -265,26 +264,26 @@ export class OdsPreStageToStage {
       const knexTable = new KnexTable({
         TableName: table.StageTablePrefix,
         TableSchema: 'stg',
-        DBConnection: this.DBConnection,
+        ConnectionString: this.DBConnection,
       })
       const blnExists = await knexTable.TableExists()
       if (blnExists) {
         rowCnt = await knexTable.CopyDataFromPreStage({
-          PreStageTableName: table.PreStageTableEnum,
+          PreStageTableName: table.PreStageTableName,
           DataPipeLineTaskQueueId: this.DataPipeLineTask.DataPipeLineTaskQueueId,
         })
         if (!isUndefined(rowCnt) && rowCnt > 0) {
           return rowCnt
         } else {
           throw new Error(
-            `Data Load to Table: ${table.stageTablePrefix} completed but didn't load data!`
+            `Data Load to Table: ${table.StageTablePrefix} completed but didn't load data!`
           )
         }
       } else {
-        throw new Error(`Table: ${table.stageTablePrefix} does not exists in DBConnection`)
+        throw new Error(`Table: ${table.StageTablePrefix} does not exists in DBConnection`)
       }
     } catch (err) {
-      throw new InvalidPreStageDataError(`Error in CopyDataToState script: ${err.message}`)
+      throw new InvalidPreStageDataError(`Error in CopyDataToStage script: ${err.message}`)
     }
   }
 

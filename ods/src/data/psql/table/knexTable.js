@@ -346,7 +346,7 @@ export class KnexTable {
           .replace(',;', ';') + ';\n'
       )
     } else {
-      throw new Error('columnSchema is empty. Cannot get Create Table SQL Statement')
+      throw new Error('Invalid Param. columnSchema is empty. Cannot get Alter Table SQL Statement')
     }
   }
 
@@ -423,8 +423,9 @@ function getTableDefinitionQuery(tableName, tableschema = 'public') {
 }
 
 function getCopyDataQuery(preStageTableName, tableName, tableSchema, dataPipeLineTaskQueueId) {
-  return `SELECT TOP 1 * 
-  FROM public."udf_CopyPreStageToStage"('${tableSchema}'
+  if (tableName) return 'SELECT 1;'
+  else
+    return `SELECT * FROM public."udf_CopyPreStageToStage"('${tableSchema}'
   , '${tableName}'
   , '${preStageTableName}'
   , '${dataPipeLineTaskQueueId}')`
