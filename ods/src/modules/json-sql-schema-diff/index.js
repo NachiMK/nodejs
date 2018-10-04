@@ -6,10 +6,12 @@ import size from 'lodash/size'
 import { ExtractMatchingKeyFromSchema } from '../json-extract-matching-keys/index'
 import { KnexTable } from '../../data/psql/table/knexTable'
 import { IsValidString } from '../../utils/string-utils'
+import { IsValidBoolean } from '../../utils/bool-utils'
 import {
   GetNewType,
   DataTypeTransferEnum,
   JsonPostgreTypeMappingEnum,
+  IsValidTypeObject,
 } from '../../data/psql/DataTypeTransform'
 
 /**
@@ -271,21 +273,24 @@ export class SchemaDiff {
     return output
   }
 
-  async GenerateSQLFromJsonDiff(jsonDiff) {
-    let dbScript
+  async GenerateSQLFromJsonDiff(jsonDiff, defaultColsForNewTable = {}) {
+    let dbScript = ''
     try {
       if (jsonDiff) {
         const objtbl = new KnexTable({ TableName: this.TableName, TableSchema: this.TableSchema })
         if (!isUndefined(jsonDiff.NewTable) && size(jsonDiff.NewTable) > 0) {
           // create new table with all columns
-          dbScript = await objtbl.getCreateTableSQL(jsonDiff.NewTable, true)
+          if (!isEmpty(defaultColsForNewTable)) {
+            Object.assign(defaultColsForNewTable, jsonDiff.NewTable)
+          }
+          dbScript = await objtbl.getCreateTableSQL(defaultColsForNewTable)
         } else {
           // alter table - ADD columns
           if (!isUndefined(jsonDiff.AddedColumns) && size(jsonDiff.AddedColumns) > 0) {
             dbScript = await objtbl.getAlterTableSQL(jsonDiff.AddedColumns, true)
           }
           // alter table - modify columns
-          if (!isUndefined(jsonDiff.AlteredColumns && size(jsonDiff.AlteredColumns) > 0)) {
+          if (!isUndefined(jsonDiff.AlteredColumns) && size(jsonDiff.AlteredColumns) > 0) {
             dbScript = dbScript + (await objtbl.getAlterTableSQL(jsonDiff.AlteredColumns))
           }
         }
@@ -301,6 +306,21 @@ export class SchemaDiff {
 
   /**
    * @function SQLScript
+   * @param {object} opts - These are options:
+   *  AddTrackingCols : true/false
+   *  AdditionalColumns : object
+   *  If AddTrackingCols is true, provide those columns should be in AdditionalColumns
+   *  and the object should in following format:
+   *    "AdditionalColumns":
+   *    {
+   *    "ColumnName" : {
+   *      "IsNullable": false,   -- not required, but if provided can be false/true
+   *      "DataType": "integer", -- This is the only required property, it should be one of TYPES IN {@link DataTypeTransferEnum}
+   *      "DataLength": -1,      -- Can be a number, if -1/0/undefined it is ignored.But, if DataType is string it is 256 by default
+   *      "precision": 22,       -- Can be a valid number if -1/0/undefined it is ignored.But, if DataType is decimal/numeric it is 22 by default
+   *      "scale": 8,            -- Can be a valid number if -1/0/undefined it is ignored.But, if DataType is decimal/numeric it is 8 by default
+   *      "datetimePrecision": -1 -- Only applicable for timestamp or timestamptz
+   *    }
    * This function generates a SQL script based on
    * differences between the Json schema and Table.
    *
@@ -309,17 +329,36 @@ export class SchemaDiff {
    *
    * Only columns are added or altered.
    */
-  async SQLScript() {
+  async SQLScript(opts = {}) {
     let script
     try {
       this.ValidParameters()
       const jDiff = await this.FindSchemaDiff()
       // generate script
-      script = await this.GenerateSQLFromJsonDiff(jDiff)
+      const addCols = this.getTrackingCols(opts)
+      script = await this.GenerateSQLFromJsonDiff(jDiff, addCols)
     } catch (err) {
       throw new Error(`Error in finding SQL Diff. ${err.message}`)
     }
     return script
+  }
+
+  getTrackingCols(opts = {}) {
+    if (
+      !isEmpty(opts) &&
+      IsValidBoolean(opts.AddTrackingCols) &&
+      !isEmpty(opts.AdditionalColumns) &&
+      size(opts.AdditionalColumns) > 0
+    ) {
+      forEach(opts.AdditionalColumns, (col) => {
+        if (!IsValidTypeObject(col)) {
+          throw new Error(
+            `opts.AddTrackingCols is true but opts.AdditionalColumns defintion is invalid for ${col}`
+          )
+        }
+      })
+      return opts.AdditionalColumns
+    }
   }
 
   ValidParameters() {

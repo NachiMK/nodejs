@@ -169,7 +169,7 @@ export class KnexTable {
         } else if (!isUndefined(column.precision) && column.precision > 0) {
           // precision
           const scale = column.scale || 0
-          retType = `${datatypeEnum.postgresType}(${(column.precision, scale)})`
+          retType = `${datatypeEnum.postgresType}(${column.precision}, ${scale})`
         } else {
           retType = datatypeEnum.postgresType
         }
@@ -198,7 +198,7 @@ export class KnexTable {
    * }
    *
    */
-  async getCreateTableSQL(columnSchema, addDefaultCols = false) {
+  async getCreateTableSQL(columnSchema) {
     let knex
     let dbScript
     const tableSchema = this.TableSchema
@@ -215,9 +215,9 @@ export class KnexTable {
         dbScript = await knex.schema
           .withSchema(tableSchema)
           .createTable(tableName, (table) => {
-            if (addDefaultCols === true) {
-              AddStgDefaultCols(table, tableName)
-            }
+            // if (addDefaultCols === true) {
+            //   AddStgDefaultCols(table, tableName)
+            // }
             forEach(columnSchema, (column, colName) => {
               try {
                 // is data type defined
@@ -275,7 +275,7 @@ export class KnexTable {
         .notNullable()
       knextable
         .specificType(`DataPipeLineTaskQueueId`, DataTypeTransferEnum.bigint.postgresType)
-        .default(-1)
+        .defaultTo(-1)
         .notNullable()
     }
   }
@@ -365,7 +365,7 @@ export class KnexTable {
           ConnectionString: this.DBConnection,
           BatcId: DataPipeLineTaskQueueId,
         }
-        const retRS = await executeScalar(params)
+        const retRS = await executeScalar(qParams)
         if (retRS && retRS.completed) {
           rowCount = isNaN(parseInt(retRS.scalarValue)) ? -1 : parseInt(retRS.scalarValue)
         } else {
@@ -423,10 +423,10 @@ function getTableDefinitionQuery(tableName, tableschema = 'public') {
 }
 
 function getCopyDataQuery(preStageTableName, tableName, tableSchema, dataPipeLineTaskQueueId) {
-  if (tableName) return 'SELECT 1;'
-  else
-    return `SELECT * FROM public."udf_CopyPreStageToStage"('${tableSchema}'
+  const [preStgSchema, preStgTable] = preStageTableName.split('.')
+  return `SELECT * FROM public."udf_CopyPreStageToStage"('${tableSchema}'
   , '${tableName}'
-  , '${preStageTableName}'
+  , '${preStgSchema}'
+  , '${preStgTable}'
   , '${dataPipeLineTaskQueueId}')`
 }

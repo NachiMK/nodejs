@@ -26,7 +26,7 @@ export const FallBackTypeEnum = {
  */
 export const DataTypeTransferEnum = {
   int: {
-    HigherTypes: ['bigint', 'real', 'double precision', 'numeric'],
+    HigherTypes: ['bigint', 'real', 'double precision', 'numeric', 'integer'],
     FallbackHigherType: FallBackTypeEnum['character varying'],
     numeric: {
       precision: 32,
@@ -108,7 +108,14 @@ export const DataTypeTransferEnum = {
     postgresType: 'decimal',
   },
   date: {
-    HigherTypes: ['timestamptz', 'datetime', 'timestamp', 'character varying'],
+    HigherTypes: [
+      'timestamptz',
+      'datetime',
+      'timestamp',
+      'character varying',
+      'timestamp without time zone',
+      'timestamp with time zone',
+    ],
     FallbackHigherType: FallBackTypeEnum['character varying'],
     'character varying': {
       DataLength: 12,
@@ -116,7 +123,12 @@ export const DataTypeTransferEnum = {
     postgresType: 'date',
   },
   timestamp: {
-    HigherTypes: ['timestamptz', 'character varying'],
+    HigherTypes: [
+      'timestamptz',
+      'character varying',
+      'timestamp with time zone',
+      'timestamp without time zone',
+    ],
     FallbackHigherType: FallBackTypeEnum['character varying'],
     'character varying': {
       DataLength: 29,
@@ -124,7 +136,7 @@ export const DataTypeTransferEnum = {
     postgresType: 'timestamp',
   },
   'timestamp without time zone': {
-    HigherTypes: ['timestamptz', 'character varying'],
+    HigherTypes: ['timestamptz', 'character varying', 'timestamp with time zone', 'timestamp'],
     FallbackHigherType: FallBackTypeEnum['character varying'],
     'character varying': {
       DataLength: 29,
@@ -132,7 +144,7 @@ export const DataTypeTransferEnum = {
     postgresType: 'timestamp',
   },
   timestamptz: {
-    HigherTypes: ['character varying'],
+    HigherTypes: ['character varying', 'timestamp with time zone'],
     FallbackHigherType: FallBackTypeEnum['character varying'],
     'character varying': {
       DataLength: 29,
@@ -140,7 +152,7 @@ export const DataTypeTransferEnum = {
     postgresType: 'timestamptz',
   },
   'timestamp with time zone': {
-    HigherTypes: ['character varying'],
+    HigherTypes: ['character varying', 'timestamptz'],
     FallbackHigherType: FallBackTypeEnum['character varying'],
     'character varying': {
       DataLength: 30,
@@ -189,7 +201,7 @@ export const DataTypeTransferEnum = {
     postgresType: 'character varying',
   },
   'character varying': {
-    HigherTypes: ['text', 'character varying'],
+    HigherTypes: ['text', 'character varying', 'varchar'],
     AllowHigerLength: true,
     FallbackHigherType: FallBackTypeEnum['character varying'],
     'character varying': {
@@ -207,7 +219,7 @@ export const DataTypeTransferEnum = {
     postgresType: 'uuid',
   },
   integer: {
-    HigherTypes: ['bigint', 'real', 'double precision', 'numeric'],
+    HigherTypes: ['bigint', 'real', 'double precision', 'numeric', 'int'],
     FallbackHigherType: FallBackTypeEnum['character varying'],
     numeric: {
       precision: 32,
@@ -216,7 +228,7 @@ export const DataTypeTransferEnum = {
     postgresType: 'int',
   },
   datetime: {
-    HigherTypes: ['character varying'],
+    HigherTypes: ['timestamp with time zone', 'timestamptz', 'character varying'],
     FallbackHigherType: FallBackTypeEnum['character varying'],
     'character varying': {
       DataLength: 29,
@@ -232,7 +244,7 @@ export const DataTypeTransferEnum = {
     postgresType: 'boolean',
   },
   bool: {
-    HigherTypes: ['bool', 'character varying', 'smallint'],
+    HigherTypes: ['boolean', 'character varying', 'smallint'],
     FallbackHigherType: FallBackTypeEnum['character varying'],
     'character varying': {
       DataLength: 5,
@@ -240,13 +252,13 @@ export const DataTypeTransferEnum = {
     postgresType: 'bool',
   },
   json: {
-    HigherTypes: ['json', 'text'],
-    FallbackHigherType: 'text',
+    HigherTypes: ['jsonb', 'text'],
+    FallbackHigherType: 'jsonb',
     postgresType: 'json',
   },
   jsonb: {
-    HigherTypes: ['jsonb', 'text'],
-    FallbackHigherType: 'text',
+    HigherTypes: ['json', 'text'],
+    FallbackHigherType: 'jsonb',
     postgresType: 'jsonb',
   },
 }
@@ -255,7 +267,7 @@ export const JsonPostgreTypeMappingEnum = {
   number: {
     Value: 10,
     postgres: {
-      dataType: 'decimal',
+      dataType: 'numeric',
       defaultPrecision: 22,
       defaultScale: 8,
     },
@@ -388,11 +400,20 @@ export function AllowCast(existingType, changeToType) {
       // first check if we know the source type
       if (isUndefined(DataTypeTransferEnum[dtExisting])) {
         throw new Error(`DataTypeTransferEnum doesn't have defintion for DataType: ${dtExisting}`)
-      } else if (DataTypeTransferEnum[dtExisting].HigherTypes.includes(dtNew)) {
-        // allow type change
-        output.AllowTypeChange = true
       } else {
-        output.FallbackToHigherType = true
+        // IF existing type is big enough then leave it
+        // we are doing the above check, by
+        // seeing if new type is not part of a higher type of the existing type
+        if (!DataTypeTransferEnum[dtNew].HigherTypes.includes(dtExisting)) {
+          // or else check if we new type is better
+          if (DataTypeTransferEnum[dtExisting].HigherTypes.includes(dtNew)) {
+            // if so allow type change
+            output.AllowTypeChange = true
+            // or else fallback
+          } else {
+            output.FallbackToHigherType = true
+          }
+        }
       }
     } else {
       // data type is same but length is different

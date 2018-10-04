@@ -32,6 +32,7 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
     // completed successfully
     taskResponse.Status = TaskStatusEnum.Completed.name
     taskResponse.error = undefined
+    Object.assign(task.TaskQueueAttributes, moduleResponse.TaskQueueAttributes)
   } else {
     // throw an error
     taskResponse.Status = TaskStatusEnum.Error.name
