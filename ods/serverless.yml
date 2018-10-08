@@ -16,7 +16,7 @@ custom:
     STAGE: ${opt:stage, env:NODE_ENV, file(package.json):config.stage}
     VERSION: ${file(package.json):version}
     DESCRIPTION: ${file(package.json):description}
-  environment: ${file(./env.js):getAndSetVarsFromEnvFile}
+  environment: ${file(env.js):getAndSetVarsFromEnvFile}
   documentation:
     # authorizers:  ${file(schemas/authorizers.yml)}
     description: "Hixme API | ${self:custom.service.DESCRIPTION}"
@@ -25,8 +25,8 @@ custom:
     summary: ${self:custom.service.DESCRIPTION}
     version: ${self:custom.service.VERSION}
   customDomain:
-    basePath: ${file(./env.js):getAPIBasePath}
-    domainName: "${file(./env.js):getDomainName}"
+    basePath: ${file(env.js):getAPIBasePath}
+    domainName: "${file(env.js):getHostname}"
     stage: ${self:custom.service.STAGE}
     certificateName: "*.hixme.com"
   cognitoPools:
@@ -125,6 +125,11 @@ functions:
   
   dynamodb-to-s3:
     handler: lib/service/dbadmin/dynamo/trigger/index.handler
+    description: ${self:custom.documentation.summary}
+    timeout: 299
+  
+  dba-save-schema-to-s3:
+    handler: lib/service/dbadmin/dynamo/schema/index.handler
     description: ${self:custom.documentation.summary}
     timeout: 299
 

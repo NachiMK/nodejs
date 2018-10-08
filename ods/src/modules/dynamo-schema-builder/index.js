@@ -28,9 +28,12 @@ export async function GetDynamoTableSchema(event = {}) {
     }
   } catch (err) {
     retResp.Status = 'error'
-    retResp.error = err
+    retResp.error = new Error(
+      `Error generating Table Schema for Table: ${event.TableName}, ${err.message}`
+    )
     retResp.Schema = undefined
-    console.error('Error in generateTableSchema call', JSON.stringify(err, null, 2))
+    console.error(retResp.error.message)
+    throw retResp.error
   }
   return retResp
 }

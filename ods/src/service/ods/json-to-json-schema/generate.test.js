@@ -11,7 +11,7 @@ describe('DoTaskSaveJsonSchema - Unit Tests', () => {
     const dpTask = new DataPipeLineTaskQueue(task)
     dpTask.TableName = task.TableName
     // await dpTask.loadAttributes()
-    expect().assertions(1)
+    expect.assertions(1)
     const resp = await ODSPipeLineFactory(DoTaskSaveJsonSchema)(dpTask)
     // const resp = await DoTaskJsonToCSV(dpTask)
     console.log('resp', JSON.stringify(resp, null, 2))

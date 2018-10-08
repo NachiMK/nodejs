@@ -13,13 +13,13 @@ export async function testlambdaToCreateSchema() {
     console.log(JSON.stringify(resp, null, 2))
     let filesRefreshed = false
     if (resp && _.isArray(resp)) {
-      resp.forEach((item) => {
+      resp.forEach(async (item) => {
         console.log('Checking item:', JSON.stringify(item, null, 2))
         if (item && item.S3FilePath) {
           console.log('S3 File Path Exists:', item.S3FilePath)
           console.log('Checking if file really exists in S3')
           const { Bucket, Key } = s3FileParser(item.S3FilePath)
-          filesRefreshed = s3FileExists(Bucket, Key)
+          filesRefreshed = await s3FileExists(Bucket, Key)
           console.log('File Exists Check Results:', JSON.stringify(filesRefreshed, null, 2))
         }
       })

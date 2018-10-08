@@ -19,7 +19,7 @@ export const handler = async (event) => {
   const tableList = await GetTableList({ RefreshAll, RefreshTableList })
   // loop through the tables and create schema
   if (tableList) {
-    respArray = tableList.map((item) => CreateSchema(item))
+    respArray = Promise.all(tableList.map(async (item) => await CreateSchema(item)))
   }
   return respArray
 }
@@ -27,7 +27,7 @@ export const handler = async (event) => {
 const GetTableList = async (params) => {
   let tablelist
   try {
-    tablelist = dataGetTableToRefresh(params)
+    tablelist = await dataGetTableToRefresh(params)
   } catch (err) {
     tablelist = []
     ODSLogger.log('error', 'Error getting tables for refreshing schema.', err.message)
