@@ -1,7 +1,8 @@
 {
-    "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/test-clients-UniformJson-20180820_152543059.json",
-    "TableName": "clients",
-    "BatchId": "25",
+    "xS3DataFilePath": "s3://dev-ods-data/unit-test/clients/test-clients-UniformJson-20181010_172935739.json",
+    "S3DataFilePath": "s3://dev-ods-data/unit-test/cart/test-cart-UniformJson-20181010_174328975.json",
+    "TableName": "cart",
+    "BatchId": "26",
     "OutputType": "Return-in-output",
     "LogLevel": "warn"
 }

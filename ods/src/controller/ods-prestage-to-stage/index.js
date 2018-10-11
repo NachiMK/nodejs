@@ -18,6 +18,7 @@ import { executeCommand, getConnectionString } from '../../data/psql'
 import { KnexTable } from '../../data/psql/table/knexTable'
 
 const JsonObjectNameEnum = DynamicAttributeEnum.JsonObjectName.value
+const JsonSchemaPathEnum = PreDefinedAttributeEnum.FlatJsonSchemaPath.value
 const PreStageTableEnum = DynamicAttributeEnum.PreStageTableName.value
 const S3SchemaFileBucketName = PreDefinedAttributeEnum.S3SchemaFileBucketName.value
 const StageTablePrefix = 'StageTablePrefix'

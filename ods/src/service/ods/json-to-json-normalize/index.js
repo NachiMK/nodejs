@@ -1,4 +1,5 @@
 import odsLogger from '../../../modules/log/ODSLogger'
+import forIn from 'lodash/forIn'
 import { JsonDataNormalizer } from '../../../modules/json-data-normalizer'
 import { TaskStatusEnum } from '../../../modules/ODSConstants/index'
 import { PreDefinedAttributeEnum } from '../../../modules/ODSConstants/AttributeNames'
@@ -43,6 +44,19 @@ function extractStatusAndAttributes(moduleResponse, task, taskResponse) {
         moduleResponse[PreDefinedAttributeEnum.S3UniformJSONFile.value]
       task.TaskQueueAttributes.S3FlatJsonFile =
         moduleResponse[PreDefinedAttributeEnum.S3FlatJsonFile.value]
+      // copy keys and paths
+      // Object.assign(task.TaskQueueAttributes, moduleResponse.JsonKeysAndPath)
+      const enumFlatkey = PreDefinedAttributeEnum.FlatJsonObjectName.value
+      const enumFlatKeyPath = PreDefinedAttributeEnum.FlatJsonSchemaPath.value
+      forIn(moduleResponse.JsonKeysAndPath, (val, key) => {
+        const [prefix, idx, partialkey] = key.split('.')
+        if (enumFlatkey.includes(partialkey)) {
+          task.TaskQueueAttributes[`${enumFlatkey.replace('#', idx)}`] = val
+        }
+        if (enumFlatKeyPath.includes(partialkey)) {
+          task.TaskQueueAttributes[`${enumFlatKeyPath.replace('#', idx)}`] = val
+        }
+      })
     } else {
       taskResponse.Status = TaskStatusEnum.Error.name
       taskResponse.error = new Error(

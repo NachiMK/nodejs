@@ -17,7 +17,7 @@ BEGIN
         AS
         (
         SELECT   Q."DataPipeLineTaskQueueId"
-                ,A."AttributeName"
+                ,L."AttributeName"
                 ,L."AttributeValue"
                 ,ROW_NUMBER() OVER (PARTITION BY Q."DataPipeLineTaskQueueId", L."AttributeName" 
                                     ORDER BY SIB."DataPipeLineTaskQueueId") as "SeqNum"
@@ -31,7 +31,12 @@ BEGIN
         INNER
         JOIN    ods."Attribute"                 AS  A   ON  A."AttributeId" = TA."AttributeId"
         INNER
-        JOIN    ods."TaskQueueAttributeLog"     AS  L   ON  upper(L."AttributeName") = upper(A."AttributeName")
+        JOIN    ods."TaskQueueAttributeLog"     AS  L   ON  (   upper(L."AttributeName") = upper(A."AttributeName")
+                                                            OR  (
+                                                                    upper(L."AttributeName") ~ REPLACE(upper(A."AttributeName"), '#', '\d+') 
+                                                                AND upper(A."AttributeName") LIKE '%#%'
+                                                                )
+                                                            )
         INNER
         JOIN    ods."DataPipeLineTaskQueue"     AS  SIB ON  SIB."ParentTaskId" = Q."ParentTaskId"
                                                 AND SIB."DataPipeLineTaskQueueId" <= DataPipeLineTaskQueueId

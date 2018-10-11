@@ -17,6 +17,7 @@ export class JsonToJsonFlattner {
     error: {},
     NormalizedDataSet: {},
     NormalizedS3Path: undefined,
+    JsonKeysAndPath: {},
   }
   logger = createLogger({
     format: _format.combine(
@@ -113,6 +114,8 @@ export class JsonToJsonFlattner {
           if (!_.isEmpty(jsonRowWithId)) {
             this.normalizeMe(_.cloneDeep(jsonRowWithId), this.TableName)
             this.LogString('Done normalizing data.', 'info')
+            // extract various tables and JSON schema paths for those tables.
+            this.UpdateOuputAddKeysAndPath()
           }
         })
       } else if (this.InputFileHasData) {
@@ -182,6 +185,31 @@ export class JsonToJsonFlattner {
       this.Output.error = new Error(`Error saving file to S3: ${err.message}`)
       this.logger.log('error', JSON.stringify(this.Output.error.message))
       throw this.Output.error
+    }
+  }
+
+  UpdateOuputAddKeysAndPath() {
+    if (
+      !_.isUndefined(this.Output.NormalizedDataSet) &&
+      _.size(this.Output.NormalizedDataSet) > 0
+    ) {
+      // Loop through
+      let idx = 0
+      _.forIn(this.Output.NormalizedDataSet, (rows, tblName) => {
+        let path = ''
+        console.log(`table: ${tblName}, size: ${_.size(rows)}, idx: ${idx}`)
+        if (!_.isEmpty(rows) && _.size(rows) > 0) {
+          path = rows[0][this.globalDefaultUriPath] || '~Unknown'
+          if (!_.isUndefined(path) && path.length > 0) {
+            // path = path.substring(1)
+            path = path.substring(1).replace(/\//gi, '.')
+          }
+        }
+        // extract ods_path
+        this.Output.JsonKeysAndPath[`Flat.${idx}.JsonObjectName`] = tblName
+        this.Output.JsonKeysAndPath[`Flat.${idx}.JsonSchemaPath`] = path
+        idx += 1
+      })
     }
   }
 

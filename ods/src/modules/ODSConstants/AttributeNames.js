@@ -28,6 +28,8 @@ export const PreDefinedAttributeEnum = {
     Prefix: '',
     HasRunningIndex: false,
   },
+  FlatJsonObjectName: { value: 'Flat.#.JsonObjectName', Prefix: '', HasRunningIndex: true },
+  FlatJsonSchemaPath: { value: 'Flat.#.JsonSchemaPath', Prefix: '', HasRunningIndex: true },
 }
 
 export const DynamicAttributeEnum = {

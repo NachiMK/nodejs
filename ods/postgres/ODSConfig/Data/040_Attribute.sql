@@ -19,6 +19,8 @@ FROM    (
             UNION   SELECT 'Prefix.FlatJSONFile' as "AttributeName"
             UNION   SELECT 'S3UniformJSONFile' as "AttributeName" --Output/Input
             UNION   SELECT 'S3FlatJSONFile' as "AttributeName" --Output/Input
+            UNION   SELECT 'Flat.#.JsonObjectName' as "AttributeName" --Output/Input
+            UNION   SELECT 'Flat.#.JsonSchemaPath' as "AttributeName" --Output/Input
 
             UNION   SELECT 'S3CSVFilesBucketName' as "AttributeName"
             UNION   SELECT 'Prefix.CSVFile' as "AttributeName"

@@ -3,16 +3,19 @@ import event from './event.json'
 import { s3FileParser, s3FileExists } from '../s3'
 
 describe('JsonToJson Flattner - Process ANY DATA', () => {
-  it('JsonToJson should Process one or Zero tasks successfully', async () => {
+  it.only('JsonToJson should Process one or Zero tasks successfully', async () => {
     console.log('event:', JSON.stringify(event, null, 2))
     const jsonFlatner = new JsonToJsonFlattner(event)
     await jsonFlatner.getNormalizedDataset()
     expect(jsonFlatner.ModuleStatus).toBe('success')
     expect(jsonFlatner.Output.NormalizedDataSet).toBeDefined()
-    // console.log(JSON.stringify(jsonFlatner.Output.NormalizedDataSet, null, 2));
+    expect(jsonFlatner.Output.JsonKeysAndPath).toBeDefined()
+    const len = Object.keys(jsonFlatner.Output.JsonKeysAndPath).length
+    expect(len).toBeGreaterThan(0)
+    console.log(JSON.stringify(jsonFlatner.Output.JsonKeysAndPath, null, 2))
   })
 
-  it.only('JsonToJson should create a file in s3', async () => {
+  it('JsonToJson should create a file in s3', async () => {
     event.OutputType = 'Save-to-S3'
     event.S3Bucket = 'dev-ods-data'
     event.S3Key = 'unit-test/clients/test-clients-flat-'

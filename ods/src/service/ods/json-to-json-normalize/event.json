@@ -1,0 +1,7 @@
+{
+    "DataPipeLineTaskQueueId": 940,
+    "TaskConfigName": "JSON History to Flat JSON",
+    "RunSequence": 2020,
+    "Status": "On Hold",
+    "TableName": "cart"
+}

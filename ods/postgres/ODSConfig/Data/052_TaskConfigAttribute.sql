@@ -46,6 +46,7 @@ VALUES
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3SchemaFile') -- This is a Json Schema file
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3CSVFile#.PreStageTableName') -- Dynamic (For copying from Previous Step)
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3CSVFile#.JsonObjectName') -- Dynamic (For copying from Previous Step)
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'Flat.#.JsonSchemaPath') -- Dynamic (For copying from Previous Step)
 
     ,('Stage to Clean', 'Process JSON to Postgres', 'S3CSVFile#.StageTableName') -- Dynamic  (For copying from Previous Step)
     ,('Stage to Clean', 'Process JSON to Postgres', 'S3CSVFile#.CleanTableName')

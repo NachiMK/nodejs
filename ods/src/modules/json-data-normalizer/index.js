@@ -11,6 +11,7 @@ export const JsonDataNormalizer = async (params = {}) => {
     error: undefined,
     S3UniformJSONFile: undefined,
     S3FlatJsonFile: undefined,
+    JsonKeysAndPath: {},
   }
   let objMissingKeyFiller
   console.log(`Parameters for JsonDataNormalier: ${JSON.stringify(params)}`)
@@ -44,6 +45,8 @@ export const JsonDataNormalizer = async (params = {}) => {
         throw new Error('JsonToJsonFlattner didnt throw error but didnt return a file.')
       }
       resp[s3FlatJsonFileEnum] = objJsonFlatner.Output.NormalizedS3Path
+      //get keys and paths
+      Object.assign(resp.JsonKeysAndPath, objJsonFlatner.Output.JsonKeysAndPath)
       resp.status.message = 'success'
     }
   } catch (err) {

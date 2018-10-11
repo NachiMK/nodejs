@@ -252,6 +252,7 @@ export class JsonObjectArrayToS3CSV {
       csvFileName: undefined,
       error: undefined,
     }
+    // TODO: Should we add Path here? May be Fix for DATA-586
     try {
       this.logger.log('debug', `Creating individual files, current key: ${key}, index:${index}`)
       if (data) {
