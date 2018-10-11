@@ -1,5 +1,6 @@
 import { format as _format, transports as _transports, createLogger } from 'winston'
-import _isEmpty from 'lodash/isEmpty'
+import _ from 'lodash'
+// import missingDeepKeys from 'missing-deep-keys'
 import { GetJSONFromS3Path, SaveJsonToS3File } from '../s3ODS'
 import { ExtractMatchingKeyFromSchema } from '../json-extract-matching-keys/index'
 
@@ -31,6 +32,7 @@ export class JsonMissingKeyFiller {
     this.s3OutputBucket = params.S3OutputBucket || ''
     this.s3OutputKey = params.S3OutputKey || ''
     this.loglevel = params.LogLevel || 'warn'
+    this.doNotfillEmptyObjects = params.DoNotfillEmptyObjects || false
     this.consoleTransport = new _transports.Console()
     this.consoleTransport.level = params.LogLevel
     this.logger.add(this.consoleTransport)
@@ -65,11 +67,14 @@ export class JsonMissingKeyFiller {
   get S3OutputKey() {
     return this.s3OutputKey
   }
+  get DoNotfillEmptyObjects() {
+    return this.doNotfillEmptyObjects
+  }
   ValidateParams() {
-    if (_isEmpty(this.S3SchemaFile)) {
+    if (_.isEmpty(this.S3SchemaFile)) {
       throw new Error('Invalid Param. Please pass a S3SchemaFile')
     }
-    if (_isEmpty(this.S3DataFile)) {
+    if (_.isEmpty(this.S3DataFile)) {
       throw new Error('Invalid Param. Please pass valid S3 Data File')
     }
   }
@@ -94,7 +99,7 @@ export class JsonMissingKeyFiller {
         throw new Error(`Default Schema from File: ${schemaFromS3} couldn't be extracted`)
       }
 
-      this.AddMissingKeys(dataFromS3)
+      this.AddMissingKeys(dataFromS3, this.DoNotfillEmptyObjects)
       if (
         this.S3OutputBucket &&
         this.S3OutputKey &&
@@ -106,7 +111,7 @@ export class JsonMissingKeyFiller {
           S3OutputKey: this.S3OutputKey,
         })
         // clear output if saving to s3
-        this.Output.UniformJsonData = undefined
+        delete this.Output.UniformJsonData
       }
       this.Output.status.message = 'success'
     } catch (err) {
@@ -117,11 +122,11 @@ export class JsonMissingKeyFiller {
     }
   }
 
-  AddMissingKeys = (dataRows) => {
+  AddMissingKeys = (dataRows, DoNotfillEmptyObjects = false) => {
     if (dataRows) {
       this.Output.UniformJsonData = dataRows.map((item) => {
-        if (item.Item) return this.Filldefaults(item.Item, this.DefaultSchema)
-        return this.Filldefaults(item, this.DefaultSchema)
+        if (item.Item) return this.Filldefaults(item.Item, DoNotfillEmptyObjects)
+        return this.Filldefaults(item, DoNotfillEmptyObjects)
       })
     }
     this.logger.log('debug', '---------------- FILLED ROWS ----------')
@@ -129,9 +134,12 @@ export class JsonMissingKeyFiller {
     this.logger.log('debug', '---------------- FILLED ROWS ----------')
   }
 
-  Filldefaults(dataRow) {
+  Filldefaults(dataRow, DoNotfillEmptyObjects = false) {
     const result = fillMissingKeys(dataRow, this.DefaultSchema)
     this.DeleteNullObjectsArrays(result)
+    if (DoNotfillEmptyObjects) {
+      this.RemoveObjectsWithOnlyDefaultValues(result, dataRow)
+    }
     return result
   }
 
@@ -141,6 +149,88 @@ export class JsonMissingKeyFiller {
       Object.keys(jsonRow).forEach((prop) => {
         if (JSON.stringify(jsonRow[prop]).localeCompare('null') === 0) {
           delete jsonRow[prop]
+        }
+      })
+    }
+  }
+
+  DeleteObjectByPath(targetJson, pathtoDelete) {
+    this.logger.log('debug', `Path to Delete: ${pathtoDelete}`)
+    if (targetJson && pathtoDelete) {
+      const objToDel = _.get(targetJson, pathtoDelete)
+      if (!_.isUndefined(objToDel)) {
+        eval(`delete targetJson${pathtoDelete}`)
+      }
+    }
+  }
+
+  DeleteMissingObjects(targetObj, sourceObj, PathToTarget) {
+    const target =
+      !_.isUndefined(PathToTarget) && PathToTarget.length > 0
+        ? eval(`targetObj${PathToTarget}`)
+        : targetObj
+    _.forIn(target, (rowValue, rowKey) => {
+      // delete if present only in target and not in source
+      if (
+        _.isObject(target[rowKey]) &&
+        // source is missing or empty
+        (_.isUndefined(sourceObj[rowKey]) || _.isEmpty(sourceObj[rowKey]))
+      ) {
+        delete target[rowKey]
+      }
+    })
+    // // find and delete missing keys
+    // const missingKeys = missingDeepKeys(targetObj, sourceObj, false)
+    // if (!_.isUndefined(missingKeys) && _.size(missingKeys) > 0) {
+    //   // remove keys that was not in original data
+    //   missingKeys.forEach((missingKeyPath) => {
+    //     this.DeleteObject(targetObj, missingKeyPath)
+    //   })
+    // }
+  }
+
+  RemoveObjectsWithOnlyDefaultValues(filledRows, OrigdataRow, PathToDataRow = '') {
+    this.logger.log('debug', `OrigDataRow: ${OrigdataRow}, PathToDataRow: ${PathToDataRow}`)
+    if (filledRows && OrigdataRow) {
+      this.DeleteMissingObjects(filledRows, OrigdataRow, PathToDataRow)
+      _.forIn(OrigdataRow, (rowValue, rowKey, rowParent) => {
+        // const rowKey = Object.keys(row)[0]
+        let myPath = `${PathToDataRow}["${rowKey}"]`
+        this.logger.log('debug', `myPath: ${myPath}`)
+        //do something
+        if (_.isObject(rowParent[rowKey])) {
+          this.logger.log('debug', `IsObject: ${true}`)
+          // recurse
+          if (_.isEmpty(rowValue)) {
+            this.logger.log('debug', `IsEmpty: ${true}`)
+            // find the object in FilledRows and delete it
+            this.DeleteObjectByPath(filledRows, myPath)
+          } else {
+            this.logger.log('debug', `Recurse: ${true}`)
+            this.RemoveObjectsWithOnlyDefaultValues(filledRows, rowValue, myPath)
+          }
+        } else if (_.isArray(rowParent[rowKey])) {
+          this.logger.log('debug', `IsArray: ${true}`)
+          // if array is empty delete in filled rows
+          if (_.isEmpty(rowValue)) {
+            this.logger.log('debug', `IsEmpty: ${true}`)
+            // find the object in FilledRows and delete it
+            this.DeleteObjectByPath(filledRows, myPath)
+          } else {
+            // if array has elements/objects then recurse
+            const simpleItems = rowValue.every((arrItem) => {
+              return !_.isObject(arrItem)
+            })
+            if (!simpleItems) {
+              this.logger.log('debug', `Not Simple Items: ${true}`)
+              // recurse the objects
+              _.forEach(rowValue, (arrItem, idx) => {
+                const myArrayPath = `${myPath}[${idx}]["${Object.keys(arrItem)[0]}"]`
+                console.log(`Recurse: myArrayPath: ${myArrayPath}`)
+                this.RemoveObjectsWithOnlyDefaultValues(filledRows, arrItem, myArrayPath)
+              })
+            }
+          }
         }
       })
     }

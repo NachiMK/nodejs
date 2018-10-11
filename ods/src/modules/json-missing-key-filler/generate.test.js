@@ -1,21 +1,22 @@
 import moment from 'moment'
 import { s3FileExists } from '../s3'
-import { JsonDataNormalizer } from './index'
+import { JsonMissingKeyFiller } from './index'
 import event from './event.json'
 
 describe('Json Missing Key Filler - Unit Tests', () => {
   it('Json Missing Key Filler should normalize data successfully', async () => {
-    const objModule = new JsonDataNormalizer(event)
+    const objModule = new JsonMissingKeyFiller(event)
+    //expect.assertions(1)
     await objModule.getUniformJsonData()
-    expect(objModule.Output.status).toBe('success')
-    expect(objModule.Output.UniformJson).toBeDefined()
+    expect(objModule.Output.status.message).toBe('success')
+    expect(objModule.Output.UniformJsonData).toBeDefined()
   })
   it.only('Json Missing Key Filler should create a file in s3', async () => {
     event.S3OutputBucket = `${process.env.STAGE || 'dev'}-ods-data`
-    event.S3OutputKey = `unit-test/clients/test-clients-UniformJson-${moment().format(
-      'YYYYMMDD_HHmmssSSS'
-    )}.json`
-    const objModule = new JsonDataNormalizer(event)
+    event.S3OutputKey = `unit-test/${event.TableName}/test-${
+      event.TableName
+    }-UniformJson-${moment().format('YYYYMMDD_HHmmssSSS')}.json`
+    const objModule = new JsonMissingKeyFiller(event)
     await objModule.getUniformJsonData()
     console.log(
       'S3UniformJsonFile File Path',

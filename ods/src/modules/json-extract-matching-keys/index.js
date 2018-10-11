@@ -17,7 +17,7 @@ export function ExtractMatchingKeyFromSchema(odsSchema, keyName, opts = {}) {
       Object.keys(odsSchema.properties).forEach((objectKey) => {
         const currAttributeObj = odsSchema.properties[objectKey]
         // proceed if type is defined.
-        if (currAttributeObj.type && currAttributeObj.type !== 'undefined') {
+        if (!isUndefined(currAttributeObj.type)) {
           // get the type
           const typeOfObj = currAttributeObj.type.toLocaleLowerCase()
           // based on type get default or recurse
@@ -35,7 +35,11 @@ export function ExtractMatchingKeyFromSchema(odsSchema, keyName, opts = {}) {
               // do we have array of objects or array of props?
               if (!skipObjectsAndArrays) {
                 retObjSchema[objectKey] = []
-                if (currAttributeObj.items.type.localeCompare('object') === 0) {
+                // TODO: Possible error here, DATA:586
+                if (
+                  !isUndefined(currAttributeObj.items.type) &&
+                  currAttributeObj.items.type.localeCompare('object') === 0
+                ) {
                   const objInArray = ExtractMatchingKeyFromSchema(
                     currAttributeObj.items,
                     keyName,

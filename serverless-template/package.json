@@ -46,9 +46,9 @@
     "deploy:function:int": "npm run build:min && cross-env STAGE=int SLS_DEBUG=* sls deploy --aws-s3-accelerate --stage int -r $npm_package_config_region function -f",
     "deploy:function:prod": "npm run build:min && cross-env STAGE=prod SLS_DEBUG=* sls deploy --aws-s3-accelerate --stage prod -r $npm_package_config_region function -f",
     "deploy:function": "npm run deploy:function:$npm_package_config_stage",
-    "deploy:dev": "STAGE=dev ./scripts/deploy_service.sh",
-    "deploy:int": "STAGE=int ./scripts/deploy_service.sh",
-    "deploy:prod": "STAGE=prod ./scripts/deploy_service.sh",
+    "deploy:dev": "STAGE=dev ./devops/deploy_service.sh",
+    "deploy:int": "STAGE=int ./devops/deploy_service.sh",
+    "deploy:prod": "STAGE=prod ./devops/deploy_service.sh",
     "deploy": "npm run deploy:$npm_package_config_stage",
     "fullstart:80": "npm run package && npm run start:80",
     "fullstart": "npm run package && npm start",
@@ -81,10 +81,10 @@
     "knex:migrate:int": "babel-node node_modules/.bin/knex migrate:latest --env int",
     "knex:migrate:prod": "babel-node node_modules/.bin/knex migrate:latest --env prod",
     
-    "release:major": "TYPE=major ./scripts/release.sh",
-    "release:minor": "TYPE=minor ./scripts/release.sh",
-    "release:patch": "TYPE=patch ./scripts/release.sh",
-    "hotfix": "./scripts/hotfix.sh"
+    "release:major": "TYPE=major ./devops/release.sh",
+    "release:minor": "TYPE=minor ./devops/release.sh",
+    "release:patch": "TYPE=patch ./devops/release.sh",
+    "hotfix": "./devops/hotfix.sh"
   },
   "dependencies": {
     "@hixme/before-after-middleware": "^2.2.1",

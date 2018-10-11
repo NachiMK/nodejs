@@ -1,7 +1,8 @@
 {
-    "S3DataFile": "s3://dev-ods-data/unit-test/clients/test-clients-Data-20180817_debug.json",
+    "S3DataFile": "s3://dev-ods-data/unit-test/cart/cart-Data-_debug_20180913_195513557.json",
     "Overwrite": "yes",
-    "S3SchemaFile": "s3://dev-ods-data/unit-test/clients/test-clients-Schema-20180817_debug.json",
-    "S3OutputBucket": "dev-ods-data",
-    "S3OutputKey": "unit-test/clients/test-clients-UniformJSON-{YYYYMMDD_HHmmssSSS}.json"
+    "S3SchemaFile": "s3://dev-ods-data/unit-test/cart/cart-Schema-_debug_20181005_174743097.json",
+    "LogLevel": "warn",
+    "TableName": "cart",
+    "DoNotfillEmptyObjects": "true"
 }

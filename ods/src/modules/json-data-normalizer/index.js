@@ -63,6 +63,7 @@ function getParamsForFillingMissedKeys(params) {
     S3OutputBucket: params.S3OutputBucket,
     S3OutputKey: params.S3UniformJsonPrefix,
     LogLevel: params.LogLevel || 'warn',
+    DoNotfillEmptyObjects: true,
   }
 }
 
