@@ -78,7 +78,7 @@ export class JsonMissingKeyFiller {
       throw new Error('Invalid Param. Please pass valid S3 Data File')
     }
   }
-  async getUniformJsonData() {
+  async getUniformJsonData(ConvertSimpleArrayToObjects = true) {
     try {
       this.ValidateParams()
       const schemaFromS3 = await GetJSONFromS3Path(this.S3SchemaFile)
@@ -89,16 +89,19 @@ export class JsonMissingKeyFiller {
           `No data in Schema File: ${this.S3SchemaFile} or in Data File: ${this.S3DataFile}`
         )
       }
+      if (ConvertSimpleArrayToObjects) {
+        this.ReplaceSimpleArrayToObjects(dataFromS3)
+      }
 
+      // get default values for all keys
       this.defaultSchema = ExtractMatchingKeyFromSchema(schemaFromS3, 'default')
-      this.logger.log('debug', '---------------- DEFAULT SCHEMA ----------')
       this.logger.log('debug', JSON.stringify(this.DefaultSchema, null, 2))
-      this.logger.log('debug', '---------------- DEFAULT SCHEMA ----------')
 
       if (!this.DefaultSchema) {
         throw new Error(`Default Schema from File: ${schemaFromS3} couldn't be extracted`)
       }
 
+      // add default values and missing keys for props missing in our data
       this.AddMissingKeys(dataFromS3, this.DoNotfillEmptyObjects)
       if (
         this.S3OutputBucket &&
@@ -119,6 +122,39 @@ export class JsonMissingKeyFiller {
       this.Output.status.message = 'error'
       this.Output.error = new Error(`Error in JsonDataNormalier: ${err.message}`)
       throw this.Output.error
+    }
+  }
+
+  IsSimpleArray(arrayToTest) {
+    let retval = false
+    if (arrayToTest.length > 0) {
+      let hasObject = false
+      hasObject = arrayToTest.some((val) => val instanceof Object)
+      retval = !hasObject
+    }
+    return retval
+  }
+
+  ReplaceSimpleArrayToObjects = (dataRows) => {
+    if (dataRows) {
+      // loop through recursively and replace arrays as objects
+      _.forIn(dataRows, (row, key, parentRows) => {
+        if (_.isObject(row)) {
+          if (this.IsSimpleArray(row)) {
+            // replace with objects
+            const arrToObj = row.map((arrayItem, idx) => {
+              return {
+                ArrayIndex: idx,
+                ArrayValue: arrayItem,
+              }
+            })
+            parentRows[key] = arrToObj
+          } else {
+            // recurse
+            this.ReplaceSimpleArrayToObjects(row)
+          }
+        }
+      })
     }
   }
 

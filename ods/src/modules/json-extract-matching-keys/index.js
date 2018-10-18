@@ -6,8 +6,8 @@ export function ExtractMatchingKeyFromSchema(odsSchema, keyName, opts = {}) {
   const retObjSchema = {}
   try {
     let includeLen =
-      !isUndefined(opts.includeMaxLength) && isBoolean(opts.includeMaxLength)
-        ? opts.includeMaxLength
+      !isUndefined(opts.IncludeMaxLength) && isBoolean(opts.IncludeMaxLength)
+        ? opts.IncludeMaxLength
         : false
     let skipObjectsAndArrays =
       !isUndefined(opts.SkipObjectsAndArrays) && isBoolean(opts.SkipObjectsAndArrays)
@@ -24,11 +24,10 @@ export function ExtractMatchingKeyFromSchema(odsSchema, keyName, opts = {}) {
           switch (typeOfObj) {
             case 'object':
               if (!skipObjectsAndArrays) {
-                retObjSchema[objectKey] = ExtractMatchingKeyFromSchema(
-                  currAttributeObj,
-                  keyName,
-                  includeLen
-                )
+                retObjSchema[objectKey] = ExtractMatchingKeyFromSchema(currAttributeObj, keyName, {
+                  IncludeMaxLength: includeLen,
+                  SkipObjectsAndArrays: skipObjectsAndArrays,
+                })
               }
               break
             case 'array':
@@ -40,11 +39,10 @@ export function ExtractMatchingKeyFromSchema(odsSchema, keyName, opts = {}) {
                   !isUndefined(currAttributeObj.items.type) &&
                   currAttributeObj.items.type.localeCompare('object') === 0
                 ) {
-                  const objInArray = ExtractMatchingKeyFromSchema(
-                    currAttributeObj.items,
-                    keyName,
-                    includeLen
-                  )
+                  const objInArray = ExtractMatchingKeyFromSchema(currAttributeObj.items, keyName, {
+                    IncludeMaxLength: includeLen,
+                    SkipObjectsAndArrays: skipObjectsAndArrays,
+                  })
                   retObjSchema[objectKey].push(objInArray)
                 }
               }

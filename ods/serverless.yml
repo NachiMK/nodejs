@@ -132,6 +132,11 @@ functions:
     handler: lib/service/dbadmin/dynamo/schema/index.handler
     description: ${self:custom.documentation.summary}
     timeout: 299
+  
+  json-to-psql:
+    handler: lib/service/ods/json-to-psql/index.JsonToPSQL
+    description: 
+    timeout: 600
 
 resources:
   Resources:

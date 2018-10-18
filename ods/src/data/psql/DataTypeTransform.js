@@ -278,6 +278,12 @@ export const JsonPostgreTypeMappingEnum = {
       dataType: 'int',
     },
   },
+  int: {
+    Value: 20,
+    postgres: {
+      dataType: 'int',
+    },
+  },
   string: {
     Value: 30,
     postgres: {

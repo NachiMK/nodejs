@@ -72,7 +72,7 @@ export class SchemaDiff {
   JsonColumnsAndTypes() {
     if (this.JsonSchema && this.DataTypeKey) {
       const colsAndTypes = ExtractMatchingKeyFromSchema(this.JsonSchema, this.DataTypeKey, {
-        includeMaxLength: true,
+        IncludeMaxLength: true,
         SkipObjectsAndArrays: true,
       })
       return colsAndTypes

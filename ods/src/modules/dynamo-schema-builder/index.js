@@ -1,9 +1,8 @@
-import { json as hixmeSchemaGenerator } from '@hixme/generate-schema'
+import { generateSchemaByData } from '../json-schema-utils/index'
 
 const awsSDK = require('aws-sdk')
 const table = require('@hixme/tables')
 const _ = require('lodash')
-// const generator = require('@hixme/generate-schema');
 
 awsSDK.config.update({
   region: 'us-west-2',
@@ -51,10 +50,10 @@ const generateTableSchema = async (tableName, options = {}) => {
     schemas = Object.keys(dataByPartition).map((key) => {
       const dataForPartition = dataByPartition[key]
       // Generate schema for each partition
-      return generateSchemaByData(key, dataForPartition)
+      return generateSchemaByData(key, dataForPartition, { SimpleArraysToObjects: true })
     })
   } else {
-    const schema = generateSchemaByData(tableName, data)
+    const schema = generateSchemaByData(tableName, data, { SimpleArraysToObjects: true })
     schemas.push(schema)
   }
 
@@ -65,23 +64,4 @@ const generateTableSchema = async (tableName, options = {}) => {
   })
 
   return schemString
-}
-
-export function generateSchemaByData(name, data) {
-  let schema = {}
-  try {
-    console.log('About to generate schema for:', name)
-    schema = hixmeSchemaGenerator(name, data, {
-      generateEnums: false,
-      maxEnumValues: 0,
-      generateLengths: false,
-    })
-  } catch (err) {
-    schema = {}
-    console.error('Error calling hixme generator', JSON.stringify(err, null, 2))
-    throw new Error(`Error calling hixme generator: ${JSON.stringify(err, null, 2)}`)
-  }
-
-  // Remove the array of items from top and just leave object
-  return { name, schema: { $schema: schema.$schema, ...schema.items } }
 }

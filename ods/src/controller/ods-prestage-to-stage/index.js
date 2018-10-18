@@ -1,7 +1,7 @@
 //@ts-check
 import pickBy from 'lodash/pickBy'
 import isUndefined from 'lodash/isUndefined'
-// import mapLimit from 'async/mapLimit'
+import get from 'lodash/get'
 import odsLogger from '../../modules/log/ODSLogger'
 import {
   DynamicAttributeEnum,
@@ -14,16 +14,19 @@ import {
 } from '../../modules/ODSErrors/StageError'
 import { IsValidString } from '../../utils/string-utils/index'
 import { SchemaDiff } from '../../modules/json-sql-schema-diff'
+import { GetSchemaByDataPath } from '../../modules/json-schema-utils'
 import { executeCommand, getConnectionString } from '../../data/psql'
 import { KnexTable } from '../../data/psql/table/knexTable'
 
 const JsonObjectNameEnum = DynamicAttributeEnum.JsonObjectName.value
 const JsonSchemaPathEnum = PreDefinedAttributeEnum.FlatJsonSchemaPath.value
+const JsonSchemaPathPropName = 'JsonSchemaPath'
 const PreStageTableEnum = DynamicAttributeEnum.PreStageTableName.value
 const S3SchemaFileBucketName = PreDefinedAttributeEnum.S3SchemaFileBucketName.value
 const StageTablePrefix = 'StageTablePrefix'
 const S3SchemaFileEnum = PreDefinedAttributeEnum.S3SchemaFile.value
 const StgTblS3PrefixEnum = PreDefinedAttributeEnum.StageSchemaFile.value
+const psqlStgTblPrefixEnum = PreDefinedAttributeEnum.StageTablePrefix.value
 /**
  * @class: OdsPreStageToStage
  * @description: This class takes a pipeline task, gets Schema details,
@@ -50,30 +53,38 @@ export class OdsPreStageToStage {
   }
 
   get TablesToStage() {
+    const regExCsv = new RegExp(/S3CSVFile\d+\.{1}.*/, 'gi')
     const regExJ = new RegExp(JsonObjectNameEnum, 'gi')
     const regExT = new RegExp(PreStageTableEnum, 'gi')
+    const regExSchema = new RegExp(JsonSchemaPathEnum.replace(/#/gi, '\\d+'), 'gi')
     const s3Prefix = this.TaskAttributes[StgTblS3PrefixEnum] || ''
     if (this.TaskAttributes) {
       const filtered = pickBy(this.TaskAttributes, function(attvalue, attkey) {
         // Attribute name should in format: S3CSVFile1.CSVFileName or S3CSVFile1.JsonObjectName
         return (
-          attkey.match(/S3CSVFile\d+\.{1}.*/gi) && (attkey.match(regExJ) || attkey.match(regExT))
+          (attkey.match(regExCsv) && (attkey.match(regExJ) || attkey.match(regExT))) ||
+          attkey.match(regExSchema)
         )
       })
-      // Every file has two different information, File name and Json
+      // Every file has few info, File name, Json key, and Json path in schema
       // we are going to combine that into one object
       const retCollection = {}
+      const stgParentPrefix = this.TaskAttributes[psqlStgTblPrefixEnum]
       Object.keys(filtered).map((item) => {
         const [fileCommonKey, AttributeName] = item.split('.')
-        if (!retCollection[fileCommonKey]) {
+        if (!retCollection[fileCommonKey] && item.match(regExCsv)) {
           retCollection[fileCommonKey] = {}
         }
         if (AttributeName.match(regExJ)) {
-          retCollection[fileCommonKey][JsonObjectNameEnum] = filtered[item]
-          const [idx, tblname] = filtered[item].split('-')
-          retCollection[fileCommonKey][StageTablePrefix] = tblname
-          retCollection[fileCommonKey]['Index'] = parseInt(idx)
-          retCollection[fileCommonKey]['S3OuputPrefix'] = `${s3Prefix}-${filtered[item]}-db`
+          const [idx] = filtered[item].split('-')
+          const tblname = filtered[item].replace(/\d+-/gi, '')
+          retCollection[fileCommonKey] = {
+            [JsonObjectNameEnum]: filtered[item],
+            [StageTablePrefix]: `${stgParentPrefix}${tblname}`,
+            Index: parseInt(idx),
+            S3OuputPrefix: `${s3Prefix}-${filtered[item]}-db`,
+            [JsonSchemaPathPropName]: filtered[`${JsonSchemaPathEnum.replace(/#/gi, idx)}`],
+          }
         } else if (AttributeName.match(regExT)) {
           retCollection[fileCommonKey][PreStageTableEnum] = filtered[item]
         }
@@ -124,7 +135,8 @@ export class OdsPreStageToStage {
       for (const item of Object.keys(tables)) {
         const table = tables[item]
         retResp.TaskQueueAttributes[`${item}.StageTableName`] = table.StageTablePrefix
-        // get SQL script from JSON
+        retResp.TaskQueueAttributes[`${item}.${JsonSchemaPathPropName}`] =
+          table[JsonSchemaPathPropName]
         const tblDiff = await this.GetTableDiffScript(table)
 
         // default values for attributes
@@ -167,8 +179,9 @@ export class OdsPreStageToStage {
   async GetTableDiffScript(table) {
     const output = {}
     const stgTblPrefix = table[StageTablePrefix]
+    const stgTblSchemaPath = table[JsonSchemaPathPropName]
     try {
-      const jsonschema = await this.getTableJsonSchema(stgTblPrefix, table.Index)
+      const jsonschema = await this.getTableJsonSchema(stgTblSchemaPath, table.Index)
       const objSchemaDiff = new SchemaDiff({
         JsonSchema: jsonschema,
         TableName: stgTblPrefix,
@@ -201,29 +214,34 @@ export class OdsPreStageToStage {
     return output
   }
 
-  async getTableJsonSchema(stgTblPrefix, index) {
-    const rootItem = index === 0
+  async getTableJsonSchema(stgTableSchemaPath, index) {
+    // const rootItem = index === 0
     // extract the schema for given object
-    if (this._JsonFroms3SchemaFile && stgTblPrefix) {
-      if (rootItem) {
-        return this._JsonFroms3SchemaFile
-      }
-      const intKeyIndex = Object.keys(this._JsonFroms3SchemaFile.properties).indexOf(stgTblPrefix)
-      this.LogMsgToODSLogger(`Stage Table Prefix: ${stgTblPrefix}, Found in Schema: ${intKeyIndex}`)
-      if (intKeyIndex > 0) {
-        if (this._JsonFroms3SchemaFile.properties[stgTblPrefix]['type'] === 'array') {
-          return this._JsonFroms3SchemaFile.properties[stgTblPrefix].items
+    if (this._JsonFroms3SchemaFile && stgTableSchemaPath) {
+      // strip the first part
+      const [, ...pathNoRoot] = stgTableSchemaPath.split('.')
+      // if (rootItem) {
+      //   return this._JsonFroms3SchemaFile
+      // }
+      const opts = { ExcludeObjects: true, ExcludeArrays: true }
+      const schema = GetSchemaByDataPath(this._JsonFroms3SchemaFile, pathNoRoot.join('.'), opts)
+      this.LogMsgToODSLogger(
+        `Stage Table Prefix: ${stgTableSchemaPath}, Found in Schema: ${!isUndefined(schema)}`
+      )
+      if (!isUndefined(schema)) {
+        if (schema['type'] === 'array') {
+          return schema.items
         } else {
-          return this._JsonFroms3SchemaFile.properties[stgTblPrefix]
+          return schema
         }
       } else {
-        throw new Error(`Table: ${stgTblPrefix} is not Found in JSON Schema`)
+        throw new Error(`Table schema at path: ${stgTableSchemaPath} is not Found in JSON Schema`)
       }
     } else {
       throw new Error(
         `Either No JSON in file: ${
           this.TaskAttributes[S3SchemaFileEnum]
-        } or TablePrefix is empty: ${stgTblPrefix}`
+        } or schema path is empty: ${stgTableSchemaPath}`
       )
     }
   }

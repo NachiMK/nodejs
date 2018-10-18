@@ -1,8 +1,8 @@
 {
-    "DataPipeLineTaskQueueId": 55,
+    "DataPipeLineTaskQueueId": 943,
     "TaskConfigName": "Pre-Stage to Stage",
     "RunSequence": 2050,
     "Status": "On Hold",
-    "TableName": "clients",
-    "LogLevel": "debug"
+    "TableName": "cart",
+    "LogLevel": "warn"
 }

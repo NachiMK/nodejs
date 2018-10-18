@@ -15,6 +15,7 @@ describe('OdsPreStageToStage - Unit Tests', () => {
     try {
       const stgResp = await objPreStageToStage.StageData()
       expect(stgResp).toBeDefined()
+      console.log(`stgResp: ${JSON.stringify(stgResp, null, 2)}`)
     } catch (err) {
       console.log('error', err.message)
       expect(err).toBeUndefined()

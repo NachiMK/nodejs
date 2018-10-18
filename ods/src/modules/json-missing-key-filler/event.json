@@ -1,7 +1,7 @@
 {
-    "S3DataFile": "s3://dev-ods-data/unit-test/cart/cart-Data-_debug_20180913_195513557.json",
+    "S3DataFile": "s3://dev-ods-data/unit-test/cart/cart-Data-debug-uniformData-20180913.json",
     "Overwrite": "yes",
-    "S3SchemaFile": "s3://dev-ods-data/unit-test/cart/cart-Schema-_debug_20181005_174743097.json",
+    "S3SchemaFile": "s3://dev-ods-data/dynamodb/cart/937/938-939-cart-Schema-20181016_163813119.json",
     "LogLevel": "warn",
     "TableName": "cart",
     "DoNotfillEmptyObjects": "true"

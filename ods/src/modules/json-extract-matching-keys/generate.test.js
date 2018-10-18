@@ -1,8 +1,7 @@
 import { ExtractMatchingKeyFromSchema } from './index'
-import isObject from 'util'
 
 describe('Json extract matching keys - Unit Tests', () => {
-  it.only('Json extract matching keys - Default', async () => {
+  it.skip('Json extract matching keys - Default', async () => {
     const event = require('./event.json')
     const resp = await ExtractMatchingKeyFromSchema(event, 'type')
     console.log('resp', JSON.stringify(resp, null, 2))
@@ -10,7 +9,17 @@ describe('Json extract matching keys - Unit Tests', () => {
     expect(resp.SalesDirectorPublicKey).toBeDefined()
     expect(resp.SalesDirectorPublicKey).toEqual('string')
     expect(resp.HixmeConnectCompositePrices).toBeDefined()
+    console.log('resp:', JSON.stringify(resp, null, 2))
     // expect(isObject(resp.SalesDirectorPublicKey)).toBeFalsy()
+  })
+  it.only('Json extract matching keys - Simple Array', async () => {
+    const event = require('./SimpleArray.json')
+    const opts = {
+      AddColsForSimpleArray: true,
+    }
+    const resp = await ExtractMatchingKeyFromSchema(event, 'type', opts)
+    console.log('resp', JSON.stringify(resp, null, 2))
+    expect(resp).toBeDefined()
   })
   it.skip('Json extract matching keys - Test Length', async () => {
     const event = require('./event.json')

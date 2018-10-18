@@ -1,7 +1,7 @@
 // Generate JSON Schema
 import _merge from 'lodash/merge'
 import { s3FileParser } from '../s3'
-import { generateSchema } from './generateJsonSchema'
+import { generateSchemaByData } from '../json-schema-utils/index'
 import odsLogger from '../log/ODSLogger'
 import { GetJSONFromS3Path, SaveJsonToS3File } from '../s3ODS'
 
@@ -145,7 +145,7 @@ export default async ({
     }
 
     // get schema from data and combine that with Raw schema.
-    const schemaByDataResp = await generateRawSchemaFromData({
+    const schemaByDataResp = await generateSchemaFromS3Data({
       Datafile,
       SaveDataSchemaToS3,
       Output,
@@ -208,7 +208,7 @@ async function getCombinedSchema(schemaFromData, S3RAWJsonSchemaFile) {
   return resp
 }
 
-async function generateRawSchemaFromData({ Datafile, SaveDataSchemaToS3 = true, Output }) {
+async function generateSchemaFromS3Data({ Datafile, SaveDataSchemaToS3 = true, Output }) {
   const rawSchemaResp = {
     Status: 'Processing',
     file: undefined,
@@ -219,7 +219,7 @@ async function generateRawSchemaFromData({ Datafile, SaveDataSchemaToS3 = true, 
     const data = await GetJSONFromS3Path(Datafile)
 
     if (data) {
-      rawSchemaResp.Schema = await generateSchema('', data)
+      rawSchemaResp.Schema = await generateSchemaByData('', data, { SimpleArraysToObjects: true })
       if (SaveDataSchemaToS3 && Output && rawSchemaResp.Schema) {
         // save file
         const saveFileParams = s3FileParser(Output)

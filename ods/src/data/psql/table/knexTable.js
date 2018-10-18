@@ -49,7 +49,7 @@ export class KnexTable {
         } should be between 1 than 63`
       )
     }
-    const tblRegEx = /[^a-z\d]+/gi
+    const tblRegEx = /[^a-z\d_]+/gi
     if (tblRegEx.test(this.TableName)) {
       throw new Error(
         `Invalid Param. TableName:${this.TableName} should contain only Alpha Numeric chars`

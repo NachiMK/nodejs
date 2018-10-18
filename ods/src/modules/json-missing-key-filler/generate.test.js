@@ -4,14 +4,14 @@ import { JsonMissingKeyFiller } from './index'
 import event from './event.json'
 
 describe('Json Missing Key Filler - Unit Tests', () => {
-  it('Json Missing Key Filler should normalize data successfully', async () => {
+  it.only('Json Missing Key Filler should normalize data successfully', async () => {
     const objModule = new JsonMissingKeyFiller(event)
     //expect.assertions(1)
     await objModule.getUniformJsonData()
     expect(objModule.Output.status.message).toBe('success')
     expect(objModule.Output.UniformJsonData).toBeDefined()
   })
-  it.only('Json Missing Key Filler should create a file in s3', async () => {
+  it('Json Missing Key Filler should create a file in s3', async () => {
     event.S3OutputBucket = `${process.env.STAGE || 'dev'}-ods-data`
     event.S3OutputKey = `unit-test/${event.TableName}/test-${
       event.TableName
