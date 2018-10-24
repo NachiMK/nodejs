@@ -33,6 +33,10 @@ FROM    (
             UNION   SELECT 'S3CSVFile#.PreStageTableName' as "AttributeName"
             UNION   SELECT 'S3CSVFile#.JsonObjectName' as "AttributeName"
             UNION   SELECT 'S3CSVFile#.StageTableName' as "AttributeName"
+            UNION   SELECT 'S3CSVFile#.JsonSchemaPath' as "AttributeName"
+            UNION   SELECT 'S3CSVFile#.RowCount' as "AttributeName"
+            UNION   SELECT 'Prefix.CleanSchemaFile' as "AttributeName"
+            UNION   SELECT 'psql.CleanTable.Prefix' as "AttributeName"
 
             UNION   SELECT 'Dynamo.TableName' as "AttributeName"
             UNION   SELECT 'Dynamo.Table.Index' as "AttributeName"

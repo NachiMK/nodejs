@@ -31,6 +31,8 @@ export const PreDefinedAttributeEnum = {
   FlatJsonObjectName: { value: 'Flat.#.JsonObjectName', Prefix: '', HasRunningIndex: true },
   FlatJsonSchemaPath: { value: 'Flat.#.JsonSchemaPath', Prefix: '', HasRunningIndex: true },
   StageTablePrefix: { value: 'psql.StageTable.Prefix', Prefix: '', HasRunningIndex: false },
+  CleanTablePrefix: { value: 'psql.CleanTable.Prefix', Prefix: '', HasRunningIndex: false },
+  CleanSchemaFile: { value: 'Prefix.CleanSchemaFile', Prefix: '', HasRunningIndex: false },
 }
 
 export const DynamicAttributeEnum = {

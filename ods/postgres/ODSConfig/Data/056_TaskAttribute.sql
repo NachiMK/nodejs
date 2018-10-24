@@ -105,6 +105,28 @@ INSERT INTO
     )
 SELECT   DPT."DataPipeLineTaskId"
         ,TCA."AttributeId"
+        ,'dynamodb/' || Tbls."CleanTableName" || 
+        CASE WHEN DPT."ParentTaskId" IS NULL THEN '/{My.Id}/{My.Id}-' ELSE '/{Root.Id}/{Parent.Id}-{My.Id}-' END
+        || 'Clean-'  AS "AttributeValue"
+FROM    DPLTables Tbls
+INNER
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"
+INNER
+JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
+INNER
+JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
+WHERE   A."AttributeName" = 'Prefix.CleanSchemaFile'
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+
+INSERT INTO
+    ods."TaskAttribute"
+    (
+         "DataPipeLineTaskId"
+        ,"AttributeId"
+        ,"AttributeValue"
+    )
+SELECT   DPT."DataPipeLineTaskId"
+        ,TCA."AttributeId"
         ,REPLACE(lower(Tbls."CleanTableName"), '-', '_') || '{My.Id}_' AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
@@ -133,7 +155,7 @@ INNER
 JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
-WHERE   A."AttributeName" LIKE 'psql.StageTable.Prefix'
+WHERE   A."AttributeName" IN ('psql.StageTable.Prefix', 'psql.CleanTable.Prefix')
 AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
 
 INSERT INTO
@@ -145,7 +167,7 @@ INSERT INTO
     )
 SELECT   DPT."DataPipeLineTaskId"
         ,TCA."AttributeId"
-        ,'info' AS "AttributeValue"
+        ,'warn' AS "AttributeValue"
 FROM    DPLTables Tbls
 INNER
 JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"

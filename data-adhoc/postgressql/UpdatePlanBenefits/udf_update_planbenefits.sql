@@ -45,7 +45,12 @@ BEGIN
             ,"CopayAfterFirstVisits" = stg."CopayAfterFirstVisits"
             ,"UpdatedDate" = update_dt_time
     FROM    public.vw_stage_planbenefits as stg
-    WHERE   pb."PlanBenefitID" = stg."PlanBenefitID"
+    WHERE   (
+                (pb."PlanBenefitID" = stg."PlanBenefitID" AND stg."PlanBenefitID" > 0)
+            OR  (   (stg."PlanBenefitID" < 0)
+                AND (stg."Benefit" is not null AND pb."Benefit" is not null and stg."Benefit" = pb."Benefit")
+                )
+            )
     AND     stg."Year" = pb."Year"
     AND     stg."HiosPlanID" = pb."HiosPlanID"
     AND     (

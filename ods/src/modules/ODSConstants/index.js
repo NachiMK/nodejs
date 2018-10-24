@@ -65,3 +65,57 @@ export const TaskStatusEnum = {
   Error: { Value: 60, name: 'Error' },
   ReProcess: { Value: 70, name: 'Re-Process' },
 }
+
+export function getPreStageDefaultCols() {
+  return {
+    StgId: { DataType: 'serial', DataLength: -1, precision: -1, scale: -1 },
+    StgRowCreatedDtTm: { DataType: 'timestamptz', DataLength: -1, precision: -1, scale: -1 },
+    StgRowDeleted: { DataType: 'boolean', DataLength: -1, precision: -1, scale: -1 },
+    DataPipeLineTaskQueueId: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
+    ODS_Batch_Id: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
+    ODS_Id: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
+    ODS_Uri: { DataType: 'varchar', DataLength: 256, precision: -1, scale: -1 },
+    ODS_Path: { DataType: 'varchar', DataLength: 1000, precision: -1, scale: -1 },
+    ODS_Parent_Path: { DataType: 'varchar', DataLength: 1000, precision: -1, scale: -1 },
+    ODS_Parent_Uri: { DataType: 'varchar', DataLength: 256, precision: -1, scale: -1 },
+  }
+}
+
+export function getCleanTableDefaultCols() {
+  return {
+    '{TableName}Id': {
+      DataType: 'bigserial',
+      DataLength: -1,
+      precision: -1,
+      scale: -1,
+    },
+    ParentId: {
+      DataType: 'bigint',
+      DataLength: -1,
+      precision: -1,
+      scale: -1,
+    },
+    EffectiveStartDate: {
+      DataType: 'date',
+      DataLength: -1,
+      precision: -1,
+      scale: -1,
+      Default: 'NOW',
+    },
+    EffectiveEndDate: {
+      DataType: 'date',
+      DataLength: -1,
+      precision: -1,
+      scale: -1,
+      Default: '12/31/9999',
+    },
+    RowCreatedDtTm: { DataType: 'timestamptz', DataLength: -1, precision: -1, scale: -1 },
+    RowDeleted: { DataType: 'boolean', DataLength: -1, precision: -1, scale: -1 },
+    DataPipeLineTaskQueueId: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
+    StgId: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
+    ODS_Batch_Id: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
+    ODS_Id: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
+    ODS_Parent_Path: { DataType: 'varchar', DataLength: 1000, precision: -1, scale: -1 },
+    ODS_Parent_Uri: { DataType: 'varchar', DataLength: 256, precision: -1, scale: -1 },
+  }
+}

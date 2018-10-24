@@ -215,9 +215,6 @@ export class KnexTable {
         dbScript = await knex.schema
           .withSchema(tableSchema)
           .createTable(tableName, (table) => {
-            // if (addDefaultCols === true) {
-            //   AddStgDefaultCols(table, tableName)
-            // }
             forEach(columnSchema, (column, colName) => {
               try {
                 // is data type defined
@@ -259,24 +256,6 @@ export class KnexTable {
       return dbScript[0].sql
     } else {
       throw new Error('columnSchema is empty. Cannot get Create Table SQL Statement')
-    }
-
-    function AddStgDefaultCols(knextable, tblName) {
-      knextable
-        .specificType(`${tblName}StgId`, DataTypeTransferEnum.serial.postgresType)
-        .notNullable()
-      knextable
-        .specificType(`StgRowCreatedDtTm`, DataTypeTransferEnum.timestamptz.postgresType)
-        .defaultTo(knex.fn.now())
-        .notNullable()
-      knextable
-        .specificType(`StgRowDeleted`, DataTypeTransferEnum.boolean.postgresType)
-        .defaultTo(false)
-        .notNullable()
-      knextable
-        .specificType(`DataPipeLineTaskQueueId`, DataTypeTransferEnum.bigint.postgresType)
-        .defaultTo(-1)
-        .notNullable()
     }
   }
 

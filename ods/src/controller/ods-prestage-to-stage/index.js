@@ -1,7 +1,6 @@
 //@ts-check
 import pickBy from 'lodash/pickBy'
 import isUndefined from 'lodash/isUndefined'
-import get from 'lodash/get'
 import odsLogger from '../../modules/log/ODSLogger'
 import {
   DynamicAttributeEnum,
@@ -17,6 +16,7 @@ import { SchemaDiff } from '../../modules/json-sql-schema-diff'
 import { GetSchemaByDataPath } from '../../modules/json-schema-utils'
 import { executeCommand, getConnectionString } from '../../data/psql'
 import { KnexTable } from '../../data/psql/table/knexTable'
+import { getPreStageDefaultCols } from '../../modules/ODSConstants'
 
 const JsonObjectNameEnum = DynamicAttributeEnum.JsonObjectName.value
 const JsonSchemaPathEnum = PreDefinedAttributeEnum.FlatJsonSchemaPath.value
@@ -27,6 +27,7 @@ const StageTablePrefix = 'StageTablePrefix'
 const S3SchemaFileEnum = PreDefinedAttributeEnum.S3SchemaFile.value
 const StgTblS3PrefixEnum = PreDefinedAttributeEnum.StageSchemaFile.value
 const psqlStgTblPrefixEnum = PreDefinedAttributeEnum.StageTablePrefix.value
+
 /**
  * @class: OdsPreStageToStage
  * @description: This class takes a pipeline task, gets Schema details,
@@ -116,7 +117,7 @@ export class OdsPreStageToStage {
    * IF stage table is missing then - InvalidSTageTableError is thrown
    * IF stage table schema couldnt be synced with PreStage then StageSchemaUpdateError is thrown
    */
-  async StageData(parallelRuns = 1) {
+  async StageData(parallelRuns = 1, tableSchema = 'stg') {
     this.ValidateParam()
     const retResp = {
       status: {
@@ -134,10 +135,12 @@ export class OdsPreStageToStage {
       const tableResults = []
       for (const item of Object.keys(tables)) {
         const table = tables[item]
-        retResp.TaskQueueAttributes[`${item}.StageTableName`] = table.StageTablePrefix
+        retResp.TaskQueueAttributes[`${item}.StageTableName`] = `${tableSchema}."${
+          table.StageTablePrefix
+        }"`
         retResp.TaskQueueAttributes[`${item}.${JsonSchemaPathPropName}`] =
           table[JsonSchemaPathPropName]
-        const tblDiff = await this.GetTableDiffScript(table)
+        const tblDiff = await this.GetTableDiffScript(table, tableSchema)
 
         // default values for attributes
         retResp.TaskQueueAttributes[`${item}.TableDiffExists`] = false
@@ -149,12 +152,12 @@ export class OdsPreStageToStage {
           retResp.TaskQueueAttributes[`${item}.S3ScriptFilePath`] = tblDiff.S3FilePath || ''
 
           // Create the Tables/Apply difference in DB
-          const tblName = await this.ApplyScriptsToDB(table, tblDiff.DBScript)
+          await this.ApplyScriptsToDB(table, tblDiff.DBScript)
           retResp.TaskQueueAttributes[`${item}.TableSchemaUpdated`] = true
         }
 
         // Copy data from PreStage to Stage.
-        const RowCount = await this.CopyDataToStage(table)
+        const RowCount = await this.CopyDataToStage(table, tableSchema)
         retResp.TaskQueueAttributes[`${item}.DataCopied`] =
           !isUndefined(RowCount) && RowCount > 0 ? true : false
         retResp.TaskQueueAttributes[`${item}.RowCount`] = RowCount
@@ -176,7 +179,7 @@ export class OdsPreStageToStage {
     return retResp
   }
 
-  async GetTableDiffScript(table) {
+  async GetTableDiffScript(table, tableSchema) {
     const output = {}
     const stgTblPrefix = table[StageTablePrefix]
     const stgTblSchemaPath = table[JsonSchemaPathPropName]
@@ -185,13 +188,13 @@ export class OdsPreStageToStage {
       const objSchemaDiff = new SchemaDiff({
         JsonSchema: jsonschema,
         TableName: stgTblPrefix,
-        TableSchema: 'stg',
+        TableSchema: tableSchema,
         DataTypeKey: 'db_type',
         DBConnection: this.DBConnection,
       })
       // get script
       output.DBScript = await objSchemaDiff.SQLScript(this.getDefaultTrackingCols())
-      output.TableSchema = 'stg'
+      output.TableSchema = tableSchema
       output.TableName = stgTblPrefix
       // save file
       if (
@@ -269,12 +272,12 @@ export class OdsPreStageToStage {
     }
   }
 
-  async CopyDataToStage(table) {
+  async CopyDataToStage(table, tableSchema) {
     let rowCnt = 0
     try {
       const knexTable = new KnexTable({
         TableName: table.StageTablePrefix,
-        TableSchema: 'stg',
+        TableSchema: tableSchema,
         ConnectionString: this.DBConnection,
       })
       const blnExists = await knexTable.TableExists()
@@ -306,20 +309,10 @@ export class OdsPreStageToStage {
   }
 
   getDefaultTrackingCols() {
+    const defCols = getPreStageDefaultCols()
     const retObj = {
       AddTrackingCols: true,
-      AdditionalColumns: {
-        StgId: { DataType: 'serial', DataLength: -1, precision: -1, scale: -1 },
-        StgRowCreatedDtTm: { DataType: 'timestamptz', DataLength: -1, precision: -1, scale: -1 },
-        StgRowDeleted: { DataType: 'boolean', DataLength: -1, precision: -1, scale: -1 },
-        DataPipeLineTaskQueueId: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
-        ODS_Batch_Id: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
-        ODS_Id: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
-        ODS_Uri: { DataType: 'varchar', DataLength: 256, precision: -1, scale: -1 },
-        ODS_Path: { DataType: 'varchar', DataLength: 1000, precision: -1, scale: -1 },
-        ODS_Parent_Path: { DataType: 'varchar', DataLength: 1000, precision: -1, scale: -1 },
-        ODS_Parent_Uri: { DataType: 'varchar', DataLength: 256, precision: -1, scale: -1 },
-      },
+      AdditionalColumns: defCols,
     }
     return retObj
   }

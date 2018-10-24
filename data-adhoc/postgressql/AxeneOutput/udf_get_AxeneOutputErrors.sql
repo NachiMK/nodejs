@@ -1,5 +1,5 @@
 -- DROP FUNCTION udf_get_AxeneOutputErrors(varchar(255));
-CREATE OR REPLACE FUNCTION udf_get_AxeneOutputErrors(batchid VARCHAR(255)) RETURNS SETOF vw_AxeneOutputFormat AS $$
+CREATE OR REPLACE FUNCTION udf_get_AxeneOutputErrors(batchid int, yearid int) RETURNS SETOF vw_AxeneErrorReport AS $$
 
     -- Report
     
@@ -51,7 +51,7 @@ SELECT  FP."Year"
                             ,p."PlanID"
                     FROM    "Plans" AS P
                     WHERE   LEFT(REPLACE(AF."FileName", AF."AxeneBatchID" || '_', ''), 36) LIKE CAST(P."PlanID" AS VARCHAR)
-                    AND     p."Year" = 2018
+                    AND     p."Year" = $2
             ) AS FP ON true
 WHERE   "AxeneBatchID" IN ($1)
 AND     "Status" = 'error'
