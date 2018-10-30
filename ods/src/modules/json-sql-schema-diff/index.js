@@ -1,4 +1,3 @@
-//@ts-check
 import isEmpty from 'lodash/isEmpty'
 import forEach from 'lodash/forEach'
 import isUndefined from 'lodash/isUndefined'

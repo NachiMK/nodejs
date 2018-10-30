@@ -1,6 +1,6 @@
--- udf_ValidateStageToClean
-DROP FUNCTION IF EXISTS public."udf_ValidateStageToClean"(jsonb);
-CREATE OR REPLACE FUNCTION public."udf_ValidateStageToClean"(
+-- udf_ValidateStageToCleanParams
+DROP FUNCTION IF EXISTS public."udf_ValidateStageToCleanParams"(jsonb);
+CREATE OR REPLACE FUNCTION public."udf_ValidateStageToCleanParams"(
     MergeParams jsonb
 )
 RETURNS BOOLEAN AS $$
@@ -12,9 +12,20 @@ RETURNS BOOLEAN AS $$
 
     DECLARE StgTableSchema VARCHAR(256) DEFAULT '';
     DECLARE StgTableName VARCHAR(256) DEFAULT '';
+    DECLARE ParentStgTableName VARCHAR(256) DEFAULT '';
 
     DECLARE CleanTableSchema VARCHAR(256) DEFAULT '';
     DECLARE CleanTableName VARCHAR(256) DEFAULT '';
+    DECLARE CleanParentTableName VARCHAR(256) DEFAULT '';
+    DECLARE PrimaryKeyName VARCHAR(256) DEFAULT '';
+    DECLARE BusinessKeyColumn VARCHAR(256) DEFAULT '';
+    DECLARE RootTableName VARCHAR(256) DEFAULT '';
+
+    DECLARE PreStageToStageTaskId BIGINT DEFAULT -1;
+    DECLARE TaskQueueId BIGINT DEFAULT -1;
+
+    DECLARE ParentTblCount INT DEFAULT 0;
+
 BEGIN
     /*
         Is MergeParams in given Format? 
@@ -28,7 +39,8 @@ BEGIN
                 "Schema": "public",
                 "TableName": "clients_clients",
                 "ParentTableName": "",
-                "PrimaryKeyName": ""
+                "PrimaryKeyName": "",
+                "BusinessKeyColumn": ""
             },
             "PreStageToStageTaskId": 1,
             "TaskQueueId": 2
@@ -71,11 +83,18 @@ BEGIN
         },
         "PrimaryKeyName": {
           "type": "string"
+        },
+        "BusinessKeyColumn": {
+          "type": "string"
+        },
+        "RootTableName": {
+          "type": "string"
         }
       },
       "required": [
         "Schema",
-        "TableName"
+        "TableName",
+        "PrimaryKeyName"
       ]
     },
     "PreStageToStageTaskId": {
@@ -110,6 +129,7 @@ BEGIN
         ,CAST(param->'StageTable'->>'ParentTableName' AS VARCHAR) as "StageParentTableName"  
         ,CAST(param->'CleanTable'->>'Schema' AS VARCHAR) as "CleanTableSchema"
         ,CAST(param->'CleanTable'->>'TableName' AS VARCHAR) as "CleanTableName"
+        ,CAST(param->'CleanTable'->>'PrimaryKeyName' AS VARCHAR) as "PrimaryKeyName"
         ,CAST(param->'CleanTable'->>'ParentTableName' AS VARCHAR) as "CleanParentTableName" 
         ,CAST(param->'PreStageToStageTaskId' AS VARCHAR) as "PreStageToStageTaskId"
         ,CAST(param->'TaskQueueId' AS VARCHAR) as "TaskQueueId"
@@ -124,33 +144,94 @@ BEGIN
     AND     LENGTH("CleanTableSchema") > 0
     AND     LENGTH("CleanTableName") > 0
     AND     LENGTH("PreStageToStageTaskId") > 0
-    AND     LENGTH("TaskQueueId") > 0;
+    AND     LENGTH("TaskQueueId") > 0
+    AND     LENGTH("PrimaryKeyName") > 0;
 
     IF blnHasColumns = false THEN
         RAISE EXCEPTION 'Invalid DB Params. One of the Stage/Clean Table values is empty --> %', blnHasColumns::text
         USING HINT = 'Please check your Stage and Clean Table Names and Schemas';
     END IF;
 
-    WITH CTEParams
-    AS
-    (
-    SELECT
-         CAST(param->'StageTable'->>'Schema' AS VARCHAR) as "StageTableSchema"
-        ,CAST(param->'StageTable'->>'TableName' AS VARCHAR) as "StageTableName"
-        ,CAST(param->'CleanTable'->>'Schema' AS VARCHAR) as "CleanTableSchema"
-        ,CAST(param->'CleanTable'->>'TableName' AS VARCHAR) as "CleanTableName"
-    FROM (SELECT MergeParams as param) as p
-    )
-    SELECT  "StageTableSchema"
-            ,"StageTableName"
-            ,"CleanTableSchema"
-            ,"CleanTableName"
-    INTO     StgTableSchema
-            ,StgTableName
-            ,CleanTableSchema
-            ,CleanTableName
-    FROM    CTEParams;
+    SELECT "StgTableSchema"
+          ,"StgTableName"
+          ,"ParentStgTableName"
+          ,"CleanTableSchema"
+          ,"CleanTableName"
+          ,"CleanParentTableName"
+          ,"PrimaryKeyName"
+          ,"BusinessKeyColumn"
+          ,"RootTableName"
+          ,"PreStageToStageTaskId"
+          ,"TaskQueueId"
+    INTO   StgTableSchema
+          ,StgTableName
+          ,ParentStgTableName
+          ,CleanTableSchema
+          ,CleanTableName
+          ,CleanParentTableName
+          ,PrimaryKeyName
+          ,BusinessKeyColumn
+          ,RootTableName
+          ,PreStageToStageTaskId
+          ,TaskQueueId
+    FROM  public."udf_ParseMergeParams"(MergeParams);
 
+    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = StgTableSchema AND table_name = StgTableName)
+        OR NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = CleanTableSchema AND table_name = CleanTableName) THEN
+        RAISE EXCEPTION 'Invalid DB Param.Stage Table % or Clean Table % doesnt exists.', StgTableName, CleanTableName
+        USING HINT = 'Please check your Stage and Clean Table Names and Schemas';
+    END IF;
+
+    IF ParentStgTableName IS NOT NULL AND LENGTH(ParentStgTableName) > 0
+      AND NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES 
+                      WHERE table_schema = StgTableSchema AND table_name = ParentStgTableName) THEN
+        RAISE EXCEPTION 'Invalid DB Param. Parent Stage Table % doesnt exists.', ParentStgTableName
+        USING HINT = 'Please provide valid Parent Stage table name';
+    ELSE 
+      ParentTblCount := ParentTblCount + 1;
+    END IF;
+
+    IF CleanParentTableName IS NOT NULL AND LENGTH(CleanParentTableName) > 0
+      AND NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES 
+                      WHERE table_schema = CleanTableSchema AND table_name = CleanParentTableName) THEN
+        RAISE EXCEPTION 'Invalid DB Param. Clean Parent Table % doesnt exists.', CleanParentTableName
+        USING HINT = 'Please provide valid Clean Parent table name';
+    ELSE
+      ParentTblCount := ParentTblCount + 1;
+    END IF;
+
+    IF RootTableName IS NOT NULL AND LENGTH(RootTableName) > 0
+      AND NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES 
+                      WHERE table_schema = CleanTableSchema AND table_name = RootTableName) THEN
+        RAISE EXCEPTION 'Invalid DB Param. Root Table % doesnt exists.', RootTableName
+        USING HINT = 'Please provide valid Root table name';
+    END IF;
+
+    IF PrimaryKeyName IS NOT NULL AND LENGTH(PrimaryKeyName) > 0 
+      AND NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE table_schema = CleanTableSchema
+                      AND table_name = CleanTableName
+                      AND column_name = PrimaryKeyName) THEN
+      RAISE EXCEPTION 'Invalid DB Param.Primary Key % in Clean Table % doesnt exists.', PrimaryKeyName, CleanTableName
+        USING HINT = 'Please provide valid column names';
+    END IF;
+    
+    IF BusinessKeyColumn IS NOT NULL AND LENGTH(BusinessKeyColumn) > 0 
+      AND NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE table_schema = CleanTableSchema
+                      AND table_name = CleanTableName
+                      AND column_name = BusinessKeyColumn) THEN
+      RAISE EXCEPTION 'Invalid DB Param. Business Key % in Clean Table % doesnt exists.', BusinessKeyColumn, CleanTableName
+        USING HINT = 'Please provide valid column names';
+    END IF;
+
+    IF NOT (((LENGTH(CleanParentTableName) > 0) AND (LENGTH(StageParentTableName) > 0))
+            OR (LENGTH(BusinessKeyColumn) > 0)) THEN
+      RAISE EXCEPTION 'Invalid DB Param. Either CleanParentTableName: % & StageParentTableName: % 
+                      should be provided or Business Key: % should be provided.'
+                      , CleanParentTableName, StageParentTableName, BusinessKeyColumn;
+    END IF;
+    
     WITH CTEPublicSchema
     AS
     (
@@ -189,7 +270,7 @@ BEGIN
     FROM   (
         SELECT  C."DataType" as "CleanType", S."DataType" as "StageType", COUNT(*) as "Cnt"
         FROM    CTEPublicSchema C
-        LEFT
+        INNER
         JOIN    CTEStageSchema  S ON S."ColumnName" = C."ColumnName"
         WHERE   (s."ColumnName" !~ 'StgId')
         AND NOT EXISTS (SELECT * FROM public."CastFunctionMapping" CF 
@@ -208,11 +289,11 @@ BEGIN
     RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
-GRANT ALL on FUNCTION public."udf_ValidateStageToClean"(jsonb) TO odsddb_role;
-GRANT ALL on FUNCTION public."udf_ValidateStageToClean"(jsonb) TO public;
+GRANT ALL on FUNCTION public."udf_ValidateStageToCleanParams"(jsonb) TO odsddb_role;
+GRANT ALL on FUNCTION public."udf_ValidateStageToCleanParams"(jsonb) TO public;
 /*
     --Testing code
-    SELECT public."udf_ValidateStageToClean"('{"StageTable" : {
+    SELECT public."udf_ValidateStageToCleanParams"('{"StageTable" : {
          "Schema": "stg",
          "TableName": "clients_clients",
          "ParentTableName": ""

@@ -1,4 +1,3 @@
-//@ts-check
 import forEach from 'lodash/forEach'
 import isUndefined from 'lodash/isUndefined'
 import { knexByConnectionString, executeScalar } from '..'
@@ -170,6 +169,8 @@ export class KnexTable {
           // precision
           const scale = column.scale || 0
           retType = `${datatypeEnum.postgresType}(${column.precision}, ${scale})`
+        } else if (!isUndefined(column.PrimaryKey) && column.PrimaryKey) {
+          retType = `${datatypeEnum.postgresType} PRIMARY KEY NOT NULL`
         } else {
           retType = datatypeEnum.postgresType
         }

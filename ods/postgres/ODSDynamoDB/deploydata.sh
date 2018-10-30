@@ -11,7 +11,7 @@ else
 fi
 echo "Params:"
 echo "First Param: stage (can be dev, int, or prod):"${stage}
-echo "Second Param: Set to rds if you want to deploy to auror instance or else localhost or empty string:"${hosttodeploy}
+echo "Second Param: Set to rds/rds2 if you want to deploy to auror instance or else localhost or empty string:"${hosttodeploy}
 echo "Third Param: Set to RunPostScripts:TRUE if you want to drop all data and recreate it:"${reset}
 echo "Fourth Param: Set to CreateDB:TRUE if you want to drop existing DB and recreate it:"${createdb}
 
@@ -35,6 +35,11 @@ fi
 
 if [ "${dbhostname}" = "rds" ]; then 
     dbhostname='-h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root'
+    echo "Enter psql password for RDS Server ${stage}:"
+    read password
+    export PGPASSWORD=$password
+elif [ "${dbhostname}" = "rds2" ]; then 
+    dbhostname='-h datalake-try.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root'
     echo "Enter psql password for RDS Server ${stage}:"
     read password
     export PGPASSWORD=$password
@@ -83,14 +88,14 @@ for filename in Types/*.sql; do
     psql ${dbhostname} -d odsdynamodb_${stagename} -f "$filename"
 done
 
-for filename in Functions/*.sql; do
-    echo "Deploying Function:" $filename
-    psql ${dbhostname} -d odsdynamodb_${stagename} -f "$filename"
-done
-
 for filename in Views/*.sql; do
     [ -e "$filename" ] || continue
     echo "Deploying View:" $filename
+    psql ${dbhostname} -d odsdynamodb_${stagename} -f "$filename"
+done
+
+for filename in Functions/*.sql; do
+    echo "Deploying Function:" $filename
     psql ${dbhostname} -d odsdynamodb_${stagename} -f "$filename"
 done
 

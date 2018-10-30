@@ -1,18 +1,18 @@
-SELECT * FROM "AxeneBatch" WHERE "ID" >= 170;
+SELECT * FROM "AxeneBatch" WHERE "ID" >= 215;
 
 SELECT "AxeneBatchID", "FileName", "Status", "StartDate", "EndDate" 
-FROM "AxeneBatchFiles" WHERE "AxeneBatchID" = 170 --IN (SELECT "ID" FROM "AxeneBatch" WHERE "ID" >= 113)
+FROM "AxeneBatchFiles" WHERE "AxeneBatchID" = 215 --IN (SELECT "ID" FROM "AxeneBatch" WHERE "ID" >= 113)
 AND "Status" != 'started'
 ORDER BY "FileName"
 
 SELECT "AxeneBatchID", "FileName", "Status", "StartDate", "EndDate" 
-FROM "AxeneBatchFiles" WHERE "AxeneBatchID" = 168 --IN (SELECT "ID" FROM "AxeneBatch" WHERE "ID" >= 170)
+FROM "AxeneBatchFiles" WHERE "AxeneBatchID" = 168 --IN (SELECT "ID" FROM "AxeneBatch" WHERE "ID" >= 215)
 AND "Status" != 'started'
 
-SELECT * FROM "AxeneOutputValues" WHERE "BatchID" IN (SELECT CAST("ID" AS VARCHAR) FROM "AxeneBatch" WHERE "ID" >= 170);
+SELECT * FROM "AxeneOutputValues" WHERE "BatchID" IN (SELECT CAST("ID" AS VARCHAR) FROM "AxeneBatch" WHERE "ID" >= 215);
 
 -- Files we submitted but not in output (could be in error though)
-SELECT * FROM "AxeneBatchFiles" AS AO WHERE "AxeneBatchID" = 170
+SELECT * FROM "AxeneBatchFiles" AS AO WHERE "AxeneBatchID" = 215
 AND NOT EXISTS ( SELECT * FROM "AxeneOutputValues" WHERE "AxeneBatchID" = AO."AxeneBatchID" AND "FileName" = AO."FileName");
 
 -- Count of Files we submitted
@@ -28,7 +28,7 @@ JOIN    (
             FROM    "AxeneOutputValues" AS O1
             WHERE   O1."BatchID" IN (SELECT CAST("ID" AS VARCHAR)
                                      FROM   "AxeneBatch" 
-                                     WHERE "ID" >= 170) 
+                                     WHERE "ID" >= 215) 
             GROUP  BY O1."BatchID"
         ) AS O ON O."AxeneBatchID" = I."AxeneBatchID"
 LEFT
@@ -38,20 +38,20 @@ JOIN
             FROM    "AxenePlanBenefitErrors" AS E 
             INNER
             JOIN    "AxeneBatchFiles"        AS I1 ON I1."ID" = "AxeneBatchFileID"
-            WHERE   I1."AxeneBatchID" >= 170
+            WHERE   I1."AxeneBatchID" >= 215
             GROUP   BY
                     I1."AxeneBatchID"
         ) AS OE ON OE."AxeneBatchID" = I."AxeneBatchID"
-WHERE   I."AxeneBatchID" IN (SELECT "ID" FROM "AxeneBatch" WHERE "ID" >= 170) 
+WHERE   I."AxeneBatchID" IN (SELECT "ID" FROM "AxeneBatch" WHERE "ID" >= 215) 
 GROUP  BY 
         I."AxeneBatchID";
 
 -- Count Files in output
-SELECT "BatchID" as "AxeneBatchID", Count(*) AS Cnt FROM "AxeneOutputValues" WHERE "BatchID" IN (SELECT CAST("ID" AS VARCHAR) FROM "AxeneBatch" WHERE "ID" >= 170) GROUP  BY "BatchID";
+SELECT "BatchID" as "AxeneBatchID", Count(*) AS Cnt FROM "AxeneOutputValues" WHERE "BatchID" IN (SELECT CAST("ID" AS VARCHAR) FROM "AxeneBatch" WHERE "ID" >= 215) GROUP  BY "BatchID";
 -- Count # of Errors by Batch
 SELECT "AxeneBatchID", Count(*) as Cnt 
 FROM "AxeneBatchFiles" AS I
-WHERE "AxeneBatchID" = 170
+WHERE "AxeneBatchID" = 215
 AND ExISTS (SELECT * FROM "AxenePlanBenefitErrors" AS E WHERE E."AxeneBatchFileID" = I."ID")
 GROUP BY
     "AxeneBatchID";
@@ -59,7 +59,7 @@ GROUP BY
 -- Count # of Errors by Plans
 SELECT DISTINCT LEFT(REPLACE("FileName", CAST("AxeneBatchID" as VARCHAR)||'_', ''), 36) as "PlanID", Count(*) as Cnt 
 FROM "AxeneBatchFiles" AS I
-WHERE "AxeneBatchID" = 170
+WHERE "AxeneBatchID" = 215
 AND ExISTS (SELECT * FROM "AxenePlanBenefitErrors" AS E WHERE E."AxeneBatchFileID" = I."ID")
 GROUP BY
     "AxeneBatchID", "FileName" ;
@@ -75,7 +75,7 @@ AND     CAST("PlanID" AS VARCHAR) IN
         FROM    "AxeneBatchFiles" AS I
         INNER   
         JOIN    "AxenePlanBenefitErrors" AS E ON E."AxeneBatchFileID" = I."ID"
-        WHERE   I."AxeneBatchID" = 170
+        WHERE   I."AxeneBatchID" = 215
     )
 ;
 -- Look at actual errors
@@ -86,38 +86,39 @@ INNER
 JOIN    "AxenePlanBenefitErrors" AS E ON E."AxeneBatchFileID" = I."ID"
 INNER
 JOIN    "AxeneErrors" AS EL ON EL."ID" = E."AxeneErrorID"
-WHERE   I."AxeneBatchID" = 170
+WHERE   I."AxeneBatchID" = 215
+ORDER BY "PlanID", E."PlanBenefitType"
 
 SELECT "AxeneBatchFileID", Count(*) AS Cnt FROM "AxenePlanBenefitErrors" WHERE "AxeneBatchFileID" IN (
-SELECT "ID" FROM "AxeneBatchFiles" WHERE "AxeneBatchID" IN (SELECT "ID" FROM "AxeneBatch" WHERE "ID" >= 170)
+SELECT "ID" FROM "AxeneBatchFiles" WHERE "AxeneBatchID" IN (SELECT "ID" FROM "AxeneBatch" WHERE "ID" >= 215)
 ) GROUP  BY "AxeneBatchFileID";
 
 
 -- Plans by Error/Batch
 SELECT * 
 FROM "AxeneBatchFiles" I
-WHERE "AxeneBatchID" = 170
+WHERE "AxeneBatchID" = 215
 AND EXISTS (SELECT * FROM "AxenePlanBenefitErrors" AS E WHERE E."AxeneBatchFileID" = I."ID")
 
 -- distinct plans that errored
 SELECT DISTINCT LEFT(REPLACE("FileName", CAST("AxeneBatchID" as VARCHAR)||'_', ''), 36) as "PlanID"
 FROM "AxeneBatchFiles" I
-WHERE "AxeneBatchID" = 170
+WHERE "AxeneBatchID" = 215
 AND EXISTS (SELECT * FROM "AxenePlanBenefitErrors" AS E WHERE E."AxeneBatchFileID" = I."ID")
 
-SELECT * FROM "PlanBenefits" WHERE "HiosPlanID" = '34484MA0640001'
-AND "Year" = 2018
-AND "Benefit" like '%eligible%'
-SELECT * FROM "Plans" WHERE "HiosPlanID" = '34484MA0640001' AND "Year" = 2018
-SELECT * FROM "Plans" WHERE "PlanID" = '700a4a0f-672b-422b-b2a6-4da00c08476d'
-
+SELECT * FROM "PlanBenefits" WHERE "HiosPlanID" = '14002TN0400001'
+AND "Year" = 2019;
+--AND "Benefit" like '%eligible%'
+SELECT * FROM "Plans" WHERE "HiosPlanID" = '14002TN0400001' AND "Year" = 2019;
+SELECT * FROM "Plans" WHERE "PlanID" = '700a4a0f-672b-422b-b2a6-4da00c08476d';
+SELECT * FROM vw_PlanBenefits WHERE "HiosPlanID" = '14002TN0400001' AND "Year" = 2019;
 -- Look for particular file in output
-SELECT * FROM "AxeneOutputValues" WHERE "BatchID" like '170'
-AND "FileName" LIKE '170_700a4a0f-672b-422b-b2a6-4da00c08476d_0_p%';
+SELECT * FROM "AxeneOutputValues" WHERE "BatchID" like '215'
+AND "FileName" LIKE '215_700a4a0f-672b-422b-b2a6-4da00c08476d_0_p%';
 
 -- Look for history of changes by file
 SELECT * FROM "AxeneBatchFilesHistory" 
-WHERE "FileName" = '170_700a4a0f-672b-422b-b2a6-4da00c08476d_0_p'
+WHERE "FileName" = '215_700a4a0f-672b-422b-b2a6-4da00c08476d_0_p'
 -- "FileName" like '%301b0d8a-1d80-464c-9921-02a77a0820c5%';
 ORDER BY
     "HistoryID"
@@ -126,55 +127,19 @@ ORDER BY
 -- Files not in error and not in output -- THESE ARE FILES Axene never returned.
 SELECT DISTINCT LEFT(REPLACE("FileName", CAST("AxeneBatchID" as VARCHAR)||'_', ''), 36) as "PlanID", * 
 FROM "AxeneBatchFiles" AS I
-WHERE "AxeneBatchID" = 170
+WHERE "AxeneBatchID" = 215
 AND NOT EXISTS (SELECT * FROM "AxeneOutputValues" AS O WHERE "BatchID" = CAST(I."AxeneBatchID" AS VARCHAR) AND I."FileName" = O."FileName")
 AND NOT ExISTS (SELECT * FROM "AxenePlanBenefitErrors" AS E WHERE E."AxeneBatchFileID" = I."ID");
 
-SELECT * FROM public.udf_get_axenestatus(2018,'','');
+SELECT * FROM public.udf_get_axenestatus(2019,'','');
 
-SELECT * FROM public.udf_get_AxeneOutput('168')
+SELECT * FROM public.udf_get_AxeneOutput('215')
 
+SELECT * FROM public.udf_get_AxeneOutputErrors('215', 2019)
 
--- PLAN BENEFITS FOR PLANS THAT ERRORED
-SELECT 
-	"PlanBenefitID",
-	"Plans"."Year",
-	"Plans"."HiosPlanID",
-	"Plans"."State",
-	"Benefit",
-	"ServiceNotCovered",
-	"AppliesToDeductible",
-	"Coinsurance",
-	"CopayAmount",
-	"CopayDayLimit",
-	"CoinsuranceCopayOrder",
-	"MemberServicePaidCap",
-	"CoverageVisitLimit",
-	"FirstDollarVisits",
-	"IsGrouped",
-	"CopayAfterFirstVisits",
-	"Notes",
-	"Plans"."GroupID" AS "ClusterID"
-	,"PlanBenefits"."UpdatedDate"
-FROM "Plans"
-INNER
-JOIN "PlanBenefits" ON "Plans"."HiosPlanID" = "PlanBenefits"."HiosPlanID" 
-                      AND "Plans"."Year" = "PlanBenefits"."Year"
-                      AND "Benefit"  NOT IN 
-                        ( 'MentalHealthProfessionalOutpatient'
-                         ,'HabilitationServices'
-                         ,'OtherPractitionerOfficeVisit'
-                         ,'OutpatientRehabilitationServices'
-                         ,'PreventiveCare')
-WHERE "Plans"."Year" = 2018 
-AND "Plans"."State" = 'AZ'
-AND "Plans"."IsForSale" = true 
-AND CAST("Plans"."PlanID" AS VARCHAR) IN 
-(
-        SELECT  DISTINCT LEFT(REPLACE("FileName", CAST("AxeneBatchID" as VARCHAR)||'_', ''), 36) as "PlanID"
-        FROM    "AxeneBatchFiles" AS I
-        INNER   
-        JOIN    "AxenePlanBenefitErrors" AS E ON E."AxeneBatchFileID" = I."ID"
-        WHERE   I."AxeneBatchID" = 170
-)
-ORDER BY "HiosPlanID", "Benefit";
+SELECT * FROM udf_Report_PlanBenefits(2019, 'NY') WHERE "HiosPlanID" = '14002TN0400001'
+
+BEGIN;
+SELECT * FROM udf_update_plan_av('215') as R
+ROLLBACK
+-- COMMIT

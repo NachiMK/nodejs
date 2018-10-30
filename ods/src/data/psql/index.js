@@ -20,7 +20,7 @@ export const executeQueryRS = async (params = {}) => {
   const ret = {
     rows: [],
     rowCount: -1,
-    error: '',
+    error: {},
     completed: false,
   }
 

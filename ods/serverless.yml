@@ -138,6 +138,10 @@ functions:
     description: 
     timeout: 600
 
+  ping-db-ods:
+      handler: lib/controller/ping-db/pingdb.pingodsdb
+      description: "${self:custom.documentation.summary} | Ping Postgres Endpoint ODS"
+
 resources:
   Resources:
     GatewayResponse:

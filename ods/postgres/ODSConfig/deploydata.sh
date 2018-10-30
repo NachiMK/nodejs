@@ -11,7 +11,7 @@ else
 fi
 echo "Params:"
 echo "First Param: stage (can be dev, int, or prod):"${stage}
-echo "Second Param: Set to rds if you want to deploy to auror instance or else localhost or empty string:"${hosttodeploy}
+echo "Second Param: Set to rds/rds2 if you want to deploy to auror instance or else localhost or empty string:"${hosttodeploy}
 echo "Third Param: Set to ResetData:TRUE if you want to drop all tables and recreate it:"${reset}
 echo "Fourth Param: Set to CreateDB:TRUE if you want to drop existing DB and recreate it:"${createdb}
 
@@ -38,9 +38,15 @@ if [ "${dbhostname}" = "rds" ]; then
     echo "Enter psql password for RDS Server ${stage}:"
     read password
     export PGPASSWORD=$password
+elif [ "${dbhostname}" = "rds2" ]; then 
+    dbhostname='-h datalake-try.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root'
+    echo "Enter psql password for RDS Server ${stage}:"
+    read password
+    export PGPASSWORD=$password
 else
     dbhostname='-h localhost -p 5432'
 fi
+
 echo "Stage:"$stage
 echo "Reset:"$resetdata
 echo "Create:"$create

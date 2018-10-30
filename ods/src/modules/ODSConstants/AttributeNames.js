@@ -33,6 +33,9 @@ export const PreDefinedAttributeEnum = {
   StageTablePrefix: { value: 'psql.StageTable.Prefix', Prefix: '', HasRunningIndex: false },
   CleanTablePrefix: { value: 'psql.CleanTable.Prefix', Prefix: '', HasRunningIndex: false },
   CleanSchemaFile: { value: 'Prefix.CleanSchemaFile', Prefix: '', HasRunningIndex: false },
+  DBSchemaStageTable: { value: 'DBSchemaStage', Prefix: '', HasRunningIndex: false },
+  DBSchemaCleanTable: { value: 'DBSchemaClean', Prefix: '', HasRunningIndex: false },
+  BusinessKeyColumn: { value: 'BusinessKeyColumn', Prefix: '', HasRunningIndex: false },
 }
 
 export const DynamicAttributeEnum = {

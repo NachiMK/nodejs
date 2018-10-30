@@ -68,7 +68,7 @@ export const TaskStatusEnum = {
 
 export function getPreStageDefaultCols() {
   return {
-    StgId: { DataType: 'serial', DataLength: -1, precision: -1, scale: -1 },
+    StgId: { DataType: 'bigserial', DataLength: -1, precision: -1, scale: -1 },
     StgRowCreatedDtTm: { DataType: 'timestamptz', DataLength: -1, precision: -1, scale: -1 },
     StgRowDeleted: { DataType: 'boolean', DataLength: -1, precision: -1, scale: -1 },
     DataPipeLineTaskQueueId: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
@@ -88,12 +88,21 @@ export function getCleanTableDefaultCols() {
       DataLength: -1,
       precision: -1,
       scale: -1,
+      PrimaryKey: true,
     },
-    ParentId: {
+    '{Parent}': {
       DataType: 'bigint',
       DataLength: -1,
       precision: -1,
       scale: -1,
+      Default: '-1',
+    },
+    '{Root}': {
+      DataType: 'bigint',
+      DataLength: -1,
+      precision: -1,
+      scale: -1,
+      Default: '-1',
     },
     EffectiveStartDate: {
       DataType: 'date',
@@ -101,6 +110,7 @@ export function getCleanTableDefaultCols() {
       precision: -1,
       scale: -1,
       Default: 'NOW',
+      AddOnlyToRootTable: true,
     },
     EffectiveEndDate: {
       DataType: 'date',
@@ -108,6 +118,7 @@ export function getCleanTableDefaultCols() {
       precision: -1,
       scale: -1,
       Default: '12/31/9999',
+      AddOnlyToRootTable: true,
     },
     RowCreatedDtTm: { DataType: 'timestamptz', DataLength: -1, precision: -1, scale: -1 },
     RowDeleted: { DataType: 'boolean', DataLength: -1, precision: -1, scale: -1 },

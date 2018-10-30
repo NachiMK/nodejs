@@ -43,6 +43,8 @@ VALUES
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'Prefix.StageSchemaFile')
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'psql.StageTable.Prefix')
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3SchemaFileBucketName')
+    ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'DBSchemaStage')
+    
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3SchemaFile') -- This is a Json Schema file
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3CSVFile#.PreStageTableName') -- Dynamic (For copying from Previous Step)
     ,('Pre-Stage to Stage', 'Process JSON to Postgres', 'S3CSVFile#.JsonObjectName') -- Dynamic (For copying from Previous Step)
@@ -51,6 +53,10 @@ VALUES
     ,('Stage to Clean', 'Process JSON to Postgres', 'S3SchemaFileBucketName') -- Path to save SQL Schema file
     ,('Stage to Clean', 'Process JSON to Postgres', 'Prefix.CleanSchemaFile') -- SQL Script file prefix for S3 
     ,('Stage to Clean', 'Process JSON to Postgres', 'psql.CleanTable.Prefix') -- Clean table prefix
+    ,('Stage to Clean', 'Process JSON to Postgres', 'DBSchemaClean') -- Clean table database schema
+    ,('Stage to Clean', 'Process JSON to Postgres', 'BusinessKeyColumn') -- Primary key
+    
+    ,('Stage to Clean', 'Process JSON to Postgres', 'DBSchemaStage') -- Dynamic (will be copied down from previous task)
     ,('Stage to Clean', 'Process JSON to Postgres', 'S3SchemaFile') -- Dynamic (For copying form prior step)This is a Json Schema file
     ,('Stage to Clean', 'Process JSON to Postgres', 'S3CSVFile#.StageTableName') -- Dynamic  (For copying from Previous Step)
     ,('Stage to Clean', 'Process JSON to Postgres', 'S3CSVFile#.JsonObjectName') -- Dynamic (For copying from Previous Step)

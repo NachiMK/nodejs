@@ -178,4 +178,44 @@ JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" LIKE 'LogLevel'
 AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
 
+INSERT INTO
+    ods."TaskAttribute"
+    (
+         "DataPipeLineTaskId"
+        ,"AttributeId"
+        ,"AttributeValue"
+    )
+SELECT   DPT."DataPipeLineTaskId"
+        ,TCA."AttributeId"
+        ,CASE WHEN A."AttributeName" = 'DBSchemaStage' THEN 'stg' ELSE 'public' END AS "AttributeValue"
+FROM    DPLTables Tbls
+INNER
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"
+INNER
+JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
+INNER
+JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
+WHERE   A."AttributeName" IN ('DBSchemaClean', 'DBSchemaStage')
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+
+INSERT INTO
+    ods."TaskAttribute"
+    (
+         "DataPipeLineTaskId"
+        ,"AttributeId"
+        ,"AttributeValue"
+    )
+SELECT   DPT."DataPipeLineTaskId"
+        ,TCA."AttributeId"
+        ,'Rowkey' AS "AttributeValue"
+FROM    DPLTables Tbls
+INNER
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"
+INNER
+JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
+INNER
+JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
+WHERE   A."AttributeName" IN ('BusinessKeyColumn')
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+
 SELECT * FROM ods."TaskAttribute";

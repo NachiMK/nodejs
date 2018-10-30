@@ -29,6 +29,7 @@ FROM    (
             UNION   SELECT 'Prefix.StageSchemaFile' as "AttributeName"
             UNION   SELECT 'psql.PreStageTable.Prefix' as "AttributeName"
             UNION   SELECT 'psql.StageTable.Prefix' as "AttributeName"
+            UNION   SELECT 'DBSchemaStage' as "AttributeName"
 
             UNION   SELECT 'S3CSVFile#.PreStageTableName' as "AttributeName"
             UNION   SELECT 'S3CSVFile#.JsonObjectName' as "AttributeName"
@@ -37,6 +38,8 @@ FROM    (
             UNION   SELECT 'S3CSVFile#.RowCount' as "AttributeName"
             UNION   SELECT 'Prefix.CleanSchemaFile' as "AttributeName"
             UNION   SELECT 'psql.CleanTable.Prefix' as "AttributeName"
+            UNION   SELECT 'DBSchemaClean' as "AttributeName"
+            UNION   SELECT 'BusinessKeyColumn' as "AttributeName"
 
             UNION   SELECT 'Dynamo.TableName' as "AttributeName"
             UNION   SELECT 'Dynamo.Table.Index' as "AttributeName"

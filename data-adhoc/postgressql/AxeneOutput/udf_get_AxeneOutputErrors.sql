@@ -50,7 +50,7 @@ SELECT  FP."Year"
                             ,p."GroupID"
                             ,p."PlanID"
                     FROM    "Plans" AS P
-                    WHERE   LEFT(REPLACE(AF."FileName", AF."AxeneBatchID" || '_', ''), 36) LIKE CAST(P."PlanID" AS VARCHAR)
+                    WHERE   LEFT(AF."FileName", 36) LIKE CAST(P."PlanID" AS VARCHAR)
                     AND     p."Year" = $2
             ) AS FP ON true
 WHERE   "AxeneBatchID" IN ($1)

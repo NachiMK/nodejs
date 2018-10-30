@@ -38,6 +38,11 @@ if [ "${dbhostname}" = "rds" ]; then
     echo "Enter psql password for RDS Server ${stage}:"
     read password
     export PGPASSWORD=$password
+elif [ "${dbhostname}" = "rds2" ]; then 
+    dbhostname='-h datalake-try.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root'
+    echo "Enter psql password for RDS Server ${stage}:"
+    read password
+    export PGPASSWORD=$password
 else
     dbhostname='-h localhost -p 5432'
 fi
