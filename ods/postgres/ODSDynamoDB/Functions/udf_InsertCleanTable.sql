@@ -22,6 +22,9 @@ DECLARE
 
     IsRootTable BOOLEAN;
 
+    RootColName VARCHAR(256);
+    ParentColName VARCHAR(256);
+
     TargetCols TEXT;
     SourceCols TEXT;
     AdditionalTargetCols TEXT DEFAULT '';
@@ -69,7 +72,11 @@ BEGIN
     AND     CT."ColumnName" !~ 'DataPipeLineTaskQueueId';
 
     IF IsRootTable THEN
-        AdditionalTargetCols := ',"Parent_Id","Root_Id","EffectiveStartDate","EffectiveEndDate","RowCreatedDtTm","RowDeleted","DataPipeLineTaskQueueId", "' || BusinessKeyColumn || '"' ;
+        -- If Root no Parent or Root is required.
+        AdditionalTargetCols := ',"Parent_Id","Root_Id","EffectiveStartDate"' ||
+                                ',"EffectiveEndDate","RowCreatedDtTm","RowDeleted"'||
+                                ',"DataPipeLineTaskQueueId", "' || BusinessKeyColumn || '"' ;
+        -- source columns
         AdditionalSourceCols := '
         , -1 as "Parent_Id"
         , -1 AS "Root_Id"
@@ -78,12 +85,37 @@ BEGIN
         , CURRENT_TIMESTAMP AS "RowCreatedDtTm"
         , false as "RowDeleted"
         , ' || CAST(TaskQueueId as VARCHAR) || ' as "DataPipeLineTaskQueueId"
-        , ST."' || BusinessKeyColumn || '" AS BusinessKeyColumn as ;
+        , ST."' || BusinessKeyColumn || '" AS BusinessKeyColumn as ;';
+
+        WHERECondition := ' AND   NOT EXISTS (SELECT 1 FROM CleanTableSchema.CleanTableName AS C' ||
+                          ' WHERE C.BusinessKeyColumn = ST.BusinessKeyColumn ' ||
+                          ' AND   C.EffectiveStartDate = ST.HistoryDate::date ' ||
+                          ' AND   C.EffectiveEndDate = ''12-31-9999'')';
     ELSE
-        AdditionalTargetCols := '"Parent_{}Id","Root_{}Id","RowCreatedDtTm","RowDeleted","DataPipeLineTaskQueueId"';
+        -- Find my Parent Column
+        SELECT  column_name
+        INTO    ParentColName
+        FROM    INFORMATION_SCHEMA.COLUMNS
+        WHERE   table_schema ~* CleanTableSchema
+        AND     table_name   ~* CleanTableName
+        AND     column_name ~* 'Parent_.*Id';
+
+        -- find my Root Column from my parent.
+        SELECT  column_name
+        INTO    RootColName
+        FROM    INFORMATION_SCHEMA.COLUMNS
+        WHERE   table_schema ~* CleanTableSchema
+        AND     table_name   ~* CleanTableName
+        AND     column_name ~* 'Root_.*Id';
+
+        -- update the Target col list for inserting
+        AdditionalTargetCols := '"' ||ParentColName || '","' || RootColName || 
+        '","RowCreatedDtTm","RowDeleted","DataPipeLineTaskQueueId"';
+        
+        -- update source column list
         AdditionalSourceCols := '
-        , {} as "Parent_{}Id"
-        , {} AS "Root_{}Id"
+        , "ParentId" as "' ||ParentColName || '"
+        , "RootId" AS "' || RootColName || '"
         , CURRENT_TIMESTAMP AS "RowCreatedDtTm"
         , false as "RowDeleted"
         , ' || CAST(TaskQueueId as VARCHAR) || ' as "DataPipeLineTaskQueueId"';
@@ -100,10 +132,7 @@ BEGIN
         )
     FROM StageTableSchema.StageTableName AS ST
     WHERE DataPipeLineTaskQueueId = PreStageToStageTaskId
-    AND   NOT EXISTS (SELECT 1 FROM CleanTableSchema.CleanTableName AS C
-                      WHERE C.BusinessKeyColumn = ST.BusinessKeyColumn
-                      AND   C.EffectiveStartDate = ST.HistoryDate::date
-                      AND   C.EffectiveEndDate = '12-31-9999');
+    ;
 
     RAISE NOTICE 'SQL Code to Insert: %', sql_code;
     RETURN QUERY EXECUTE sql_code;

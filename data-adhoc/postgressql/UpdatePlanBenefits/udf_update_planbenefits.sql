@@ -119,6 +119,8 @@ BEGIN
     AND     stg."PlanBenefitID" < 0 -- Negative in here means new plans
     ;
 
+    PERFORM public.udf_Update_OtherBenefitColumns();
+
     -- Find count after update
     rcnt:=
         (

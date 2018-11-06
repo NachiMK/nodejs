@@ -72,12 +72,6 @@ BEGIN
         rcnt := 
         (
             SELECT   COUNT(*)
-                    --  stg."PlanBenefitID"
-                    -- ,stg."Year"
-                    -- ,pb."Year"
-                    -- ,stg."HiosPlanID"
-                    -- ,pb."HiosPlanID"
-                    -- ,pb."PlanBenefitID"
             FROM    public.vw_stage_planbenefits as stg
             INNER 
             JOIN    public."PlanBenefits" as pb ON  stg."Year"          = pb."Year"
@@ -85,6 +79,7 @@ BEGIN
                                                 AND stg."Benefit"       = pb."Benefit"
             WHERE   1 = 1
             AND     pb."PlanBenefitID" != stg."PlanBenefitID"
+            AND     stg."PlanBenefitID" > 0
         );
         raise notice 'PlanBenefit with incorrect PlanBenefitIDs, Fix these: %', rcnt;
 
@@ -140,6 +135,7 @@ BEGIN
             JOIN    public."PlanBenefits" as pb ON   pb."PlanBenefitID" = stg."PlanBenefitID"
                                                 AND  stg."Year" = pb."Year"
                                                 AND  stg."HiosPlanID" = pb."HiosPlanID"
+                                                AND  stg."PlanBenefitID" > 0
             WHERE    0 = 1
             OR (stg."Benefit" IS NULL AND pb."Benefit" is not null) OR (stg."Benefit" is not null AND pb."Benefit" IS NULL) OR (stg."Benefit" is not null AND pb."Benefit" is not null and stg."Benefit" != pb."Benefit")
             OR (stg."ServiceNotCovered" IS NULL AND pb."ServiceNotCovered" is not null) OR (stg."ServiceNotCovered" is not null AND pb."ServiceNotCovered" IS NULL) OR (stg."ServiceNotCovered" is not null AND pb."ServiceNotCovered" is not null and stg."ServiceNotCovered" != pb."ServiceNotCovered")
@@ -154,7 +150,35 @@ BEGIN
             OR (stg."IsGrouped" IS NULL AND pb."IsGrouped" is not null) OR (stg."IsGrouped" is not null AND pb."IsGrouped" IS NULL) OR (stg."IsGrouped" is not null AND pb."IsGrouped" is not null and stg."IsGrouped" != pb."IsGrouped")
             OR (stg."CopayAfterFirstVisits" IS NULL AND pb."CopayAfterFirstVisits" is not null) OR (stg."CopayAfterFirstVisits" is not null AND pb."CopayAfterFirstVisits" IS NULL) OR (stg."CopayAfterFirstVisits" is not null AND pb."CopayAfterFirstVisits" is not null and stg."CopayAfterFirstVisits" != pb."CopayAfterFirstVisits")
         );
-        raise notice 'Rows to Update: %', rcnt;
+        raise notice 'Existing Rows (by PlanBenefitID) to Update: %', rcnt;
+
+        -- -- rows that doesn't match at least one of the provided values
+        -- -- consider -1 as nulls in stage table.
+        rcnt :=
+        (
+            SELECT   --'rows that have at least one mismatching col' as scomments, count(*) as count_of_rows
+                    COUNT(*)
+            FROM     public.vw_stage_planbenefits as stg
+            INNER 
+            JOIN    public."PlanBenefits" as pb ON   pb."Benefit" = stg."Benefit"
+                                                AND  stg."PlanBenefitID" < 0
+                                                AND  stg."Year" = pb."Year"
+                                                AND  stg."HiosPlanID" = pb."HiosPlanID"
+            WHERE    0 = 1
+            OR (stg."Benefit" IS NULL AND pb."Benefit" is not null) OR (stg."Benefit" is not null AND pb."Benefit" IS NULL) OR (stg."Benefit" is not null AND pb."Benefit" is not null and stg."Benefit" != pb."Benefit")
+            OR (stg."ServiceNotCovered" IS NULL AND pb."ServiceNotCovered" is not null) OR (stg."ServiceNotCovered" is not null AND pb."ServiceNotCovered" IS NULL) OR (stg."ServiceNotCovered" is not null AND pb."ServiceNotCovered" is not null and stg."ServiceNotCovered" != pb."ServiceNotCovered")
+            OR (stg."AppliesToDeductible" IS NULL AND pb."AppliesToDeductible" is not null) OR (stg."AppliesToDeductible" is not null AND pb."AppliesToDeductible" IS NULL) OR (stg."AppliesToDeductible" is not null AND pb."AppliesToDeductible" is not null and stg."AppliesToDeductible" != pb."AppliesToDeductible")
+            OR (stg."Coinsurance" IS NULL AND pb."Coinsurance" is not null) OR (stg."Coinsurance" is not null AND pb."Coinsurance" IS NULL) OR (stg."Coinsurance" is not null AND pb."Coinsurance" is not null and stg."Coinsurance" != pb."Coinsurance")
+            OR (stg."CopayAmount" IS NULL AND pb."CopayAmount" is not null) OR (stg."CopayAmount" is not null AND pb."CopayAmount" IS NULL) OR (stg."CopayAmount" is not null AND pb."CopayAmount" is not null and stg."CopayAmount" != pb."CopayAmount")
+            OR (stg."CopayDayLimit" IS NULL AND pb."CopayDayLimit" is not null) OR (stg."CopayDayLimit" is not null AND pb."CopayDayLimit" IS NULL) OR (stg."CopayDayLimit" is not null AND pb."CopayDayLimit" is not null and stg."CopayDayLimit" != pb."CopayDayLimit")
+            OR (stg."CoinsuranceCopayOrder" IS NULL AND pb."CoinsuranceCopayOrder" is not null) OR (stg."CoinsuranceCopayOrder" is not null AND pb."CoinsuranceCopayOrder" IS NULL) OR (stg."CoinsuranceCopayOrder" is not null AND pb."CoinsuranceCopayOrder" is not null and stg."CoinsuranceCopayOrder" != pb."CoinsuranceCopayOrder")
+            OR (stg."MemberServicePaidCap" IS NULL AND pb."MemberServicePaidCap" is not null) OR (stg."MemberServicePaidCap" is not null AND pb."MemberServicePaidCap" IS NULL) OR (stg."MemberServicePaidCap" is not null AND pb."MemberServicePaidCap" is not null and stg."MemberServicePaidCap" != pb."MemberServicePaidCap")
+            OR (stg."CoverageVisitLimit" IS NULL AND pb."CoverageVisitLimit" is not null) OR (stg."CoverageVisitLimit" is not null AND pb."CoverageVisitLimit" IS NULL) OR (stg."CoverageVisitLimit" is not null AND pb."CoverageVisitLimit" is not null and stg."CoverageVisitLimit" != pb."CoverageVisitLimit")
+            OR (stg."FirstDollarVisits" IS NULL AND pb."FirstDollarVisits" is not null) OR (stg."FirstDollarVisits" is not null AND pb."FirstDollarVisits" IS NULL) OR (stg."FirstDollarVisits" is not null AND pb."FirstDollarVisits" is not null and stg."FirstDollarVisits" != pb."FirstDollarVisits")
+            OR (stg."IsGrouped" IS NULL AND pb."IsGrouped" is not null) OR (stg."IsGrouped" is not null AND pb."IsGrouped" IS NULL) OR (stg."IsGrouped" is not null AND pb."IsGrouped" is not null and stg."IsGrouped" != pb."IsGrouped")
+            OR (stg."CopayAfterFirstVisits" IS NULL AND pb."CopayAfterFirstVisits" is not null) OR (stg."CopayAfterFirstVisits" is not null AND pb."CopayAfterFirstVisits" IS NULL) OR (stg."CopayAfterFirstVisits" is not null AND pb."CopayAfterFirstVisits" is not null and stg."CopayAfterFirstVisits" != pb."CopayAfterFirstVisits")
+        );
+        raise notice 'Existing Rows (by Benefit) to Update: %', rcnt;
 
 END;
 $$;

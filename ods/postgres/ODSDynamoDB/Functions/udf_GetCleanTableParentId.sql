@@ -19,6 +19,7 @@ DECLARE
     CleanTableSchema VARCHAR(256);
     CleanTableName VARCHAR(256);
     CleanTableParentName VARCHAR(256);
+    RootTableName VARCHAR(256);
     PreStageToStageTaskId BIGINT;
     StgRowCount BIGINT DEFAULT -1;
     ParentCnt BIGINT DEFAULT -1;
@@ -31,6 +32,7 @@ BEGIN
           ,"CleanTableName"
           ,"CleanParentTableName"
           ,"PreStageToStageTaskId"
+          ,"RootTableName"
     INTO   StageTableSchema
           ,StageTableName
           ,StageTableParentName
@@ -38,6 +40,7 @@ BEGIN
           ,CleanTableName
           ,CleanTableParentName
           ,PreStageToStageTaskId
+          ,RootTableName
     FROM  public."udf_ParseMergeParams"(MergeParams);
 
     -- Get Stage Count
@@ -87,38 +90,51 @@ BEGIN
                                     FROM    pg_class pc
                                     INNER 
                                     JOIN    pg_namespace pr on pr.oid = pc.relnamespace
-                                    WHERE   relname     = '''|| CleanTableParentName || '''
-                                    AND     pr.nspname  = '''|| CleanTableSchema || '''
+                                    WHERE   relname     ~* '''|| CleanTableParentName || '''
+                                    AND     pr.nspname  ~* '''|| CleanTableSchema || '''
                                 )
             AND    i.indisprimary;';
         RAISE NOTICE 'SQL Query to get PK Column: %', sql_code;
         EXECUTE sql_code INTO ParentPKcol;
 
         -- get Root key of Parent
-        -- sql_code := '
-        --     SELECT a.attname as ParentRootCol
-        --     FROM   pg_index i
-        --     JOIN   pg_attribute a ON a.attrelid = i.indrelid
-        --                         AND a.attnum = ANY(i.indkey)
-        --     WHERE  i.indrelid = (
-        --                             SELECT  pc.oid
-        --                             FROM    pg_class pc
-        --                             INNER 
-        --                             JOIN    pg_namespace pr on pr.oid = pc.relnamespace
-        --                             WHERE   relname     = '''|| CleanTableParentName || '''
-        --                             AND     pr.nspname  = '''|| CleanTableSchema || '''
-        --                         )
-        --     AND    i.indisprimary;';
-        -- RAISE NOTICE 'SQL Query to get PK Column: %', sql_code;
-        -- EXECUTE sql_code INTO ParentRootCol;
+        IF RootTableName != '' AND RootTableName = ParentTableName THEN
+            RootColName := ParentPKcol;
+        ELSE 
+            sql_code := '
+                SELECT  column_name 
+                FROM    INFORMATION_SCHEMA.COLUMNS C
+                WHERE   C.table_schema ~* ''' || CleanTableSchema || '''
+                AND     C.table_name ~* ''' || CleanTableName || '''
+                AND     C.column_name ~ ''Root_.*Id''
+                AND     EXISTS 
+                        (
+                            SELECT  1
+                            FROM    INFORMATION_SCHEMA.COLUMNS AS R
+                            WHERE   R.table_schema = c.table_schema
+                            AND     R.table_name ~* ''' || RootTableName || '''
+                            AND     R.column_name ~* REPLACE(C.column_name, ''Root_'', '''')
+                        );';
+            RAISE NOTICE 'SQL Query to get Root Column: %', sql_code;
+            EXECUTE sql_code INTO RootColName;
+
+            IF RootColName ~* 'Root_Id' THEN
+                RootColName := ParentPKcol;
+            END IF;
+
+            IF RootColName IS NULL OR LENGTH(RootColName) = 0 THEN
+                RAISE EXCEPTION 'RootColName is null or empty. Please Check, Parent: %', CleanParentTableName;
+            END IF;
+        END IF;
 
         -- If row counts match then get rows
         FieldList := ' sc1."StgId", sp1."StgId" as "StgParentId"
                         ,cp1."'|| CAST(ParentPKcol AS VARCHAR) || '" as "ParentId"
-                    -- , sc1."ODS_Parent_Uri", sc1."ODS_Batch_Id", sc1."DataPipeLineTaskQueueId" ';
+                        ,cp1."'|| CAST(RootColName AS VARCHAR) || '" as "RootId" ';
         sql_code := REPLACE(sql_get_rows, '<FieldList>', FieldList);
     ELSE
-        sql_code := 'SELECT   sc1."StgId", CAST(-1 as BIGINT) as "StgParentId", CAST(-1 as BIGINT) as "ParentId" 
+        sql_code := 'SELECT   sc1."StgId", CAST(-1 as BIGINT) as "StgParentId"
+                     , CAST(-1 as BIGINT) as "ParentId" , CAST(-1 as BIGINT) as "RootId" 
                      FROM '|| StageTableSchema || '."' || StageTableName || '" sc1
                      WHERE    sc1."DataPipeLineTaskQueueId" = '|| CAST(PreStageToStageTaskId AS VARCHAR);
     END IF;
