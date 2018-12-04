@@ -364,13 +364,13 @@ export class ODSStageToClean {
         BusinessKeyName: '',
         RootTableName: lineageCols.RootParentTableName,
       },
-      PreStageToStageTaskId: this.PrevTaskId,
+      PreStageToStageTaskId: parseInt(this.PrevTaskId),
       TaskQueueId: this.DataPipeLineTask.DataPipeLineTaskQueueId,
     }
-    if (_.isEmpty(lineageCols.IsRoot)) {
+    if (lineageCols.IsRoot === true) {
       mergeParams.CleanTable.BusinessKeyName = this.BusinessKeyColName
     }
-    return mergeParams
+    return JSON.stringify(mergeParams, null, 2)
   }
 
   async dataMergeParams(mergeParams) {

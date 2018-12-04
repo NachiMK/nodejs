@@ -41,15 +41,15 @@ BEGIN
     )
     SELECT   "StageTableSchema"
             ,"StageTableName"
-            ,COALESCE("StageParentTableName", '''')
+            ,COALESCE("StageParentTableName", '''') as "ParentStgTableName"
             ,"CleanTblSchema"
             ,"CleanTblName"
-            ,COALESCE("CleanParentTblName", '''')
-            ,COALESCE("PKName", '''')
-            ,COALESCE("BizKeyName", '''')
-            ,COALESCE("RootTblName", '''')
-            ,CAST("PreStgToStgTaskId" as BIGINT)
-            ,CAST("TaskQId" as BIGINT)
+            ,COALESCE("CleanParentTblName", '''') as "CleanParentTableName"
+            ,COALESCE("PKName", '''') as "PrimaryKeyName"
+            ,COALESCE("BizKeyName", '''') as "BusinessKeyColumn"
+            ,COALESCE("RootTblName", '''') as "RootTableName"
+            ,CAST("PreStgToStgTaskId" as BIGINT) as "PreStageToStageTaskId"
+            ,CAST("TaskQId" as BIGINT) as "TaskQueueId"
             ,CASE WHEN LENGTH("RootTblName") > 0 THEN TRUE ELSE FALSE END AS "HasRoot"
             ,CASE WHEN LENGTH("CleanParentTblName") > 0 THEN TRUE ELSE FALSE END AS "HasParent"
     FROM    CTEParams;';

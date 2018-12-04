@@ -6,7 +6,7 @@ export async function DoTaskStageToClean(dataPipeLineTaskQueue) {
   const taskResp = {}
   if (dataPipeLineTaskQueue) {
     odsLogger.log('info', 'About to call Stage To Clean:', dataPipeLineTaskQueue)
-    const objStageToClean = new OdsStageToClean(dataPipeLineTaskQueue)
+    const objStageToClean = new ODSStageToClean(dataPipeLineTaskQueue)
     try {
       const stgResp = await objStageToClean.LoadData()
 

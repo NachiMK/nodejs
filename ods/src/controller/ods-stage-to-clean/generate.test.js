@@ -10,10 +10,10 @@ describe('ODSStageToClean - Unit Tests', () => {
     expect.assertions(2)
     const processStatusResp = await dataPipeLineTaskQueue.PickUpTask(true)
     expect(processStatusResp.Picked).toBeDefined()
-    const objPreStageToStage = new ODSStageToClean(dataPipeLineTaskQueue)
+    const objStageToClean = new ODSStageToClean(dataPipeLineTaskQueue)
     try {
       expect.assertions(1)
-      const stgResp = await objPreStageToStage.LoadData()
+      const stgResp = await objStageToClean.LoadData()
       expect(stgResp).toBeDefined()
       console.log(`stgResp: ${JSON.stringify(stgResp, null, 2)}`)
     } catch (err) {

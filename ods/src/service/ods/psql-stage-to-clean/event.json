@@ -1,0 +1,8 @@
+{
+    "DataPipeLineTaskQueueId": 112,
+    "TaskConfigName": "Stage to Clean",
+    "RunSequence": 2060,
+    "Status": "On Hold",
+    "TableName": "clients",
+    "LogLevel": "warn"
+}

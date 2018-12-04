@@ -22,6 +22,7 @@ SELECT   PS.table_schema as "TableSchema"
         ,PS.table_schema || '."' || PS.table_name || '"' as "FullTableName"
         ,'"' || PS.column_name || '"' AS "QuotedColumnName"
 FROM    INFORMATION_SCHEMA.COLUMNS PS
+WHERE   table_catalog = current_database()
 ;
 GRANT ALL PRIVILEGES on public."vwColumnDefinition" TO odsddb_role;
 GRANT SELECT on public."vwColumnDefinition" TO public;

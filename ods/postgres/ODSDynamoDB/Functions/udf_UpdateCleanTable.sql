@@ -44,10 +44,10 @@ BEGIN
     AND     CT."ColumnName" !~ 'DataPipeLineTaskQueueId'
     AND     ST."ColumnName" !~ 'Stg';
 
-    -- RAISE NOTICE 'Params:CleanTableSchema: %, StageTableSchema: %, CleanTable: %, StageTable: %, PrimaryKeyName: %, BusinessKeyColumn: %',
-    -- CleanTableSchema,StageTableSchema,CleanTable,StageTable,PrimaryKeyName,BusinessKeyColumn;
+    RAISE NOTICE 'Params:CleanTableSchema: %, StageTableSchema: %, CleanTable: %, StageTable: %, PrimaryKeyName: %, BusinessKeyColumn: %',
+    CleanTableSchema,StageTableSchema,CleanTable,StageTable,PrimaryKeyName,BusinessKeyColumn;
 
-    -- RAISE NOTICE 'Update Cols: %', Updatecols;
+    RAISE NOTICE 'Update Cols: %', Updatecols;
 
     sql_code := 'UPDATE ' || CleanTableSchema || '."'|| CleanTable ||'"
     SET     "EffectiveEndDate" = CASE WHEN CT."EffectiveStartDate"::DATE < stg."HistoryDate"::DATE
@@ -71,7 +71,7 @@ BEGIN
     RETURNING CT."StgId", CT."' || PrimaryKeyName || '" as "TableId";';
     RAISE NOTICE 'SQL Code to update %', sql_code;
 
-    -- sql_code := 'SELECT CAST(1 as bigint), CAST(1 as bigint)';
+    sql_code := 'SELECT CAST(1 as bigint), CAST(1 as bigint)';
     RETURN QUERY EXECUTE sql_code;
 
 END;

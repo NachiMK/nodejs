@@ -21,6 +21,13 @@ RETURNS BIGINT AS $$
     DECLARE BusinessKeyColumn VARCHAR(256) DEFAULT '';
     DECLARE RootTableName VARCHAR(256) DEFAULT '';
 
+    DECLARE UpdateCount BIGINT DEFAULT 0;
+    DECLARE InsertCount BIGINT DEFAULT 0;
+    DECLARE DeleteCount BIGINT DEFAULT 0;
+
+    DECLARE UpdatedIDs TEXT DEFAULT '';
+    DECLARE InsertedIDs TEXT DEFAULT '';
+
     DECLARE PreStageToStageTaskId BIGINT DEFAULT -1;
     DECLARE TaskQueueId BIGINT DEFAULT -1;
 BEGIN
@@ -36,12 +43,12 @@ BEGIN
                 Schema: 'public',
                 TableName: 'clients_clients',
                 ParentTableName: '',
-                PrimaryKeyName: '',
-                BusinessKeyColumn: '',
+                PrimaryKeyName: 'clientsId',
+                BusinessKeyColumn: 'Rowkey',
                 RootTableName: ''
             },
-            PreStageToStageTaskId: 1,
-            TaskQueueId: 2
+            PreStageToStageTaskId: 111,
+            TaskQueueId: 112
         }
         How it works?
         - Json Schema validation is done
@@ -69,17 +76,17 @@ BEGIN
     /*
         -- Parameters
     */
-    SELECT  "StageTableSchema"
-            ,"StageTableName"
-            ,"StageParentTableName"
+    SELECT  "StgTableSchema"
+            ,"StgTableName"
+            ,"ParentStgTableName"
             ,"CleanTableSchema"
             ,"CleanTableName"
             ,"CleanParentTableName"
             ,"PrimaryKeyName"
             ,"BusinessKeyColumn"
             ,"RootTableName"
-            ,CAST("PreStageToStageTaskId" as INT)
-            ,CAST("TaskQueueId" AS INT)
+            ,"PreStageToStageTaskId"
+            ,"TaskQueueId"
     INTO     StgTableSchema
             ,StgTableName
             ,ParentStgTableName
@@ -118,9 +125,10 @@ BEGIN
     IF BusinessKeyColumn is not null THEN
         -- we dont have to find parent, because this is the parent
         -- UPDATE existing rows
-        SELECT  *
+        SELECT  COUNT(*) AS Cnt, STRING_AGG("TableId"::TEXT, ',')
+        INTO    UpdateCount, UpdatedIDs
         FROM "udf_UpdateCleanTable"(
-            StgTableSchema
+             StgTableSchema
             ,StgTableName
             ,CleanTableSchema
             ,CleanTableName
@@ -131,100 +139,18 @@ BEGIN
 
         -- If I am updating a row, then my child rows may get invalid
         -- Remove Child rows. Later on it will get add by its own process
+        -- PERFORM public."udf_RemoveRowsInChild"(CleanTableSchema
+        --                                       ,CleanParentTableName
+        --                                       ,PrimaryKeyName
+        --                                       ,UpdatedIDs);
+    END IF;
 
-        -- Add new rows
-    ELSE
-        /*
-            StgId   ParentId
-            ----------------
-        */
-        SELECT public."udf_GetCleanTableParentId"(MergeParams);
+    -- Add new rows
+    SELECT  COUNT(*) AS Cnt, STRING_AGG("TableId"::TEXT, ',')
+    INTO    InsertCount, InsertedIDs
+    FROM    public."udf_InsertCleanTable"(MergeParams);
 
-    END IF
-    
-    -- /*
-    --     Comma Separated List of columns
-    -- */
-    -- SELECT public."udf_GetMergeColumns"(StgTableName, CleanTableName)
-
-    -- -- statement to add DATA
-    -- WITH CTERawSchema
-    -- AS
-    -- (
-    --     SELECT   PS."Position"
-    --             ,PS."ColumnName"
-    --             ,PS."IsNullable"
-    --             ,PS."DataType"
-    --             ,PS."DataLength"
-    --             ,PS."precision"
-    --             ,PS."scale"
-    --             ,PS."DataTypeWithLen"
-    --             ,PS.udt_name
-    --     FROM    public."vwColumnDefinition" as PS
-    --     WHERE   PS."TableSchema" = PreStageSchema
-    --     AND     PS."TableName" = PreStageTable
-    -- ),
-    -- CTEStageSchema
-    -- AS
-    -- (
-    --     SELECT   PS."Position"
-    --             ,PS."ColumnName"
-    --             ,PS."IsNullable"
-    --             ,PS."DataType"
-    --             ,PS."DataLength"
-    --             ,PS."precision"
-    --             ,PS."scale"
-    --             ,PS."DataTypeWithLen"
-    --             ,PS.udt_name
-    --     FROM    public."vwColumnDefinition" as PS
-    --     WHERE   PS."TableSchema" = StgTableSchema
-    --     AND     PS."TableName" = StgTableName
-    -- ),
-    -- CTEColList
-    -- AS
-    -- (
-    --     SELECT  
-    --         CASE WHEN R."ColumnName" IS NOT NULL AND C."CastFunction" IS NOT NULL
-    --             THEN  'public."' || C."CastFunction" || '"(R."' || R."ColumnName" || '") as "' || S."ColumnName" || '"'
-    --         WHEN R."ColumnName" IS NOT NULL AND R."DataType" = S."DataType" 
-    --             THEN 'R."' || R."ColumnName" || '" as "' || S."ColumnName" || '"'
-    --         ELSE
-    --             CASE WHEN (s."ColumnName" ~ 'StgRowCreatedDtTm') 
-    --                     THEN 'CURRENT_TIMESTAMP AS "' || S."ColumnName" || '"'
-    --                 WHEN (s."ColumnName" ~ 'StgRowDeleted')
-    --                     THEN 'false as "' || S."ColumnName" || '"'
-    --                 WHEN (s."ColumnName" ~ 'DataPipeLineTaskQueueId')
-    --                     THEN  CAST(DataPipeLineTaskQueueId as VARCHAR) || ' as "' || S."ColumnName" || '"'
-    --                 ELSE 'null as "' || S."ColumnName" || '"'
-    --             END
-    --         END as "SelectColumns"
-    --         ,'"' || S."ColumnName" || '"' as "InsertColumns"
-    --     FROM    CTEStageSchema S
-    --     LEFT
-    --     JOIN    CTERawSchema  R ON S."ColumnName" = R."ColumnName"
-    --     LEFT
-    --     JOIN    public."CastFunctionMapping" C  ON  UPPER(C."SourceType") = UPPER(R."DataType")
-    --                                             AND UPPER(C."TargetType") = UPPER(S."DataType")
-    --                                             AND S."DataType" != R."DataType"
-    --     WHERE   (s."ColumnName" !~ 'StgId')
-    --     ORDER BY  S."Position"
-    -- )
-    -- SELECT  
-    --         'INSERT INTO '|| StgTableSchema ||'."'|| StgTableName ||'" ' 
-    --         || E'\n' || '(' || string_agg("InsertColumns"::text, E'\n' || ',') || ')'
-    --         || E'\n' || ' SELECT ' || E'\n' || string_agg("SelectColumns"::text, E'\n' || ',')
-    --         || E'\n' || ' FROM '|| PreStageSchema ||'."'|| PreStageTable ||'" AS R;'
-    -- INTO    dsql    
-    -- FROM    CTEColList
-    -- ;
-    -- RAISE NOTICE 'Insert Statement PreStage %s to Stage:%, %', PreStageTable, StgTableSchema, dsql;
-    -- EXECUTE dsql;
-
-    -- dsql := 'SELECT COUNT(*) FROM ' || StgTableSchema || '.' || '"' || StgTableName 
-    --         || '" WHERE "DataPipeLineTaskQueueId" = '
-    --         || CAST(DataPipeLineTaskQueueId AS VARCHAR) || ';';
-    -- RAISE NOTICE 'Count after Stage table update: %', dsql;
-    -- EXECUTE dsql INTO StageCount;
+    StageCount := InsertCount + UpdateCount + DeleteCount;
 
     RETURN StageCount;
 END;
@@ -243,10 +169,10 @@ GRANT ALL on FUNCTION public."udf_MergeStageToClean"(jsonb) TO public;
             "Schema": "public",
             "TableName": "clients_clients",
             "ParentTableName": "",
-            "PrimaryKeyName": "",
-            "BusinessKeyColumn": "",
+            "PrimaryKeyName": "clientsId",
+            "BusinessKeyColumn": "Rowkey",
             "RootTableName": ""
           },
-          "PreStageToStageTaskId": 1,
-          "TaskQueueId": 2}'::jsonb)
+          "PreStageToStageTaskId": 111,
+          "TaskQueueId": 112}'::jsonb)
 */

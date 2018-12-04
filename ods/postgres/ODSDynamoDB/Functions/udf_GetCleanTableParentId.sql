@@ -13,6 +13,7 @@ DECLARE
     sql_get_rows TEXT;
     FieldList VARCHAR(500);
     ParentPKcol VARCHAR(256);
+    RootColName VARCHAR(256);
     StageTableSchema VARCHAR(256);
     StageTableName VARCHAR(256);
     StageTableParentName VARCHAR(256);
@@ -21,6 +22,8 @@ DECLARE
     CleanTableParentName VARCHAR(256);
     RootTableName VARCHAR(256);
     PreStageToStageTaskId BIGINT;
+    TaskQueueId BIGINT;
+
     StgRowCount BIGINT DEFAULT -1;
     ParentCnt BIGINT DEFAULT -1;
 BEGIN
@@ -32,6 +35,7 @@ BEGIN
           ,"CleanTableName"
           ,"CleanParentTableName"
           ,"PreStageToStageTaskId"
+          ,"TaskQueueId"
           ,"RootTableName"
     INTO   StageTableSchema
           ,StageTableName
@@ -40,6 +44,7 @@ BEGIN
           ,CleanTableName
           ,CleanTableParentName
           ,PreStageToStageTaskId
+          ,TaskQueueId
           ,RootTableName
     FROM  public."udf_ParseMergeParams"(MergeParams);
 
@@ -65,7 +70,7 @@ BEGIN
                                                             AND  sc1."ODS_Batch_Id" = sp1."ODS_Batch_Id"
                                                             AND  sc1."DataPipeLineTaskQueueId" = sp1."DataPipeLineTaskQueueId"
         INNER
-        JOIN    '|| CleanTableSchema || '."' || CleanTableParentName || '" cp1 ON cp1."DataPipeLineTaskQueueId" = sp1."DataPipeLineTaskQueueId"
+        JOIN    '|| CleanTableSchema || '."' || CleanTableParentName || '" cp1 ON cp1."DataPipeLineTaskQueueId" = '|| CAST(TaskQueueId AS VARCHAR) || '
                                                             AND cp1."StgId" = sp1."StgId"
         WHERE   sc1."DataPipeLineTaskQueueId" = '|| CAST(PreStageToStageTaskId AS VARCHAR) || '
         AND     cp1."RowDeleted" = false;';
@@ -92,13 +97,14 @@ BEGIN
                                     JOIN    pg_namespace pr on pr.oid = pc.relnamespace
                                     WHERE   relname     ~* '''|| CleanTableParentName || '''
                                     AND     pr.nspname  ~* '''|| CleanTableSchema || '''
+                                    AND     relkind = ''r''
                                 )
             AND    i.indisprimary;';
         RAISE NOTICE 'SQL Query to get PK Column: %', sql_code;
         EXECUTE sql_code INTO ParentPKcol;
 
         -- get Root key of Parent
-        IF RootTableName != '' AND RootTableName = ParentTableName THEN
+        IF RootTableName != '' AND RootTableName = CleanTableParentName THEN
             RootColName := ParentPKcol;
         ELSE 
             sql_code := '
@@ -163,5 +169,5 @@ GRANT ALL on FUNCTION public."udf_GetCleanTableParentId"(jsonb) TO public;
             "RootTableName": "clients_clients"
           },
           "PreStageToStageTaskId": 111,
-          "TaskQueueId": 2}'::jsonb)
+          "TaskQueueId": 112}'::jsonb)
 */

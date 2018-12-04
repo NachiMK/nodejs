@@ -2,6 +2,12 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "/Users/Nachi/Documents/work/git/health-plan-service"
+		},
+		{
+			"path": "/Users/Nachi/Documents/work/git/axene-service"
 		}
 	],
 	"settings": {}
