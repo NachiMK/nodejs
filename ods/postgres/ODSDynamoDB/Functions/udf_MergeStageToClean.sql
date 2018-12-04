@@ -122,10 +122,10 @@ BEGIN
     PERFORM public."udf_IndexCleanTable"(CleanTableSchema, CleanTableName, BusinessKeyColumn);
     PERFORM public."udf_IndexCleanTable"(CleanTableSchema, CleanParentTableName, BusinessKeyColumn);
 
-    IF BusinessKeyColumn is not null THEN
+    IF BusinessKeyColumn IS NOT NULL AND LENGTH(BusinessKeyColumn) > 0 THEN
         -- we dont have to find parent, because this is the parent
         -- UPDATE existing rows
-        SELECT  COUNT(*) AS Cnt, STRING_AGG("TableId"::TEXT, ',')
+        SELECT  COUNT(*) AS Cnt, STRING_AGG("TableId"::VARCHAR, ',')
         INTO    UpdateCount, UpdatedIDs
         FROM "udf_UpdateCleanTable"(
              StgTableSchema
@@ -139,10 +139,10 @@ BEGIN
 
         -- If I am updating a row, then my child rows may get invalid
         -- Remove Child rows. Later on it will get add by its own process
-        -- PERFORM public."udf_RemoveRowsInChild"(CleanTableSchema
-        --                                       ,CleanParentTableName
-        --                                       ,PrimaryKeyName
-        --                                       ,UpdatedIDs);
+        PERFORM public."udf_RemoveRowsInChild"(CleanTableSchema
+                                              ,CleanTableName
+                                              ,PrimaryKeyName
+                                              ,UpdatedIDs);
     END IF;
 
     -- Add new rows

@@ -125,6 +125,7 @@ export class ODSStageToClean {
             [CleanTableNameEnum]: `${ParentPrefix}${tblname}`,
             S3OutputPrefix: `${s3Prefix}${filtered[item]}-db`,
             StageRowCount: filtered[`${fileCommonKey}.${RowCntEnum}`],
+            CleanTableRowCount: -1,
           }
         }
       })
@@ -139,7 +140,7 @@ export class ODSStageToClean {
       status: {
         message: 'processing',
       },
-      TaskAttributes: {},
+      TaskQueueAttributes: {},
       error: {},
     }
     try {
@@ -170,7 +171,10 @@ export class ODSStageToClean {
         // retTables.push(retObj)
       }
 
-      _.forEach(tables, async (table, key) => {
+      const sorted_tables = _.sortBy(tables, ['Index'])
+      for (let index = 0; index < sorted_tables.length; ) {
+        const table = sorted_tables[index]
+        index += 1
         odsLogger.log('info', `Merging Stage to clean table: ${table}`)
         // stage has some rows
         if (table['LoadCleanTable'] === 'yes') {
@@ -182,14 +186,16 @@ export class ODSStageToClean {
             table['CleanTableRowCount'] = loadResp.RowCount
           }
         }
-      })
+      }
 
       // update attributes
       _.forIn(tables, (table, key) => {
         _.forIn(table, (val, subkey) => {
-          output.TaskAttributes[`${key}.${subkey}`] = val
+          output.TaskQueueAttributes[`${key}.${subkey}`] = val
         })
       })
+
+      output.status.message = 'success'
       return output
     } catch (err) {
       output.error = new Error(`Error LoadData stage to clean: ${err.message}`)
@@ -340,8 +346,10 @@ export class ODSStageToClean {
     try {
       const mergeParams = this.getMergeParams(table, tableList)
       output.RowCount = await this.dataMergeParams(mergeParams)
+      output.status = 'success'
     } catch (err) {
       const errmsg = `Error in MergeStageToClean Table: ${tableName}, ${err.message}`
+      output.status = 'error'
       odsLogger.log('error', errmsg)
       throw new Error(errmsg)
     }
@@ -361,14 +369,14 @@ export class ODSStageToClean {
         TableName: table.CleanTableName,
         ParentTableName: lineageCols.CleanParentTableName,
         PrimaryKeyName: lineageCols.PrimaryKeyName,
-        BusinessKeyName: '',
+        BusinessKeyColumn: '',
         RootTableName: lineageCols.RootParentTableName,
       },
       PreStageToStageTaskId: parseInt(this.PrevTaskId),
       TaskQueueId: this.DataPipeLineTask.DataPipeLineTaskQueueId,
     }
     if (lineageCols.IsRoot === true) {
-      mergeParams.CleanTable.BusinessKeyName = this.BusinessKeyColName
+      mergeParams.CleanTable.BusinessKeyColumn = this.BusinessKeyColName
     }
     return JSON.stringify(mergeParams, null, 2)
   }
@@ -382,7 +390,7 @@ export class ODSStageToClean {
         BatchKey: this.DataPipeLineTask.DataPipeLineTaskQueueId,
       }
       const dbResp = await executeQueryRS(qParams)
-      if (!dbResp.completed || !_.isUndefined(dbResp.error)) {
+      if (!dbResp.completed || !_.isEmpty(dbResp.error)) {
         throw new Error(`Error merging to Table: ${dbResp.error.message}`)
       } else {
         return dbResp.rowCount

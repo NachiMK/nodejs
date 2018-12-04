@@ -2,7 +2,7 @@ DROP FUNCTION IF EXISTS public."udf_RemoveRowsInChild"(VARCHAR, VARCHAR, VARCHAR
 CREATE OR REPLACE FUNCTION public."udf_RemoveRowsInChild"(CleanTableSchema VARCHAR(256)
                                                         ,CleanParentTableName VARCHAR(256)
                                                         ,PrimaryKeyName VARCHAR(256)
-                                                        ,IDsToRemove TEXT)
+                                                        ,IDsToRemove TEXT DEFAULT '')
 RETURNS VOID AS $$
     DECLARE dsql TEXT DEFAULT '';
     DECLARE UpdatedIdsToday TEXT DEFAULT '';
@@ -11,12 +11,12 @@ BEGIN
 
     -- Find only Rows that were updated today
     dsql = '
-    SELECT  STRING_AGG("' || PrimaryKeyName || '", '','')
+    SELECT  STRING_AGG(CAST("' || PrimaryKeyName || '" AS VARCHAR), '','')
     FROM    ' || CleanTableSchema || '."' || CleanParentTableName || '" AS CT
     WHERE   "EffectiveEndDate" = ''9999-12-31''::DATE
     AND     EXISTS (SELECT TableId 
-                    FROM regexp_split_to_table(''' || IDsToRemove || ''', '','') AS TableId 
-                    WHERE TableId = CT."'||PrimaryKeyName||'")
+                    FROM regexp_split_to_table(''' || COALESCE(IDsToRemove, '') || ''', '','') AS TableId 
+                    WHERE CAST(TableId as BIGINT) = CT."'||PrimaryKeyName||'")
     ';
     EXECUTE dsql INTO UpdatedIdsToday;
 
@@ -35,6 +35,7 @@ BEGIN
             WHERE   P."TableName" = CleanParentTableName
             AND     P."ColumnName" = PrimaryKeyName
         LOOP
+            RAISE NOTICE 'Script to Delete: %', DeleteScript;
             EXECUTE DeleteScript;
         END LOOP;
     END IF;
