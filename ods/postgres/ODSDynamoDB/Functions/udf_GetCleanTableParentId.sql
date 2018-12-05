@@ -95,8 +95,8 @@ BEGIN
                                     FROM    pg_class pc
                                     INNER 
                                     JOIN    pg_namespace pr on pr.oid = pc.relnamespace
-                                    WHERE   relname     ~* '''|| CleanTableParentName || '''
-                                    AND     pr.nspname  ~* '''|| CleanTableSchema || '''
+                                    WHERE   relname     ~ '''|| CleanTableParentName || '''
+                                    AND     pr.nspname  ~ '''|| CleanTableSchema || '''
                                     AND     relkind = ''r''
                                 )
             AND    i.indisprimary;';
@@ -110,16 +110,16 @@ BEGIN
             sql_code := '
                 SELECT  column_name 
                 FROM    INFORMATION_SCHEMA.COLUMNS C
-                WHERE   C.table_schema ~* ''' || CleanTableSchema || '''
-                AND     C.table_name ~* ''' || CleanTableName || '''
+                WHERE   C.table_schema ~ ''' || CleanTableSchema || '''
+                AND     C.table_name ~ ''' || CleanTableName || '''
                 AND     C.column_name ~ ''Root_.*Id''
                 AND     EXISTS 
                         (
                             SELECT  1
                             FROM    INFORMATION_SCHEMA.COLUMNS AS R
                             WHERE   R.table_schema = c.table_schema
-                            AND     R.table_name ~* ''' || RootTableName || '''
-                            AND     R.column_name ~* REPLACE(C.column_name, ''Root_'', '''')
+                            AND     R.table_name ~ ''' || RootTableName || '''
+                            AND     R.column_name ~ REPLACE(C.column_name, ''Root_'', '''')
                         );';
             RAISE NOTICE 'SQL Query to get Root Column: %', sql_code;
             EXECUTE sql_code INTO RootColName;

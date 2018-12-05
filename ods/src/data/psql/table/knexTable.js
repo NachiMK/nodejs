@@ -386,7 +386,12 @@ function getTableDefinitionQuery(tableName, tableschema = 'public') {
                         ,CASE WHEN is_nullable = 'YES' THEN true ELSE false END as "IsNullable"
                         ,lower(data_type) as "DataType"
                         ,COALESCE(character_maximum_length, -1) as "DataLength"
-                        ,COALESCE(numeric_precision, -1) as "precision"
+                        ,CASE WHEN lower(data_type) IN ('smallint', 'int', 'integer'
+                                                      , 'bigint', 'smallserial'
+                                                      , 'serial', 'bigserial')
+                              THEN -1 
+                              ELSE COALESCE(numeric_precision, -1) 
+                        END as "precision"
                         ,COALESCE(numeric_scale, -1) as "scale"
                         ,COALESCE(datetime_precision, -1)  as "datetimePrecision"
                     FROM    INFORMATION_SCHEMA.COLUMNS I2

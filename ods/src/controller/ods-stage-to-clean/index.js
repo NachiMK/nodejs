@@ -116,7 +116,7 @@ export class ODSStageToClean {
         }
         if (AttributeName.match(regExJ)) {
           const [idx] = filtered[item].split('-')
-          const tblname = filtered[item].replace(/\d+-/gi, '')
+          const tblname = filtered[item].replace(/\d+-/gi, '').replace('-', '_')
           retCollection[fileCommonKey] = {
             Index: parseInt(idx),
             [StageTblEnum]: filtered[`${fileCommonKey}.${StageTblEnum}`],
@@ -125,7 +125,6 @@ export class ODSStageToClean {
             [CleanTableNameEnum]: `${ParentPrefix}${tblname}`,
             S3OutputPrefix: `${s3Prefix}${filtered[item]}-db`,
             StageRowCount: filtered[`${fileCommonKey}.${RowCntEnum}`],
-            CleanTableRowCount: -1,
           }
         }
       })
@@ -183,6 +182,7 @@ export class ODSStageToClean {
           // Return count
           const loadResp = await this.MergeStageToClean(table, tables)
           if (loadResp && loadResp.status === 'success') {
+            // @ts-ignore
             table['CleanTableRowCount'] = loadResp.RowCount
           }
         }
@@ -275,15 +275,15 @@ export class ODSStageToClean {
     const [...lineagePath] = jsonSchemaPath.split('.')
     const tbl =
       Array.isArray(lineagePath) && lineagePath.length > 0
-        ? lineagePath[lineagePath.length - 1]
+        ? lineagePath[lineagePath.length - 1].replace('-', '_')
         : ''
     let parentid = ''
     let rootid = ''
     let IsRootTable = true
     // find parent
     if (!_.isUndefined(lineagePath) && _.size(lineagePath) > 1) {
-      parentid = lineagePath[lineagePath.length - 2]
-      rootid = lineagePath[0]
+      parentid = lineagePath[lineagePath.length - 2].replace('-', '_')
+      rootid = lineagePath[0].replace('-', '_')
       IsRootTable = false
     }
     output.TableName = tbl
@@ -300,8 +300,12 @@ export class ODSStageToClean {
           return false
         }
       })
-      output.CleanParentTableName = !_.isUndefined(objParent) ? objParent[CleanTableNameEnum] : ''
-      output.StageParentTableName = !_.isUndefined(objParent) ? objParent[StageTblEnum] : ''
+      output.CleanParentTableName = !_.isUndefined(objParent)
+        ? objParent[CleanTableNameEnum].replace('-', '_')
+        : ''
+      output.StageParentTableName = !_.isUndefined(objParent)
+        ? objParent[StageTblEnum].replace('-', '_')
+        : ''
       // find my root table
       const rootPath = lineagePath[0]
       const objRoot = _.find(tables, (val) => {
@@ -311,7 +315,9 @@ export class ODSStageToClean {
           return false
         }
       })
-      output.RootParentTableName = !_.isUndefined(objRoot) ? objRoot[CleanTableNameEnum] : ''
+      output.RootParentTableName = !_.isUndefined(objRoot)
+        ? objRoot[CleanTableNameEnum].replace('-', '_')
+        : ''
     } else {
       output.IsRoot = true
     }

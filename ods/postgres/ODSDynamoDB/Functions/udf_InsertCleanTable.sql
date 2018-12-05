@@ -97,17 +97,17 @@ BEGIN
         SELECT  column_name
         INTO    ParentColName
         FROM    INFORMATION_SCHEMA.COLUMNS
-        WHERE   table_schema ~* CleanTableSchema
-        AND     table_name   ~* CleanTableName
-        AND     column_name ~* 'Parent_.*Id';
+        WHERE   table_schema ~ CleanTableSchema
+        AND     table_name   ~ CleanTableName
+        AND     column_name ~ 'Parent_.*Id';
 
         -- find my Root Column from my parent.
         SELECT  column_name
         INTO    RootColName
         FROM    INFORMATION_SCHEMA.COLUMNS
-        WHERE   table_schema ~* CleanTableSchema
-        AND     table_name   ~* CleanTableName
-        AND     column_name ~* 'Root_.*Id';
+        WHERE   table_schema ~ CleanTableSchema
+        AND     table_name   ~ CleanTableName
+        AND     column_name ~ 'Root_.*Id';
 
         -- update the Target col list for inserting
         AdditionalTargetCols := ', "' ||ParentColName || '","' || RootColName || 

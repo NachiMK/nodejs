@@ -78,7 +78,7 @@ export class OdsPreStageToStage {
         }
         if (AttributeName.match(regExJ)) {
           const [idx] = filtered[item].split('-')
-          const tblname = filtered[item].replace(/\d+-/gi, '')
+          const tblname = filtered[item].replace(/\d+-/gi, '').replace('-', '_')
           retCollection[fileCommonKey] = {
             [JsonObjectNameEnum]: filtered[item],
             [StageTablePrefix]: `${stgParentPrefix}${tblname}`,
@@ -135,9 +135,7 @@ export class OdsPreStageToStage {
       const tableResults = []
       for (const item of Object.keys(tables)) {
         const table = tables[item]
-        retResp.TaskQueueAttributes[`${item}.StageTableName`] = `${tableSchema}."${
-          table.StageTablePrefix
-        }"`
+        retResp.TaskQueueAttributes[`${item}.StageTableName`] = `${table.StageTablePrefix}`
         retResp.TaskQueueAttributes[`${item}.${JsonSchemaPathPropName}`] =
           table[JsonSchemaPathPropName]
         const tblDiff = await this.GetTableDiffScript(table, tableSchema)
