@@ -15,6 +15,7 @@ import InvalidParameterError from '../../../../modules/ODSErrors/InvalidParamete
 // import ODSError from '../../../../modules/ODSErrors/ODSError';
 
 import ODSLogger from '../../../../modules/log/ODSLogger'
+import { invokeLambda } from '../../../../modules/aws-lambda/invoke-lambda'
 
 // dependencies
 const _ = require('lodash')
@@ -111,6 +112,10 @@ export const handler = async (event) => {
   }
 
   ODSLogger.log('info', 'Completed Saving to S3, savestatus:%j', saveStatus)
+
+  // invoking additional lambda if needed
+  RunJsonToSQLProcess(tableName)
+
   return saveStatus
 }
 
@@ -136,6 +141,41 @@ function SaveDataOnDBFailure(params) {
         ODSLogger.log('error', `DB Tracking failed and Error saving Event to S3 file.${res}`)
       )
   } catch (err) {
-    ODSLogger.log('error', `DB Tracking failed and Error saving Event to S3 file.${err}`)
+    ODSLogger.log('error', `DB Tracking failed and Error saving Event to S3 file.${err.message}`)
   }
+}
+
+function RunJsonToSQLProcess(tableName) {
+  const stg = process.env.STAGE
+  const jsonToSQLLambda = process.env.JsonToPSQLLambda || 'json-to-psql'
+  const invoke = process.env.InvokeJsonToSQL
+
+  if (_.isUndefined(invoke) || _.isEmpty(invoke) || invoke !== true) {
+    ODSLogger.log('info', `NOT INVOKED. Lambda Json to PSQL was not invoked.`)
+    return
+  }
+  const lambdaParams = {
+    FunctionName: `ods-service-${stg}-${jsonToSQLLambda}`,
+  }
+  const payload = {
+    TableName: `${tableName}`,
+  }
+  ODSLogger.log(
+    'info',
+    `Invoking Lambda: ${jsonToSQLLambda} with params: ${JSON.stringify(lambdaParams, null, 2)}`
+  )
+  invokeLambda(lambdaParams, payload)
+    .then((resp) => {
+      ODSLogger.log(
+        'info',
+        `Invoking Lambda: ${jsonToSQLLambda} response: ${JSON.stringify(resp, null, 2)}`
+      )
+      return
+    })
+    .catch((err) => {
+      const retErr = new Error(`Error calling JsonToSQLLambda.${err.message}`)
+      ODSLogger.log('error', retErr.message)
+      throw retErr
+    })
+  ODSLogger.log('info', `Invoked Lambda: ${jsonToSQLLambda}`)
 }

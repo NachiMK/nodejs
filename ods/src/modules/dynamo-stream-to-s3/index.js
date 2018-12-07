@@ -189,8 +189,19 @@ function getRowKey(item) {
       retVal = item.Id[Object.keys(item.Id)[0]].toString()
       console.log('id from object', JSON.stringify(retVal))
     } else {
-      retVal = uuidv4()
-      console.log('uuid', JSON.stringify(retVal))
+      // some tables have a key that is named *PublicKey/*Name, so for those tables
+      // get the value of those keys as the row key
+      const publicKeyAttributes = Object.keys(item).filter(
+        (keyname) => keyname.match(/PublicKey$/gi) || keyname.match(/Name$/gi)
+      )
+      if (!_.isUndefined(publicKeyAttributes) && publicKeyAttributes.length > 0) {
+        const idColName = publicKeyAttributes[0]
+        retVal = item[idColName][Object.keys(item[idColName])[0]].toString()
+        console.log('PublicKey/Name', JSON.stringify(retVal))
+      } else {
+        retVal = uuidv4()
+        console.log('uuid', JSON.stringify(retVal))
+      }
     }
   } catch (err) {
     console.log(`Error in Finding "Id" column for Object:.${JSON.stringify(item, null, 2)}`)

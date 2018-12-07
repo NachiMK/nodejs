@@ -1,3 +1,5 @@
+import { isArray } from 'util'
+
 const delay = require('delay')
 const AWS = require('aws-sdk')
 const sleep = require('sleep')
@@ -72,6 +74,7 @@ export const getTableInfo = async (tablename) => {
     GlobalSecondaryIndexesCount: 0,
     ItemCount: 0,
     KeySchemaCount: 0,
+    KeySchema: '',
     LocalSecondaryIndexesCount: 0,
     LatestStreamArn: '',
     LatestStreamLabel: '',
@@ -95,6 +98,13 @@ export const getTableInfo = async (tablename) => {
       retTblInfo.AttributeCount = tbl.AttributeDefinitions.length
       retTblInfo.ItemCount = tbl.ItemCount
       retTblInfo.KeySchemaCount = tbl.KeySchema.length
+      const arrOfKeys = tbl.KeySchema.map((item) => {
+        return item.AttributeName
+      })
+      retTblInfo.KeySchema =
+        retTblInfo.KeySchemaCount > 0 && (isArray(arrOfKeys) && arrOfKeys.length > 0)
+          ? arrOfKeys.join(',')
+          : 'NOKEYS'
       retTblInfo.LatestStreamArn = tbl.LatestStreamArn
       retTblInfo.LatestStreamLabel = tbl.LatestStreamLabel
       retTblInfo.TableArn = tbl.TableArn

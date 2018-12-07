@@ -18,7 +18,6 @@ export const FallBackTypeEnum = {
 }
 
 /**
- * @enum DataTypeTransferEnum
  * @description : This enum defines all supported postgres
  * data types, and which type can be converted to what higer types
  * If higher types are supported and needs some minimum length
