@@ -72,7 +72,7 @@ export async function JsonToPSQL(event = {}) {
         if (resp && resp.Status && resp.Status.toLowerCase() === 'success') {
           // Mark Next step as Ready.
           if (PendingTasks.length > 0) {
-            await PendingTasks[0].updateTaskStatus(TaskStatusEnum.Ready.name, undefined, undefined)
+            await PendingTasks[0].updateTaskStatus(TaskStatusEnum.Ready.name, undefined)
           }
         } else {
           // quit

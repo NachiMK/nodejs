@@ -68,21 +68,21 @@ export class DataPipeLineTaskQueue {
       // refresh attributes if needed
       if (RefreshAttributes === true) await this.loadAttributes()
       // Update task as picked up
-      await this.updateTaskStatus(TaskStatusEnum.Processing.name, undefined, undefined)
+      await this.updateTaskStatus(TaskStatusEnum.Processing.name, undefined)
       processStatusResp.NewStatus = this.TaskStatus
       processStatusResp.Picked = true
     }
     return processStatusResp
   }
 
-  async updateTaskStatus(status, err = {}, attributes = {}) {
-    // do something
-    this.TaskQueueAttributes = attributes
+  async updateTaskStatus(status, err = {}) {
+    // Seems redundant, because the caller sends this from the same attribute
+    // this.TaskQueueAttributes = attributes
     const updateparams = {
       Status: status,
       Error: err,
     }
-    Object.assign(updateparams, attributes)
+    Object.assign(updateparams, this.TaskQueueAttributes || {})
     await dataUpdatePipeLineTaskStatus(this.DataPipeLineTaskQueueId, updateparams)
     // if successfully updated then update my status.
     this._taskStatus = status

@@ -75,11 +75,7 @@ export function ODSPipeLineFactory(childTaskFunction) {
   async function UpdateStatusInDB(childResp, dataPipeLineTaskQueue) {
     if (childResp && childResp.Status !== TaskStatusEnum.Processing.name) {
       // save status
-      await dataPipeLineTaskQueue.updateTaskStatus(
-        childResp.Status,
-        childResp.error,
-        dataPipeLineTaskQueue.TaskQueueAttributes
-      )
+      await dataPipeLineTaskQueue.updateTaskStatus(childResp.Status, childResp.error)
     }
   }
 
