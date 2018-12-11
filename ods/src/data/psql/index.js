@@ -24,7 +24,7 @@ export const executeQueryRS = async (params = {}) => {
     completed: false,
   }
 
-  const { Query = QuoteSQL(Query), DBName } = params
+  const { Query, DBName } = params
   const dbConnString = params.ConnectionString || ''
   // may throw an error
   IsValidParams(params, true)
@@ -35,7 +35,7 @@ export const executeQueryRS = async (params = {}) => {
     let logresp = await logSQLCommand(params, 'executeQueryRS')
     ODSLogger.log('debug', 'About to run query:%j', params)
     const id = logresp.scalarValue
-    const knexResp = await localKnex.raw(Query)
+    const knexResp = await localKnex.raw(QuoteSQL(Query))
     if (knexResp && knexResp.rowCount >= 0) {
       ret.rows = knexResp.rows
       ret.completed = true
@@ -61,7 +61,7 @@ export const executeScalar = async (params = {}) => {
     error: undefined,
   }
 
-  const { Query = QuoteSQL(Query), DBName } = params
+  const { Query, DBName } = params
   const dbConnString = params.ConnectionString || ''
   // may throw an error
   IsValidParams(params, true)
@@ -73,7 +73,7 @@ export const executeScalar = async (params = {}) => {
     let logresp = await logSQLCommand(params, 'executeScalar')
     const id = logresp.scalarValue
     ODSLogger.log('debug', 'About to run scalar query:%j', params)
-    const resExeScalar = await localKnex.raw(Query)
+    const resExeScalar = await localKnex.raw(QuoteSQL(Query))
     ODSLogger.log('debug', 'scalar query Response:%j', resExeScalar)
     if (resExeScalar) {
       if (resExeScalar.rows && resExeScalar.rows.length > 0) {
@@ -99,7 +99,7 @@ export const executeCommand = async (params = {}) => {
     completed: false,
   }
 
-  const { Query = QuoteSQL(Query), DBName } = params
+  const { Query, DBName } = params
   const dbConnString = params.ConnectionString || ''
   // may throw an error
   IsValidParams(params, true)
@@ -111,7 +111,7 @@ export const executeCommand = async (params = {}) => {
     logresp = await logSQLCommand(params, 'executeCommand')
     const id = logresp.scalarValue
     ODSLogger.log('debug', 'About to run Execute command:%j', params)
-    logresp = await localKnex.raw(Query)
+    logresp = await localKnex.raw(QuoteSQL(Query))
     ret.completed = true && !isUndefined(logresp)
     logresp = await updateCommandLogEndTime(await getCommandLogID(id))
   } catch (err) {
@@ -131,7 +131,7 @@ export const logSQLCommand = async (params = {}, commandType = 'UNKNOWN') => {
   }
 
   const odsLogDbName = process.env.log_dbname || 'ODSLog'
-  const { Query = QuoteSQL(Query), DBName } = params
+  const { Query, DBName } = params
   const BatchKey = params.BatchKey || getDefaultBatchKey(Query)
 
   const localKnex = knex(odsLogDbName)
@@ -301,8 +301,8 @@ function getDefaultBatchKey(Query) {
 }
 
 function QuoteSQL(Query) {
-  if (Query && Query instanceof String) {
-    return Query.replace("'", "''")
+  if (Query && typeof Query === 'string') {
+    return Query.replace('?', '\\?')
   }
   return Query
 }
