@@ -76,6 +76,7 @@ provider:
         - lambda:InvokeFunction
       Resource:
         - arn:aws:lambda:us-west-2:409076796536:function:*dynamodb-to-s3*
+        - arn:aws:lambda:us-west-2:409076796536:function:*process-tables*
     - Effect: Allow
       Action:
         - lambda:CreateEventSourceMapping
@@ -135,8 +136,13 @@ functions:
   
   json-to-psql:
     handler: lib/service/ods/json-to-psql/index.JsonToPSQL
-    description: 
+    description: "ODS PipeLine Lambda to Convert S3 JSON to PSQL"
     timeout: 600
+  
+  process-tables:
+    handler: lib/service/ods/process-pending-tables/process-tables.processPendingTables
+    description: "ODS PipeLine Lambda to Run Pending Dynamo history through pipeline"
+    timeout: 299
 
   ping-db-ods:
       handler: lib/controller/ping-db/pingdb.pingodsdb

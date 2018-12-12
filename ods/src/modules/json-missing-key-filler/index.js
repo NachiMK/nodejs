@@ -3,8 +3,7 @@ import _ from 'lodash'
 // import missingDeepKeys from 'missing-deep-keys'
 import { GetJSONFromS3Path, SaveJsonToS3File } from '../s3ODS'
 import { ExtractMatchingKeyFromSchema } from '../json-extract-matching-keys/index'
-
-const fillMissingKeys = require('object-fill-missing-keys')
+import fillMissingKeys from 'object-fill-missing-keys'
 
 export class JsonMissingKeyFiller {
   output = {

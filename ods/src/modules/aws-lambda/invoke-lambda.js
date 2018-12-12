@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import AWS from 'aws-sdk'
 
 export const invokeLambda = async (params = {}, lambdaPayLoad = {}) => {
   console.log(
@@ -11,9 +12,10 @@ export const invokeLambda = async (params = {}, lambdaPayLoad = {}) => {
     console.error(`Invalid Parameter Sent to invoke Lambda. FunctionName is required.`)
     throw new Error(`Invalid Parameter Sent to invoke Lambda. FunctionName is required.`)
   }
+
+  const lambdaFunction = params.FunctionName
   try {
-    const lambdaFunction = params.FunctionName
-    const lambda = new aws.Lambda({ region: params.Region || 'us-west-2' })
+    const lambda = new AWS.Lambda({ region: params.Region || 'us-west-2' })
     // find the lambda to invoke
     const lambdaParams = {
       FunctionName: lambdaFunction,
@@ -29,6 +31,6 @@ export const invokeLambda = async (params = {}, lambdaPayLoad = {}) => {
     console.log(`Completed invoking Lambda: ${lambdaFunction}`)
   } catch (err) {
     console.error(`Error in calling Lambda: ${lambdaFunction}, error: ${err.message}`)
-    throw new ServerError(`Error in calling Lambda: ${lambdaFunction}, error: ${err.message}`)
+    throw new Error(`Error in calling Lambda: ${lambdaFunction}, error: ${err.message}`)
   }
 }
