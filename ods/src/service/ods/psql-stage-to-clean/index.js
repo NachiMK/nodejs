@@ -14,8 +14,8 @@ export async function DoTaskStageToClean(dataPipeLineTaskQueue) {
       extractStatusAndAttributes(stgResp, dataPipeLineTaskQueue, taskResp)
     } catch (err) {
       taskResp.Status = TaskStatusEnum.Error.name
-      taskResp.error = objPreStageToStage.error
-        ? objPreStageToStage.error
+      taskResp.error = objStageToClean.error
+        ? objStageToClean.error
         : new Error(`Unknown Error: ${err.message}`)
       odsLogger.log('error', taskResp.error.message)
     }

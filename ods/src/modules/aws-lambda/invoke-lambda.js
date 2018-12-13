@@ -1,5 +1,6 @@
 import _ from 'lodash'
-import AWS from 'aws-sdk'
+import awsInvkLambda from 'aws-sdk'
+const lambda = new awsInvkLambda.Lambda({ region: 'us-west-2' })
 
 export const invokeLambda = async (params = {}, lambdaPayLoad = {}) => {
   console.log(
@@ -15,20 +16,22 @@ export const invokeLambda = async (params = {}, lambdaPayLoad = {}) => {
 
   const lambdaFunction = params.FunctionName
   try {
-    const lambda = new AWS.Lambda({ region: params.Region || 'us-west-2' })
     // find the lambda to invoke
     const lambdaParams = {
       FunctionName: lambdaFunction,
       InvocationType: 'Event',
-      Payload: JSON.stringify(lambdaPayLoad, null, 2),
+      Payload: JSON.stringify(lambdaPayLoad),
     }
     console.log(
       `Calling Lambda: ${lambdaFunction} with Payload:${JSON.stringify(lambdaPayLoad, null, 2)}`
     )
     console.log(`Param to Invoke Lambda: ${JSON.stringify(lambdaParams, null, 2)}`)
     // invoke submit lambda
-    await lambda.invoke(lambdaParams).promise()
-    console.log(`Completed invoking Lambda: ${lambdaFunction}`)
+    lambda
+      .invoke(lambdaParams)
+      .promise()
+      .then((res) => console.log(`Invoke Lambda Response: ${JSON.stringify(res)}`))
+      .catch((err) => console.log(`Error invoking lambda: ${err.message}`))
   } catch (err) {
     console.error(`Error in calling Lambda: ${lambdaFunction}, error: ${err.message}`)
     throw new Error(`Error in calling Lambda: ${lambdaFunction}, error: ${err.message}`)

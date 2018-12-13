@@ -49,9 +49,9 @@ BEGIN
 
     RAISE NOTICE 'Update Cols: %', Updatecols;
 
-    sql_code := 'UPDATE ' || CleanTableSchema || '."'|| CleanTable ||'"
-    SET     "EffectiveEndDate" = CASE WHEN CT."EffectiveStartDate"::DATE < stg."HistoryDate"::DATE
-                                        THEN (stg."HistoryDate" - interval ''1 day'')::DATE
+    sql_code := 'UPDATE ' || CleanTableSchema || '."'|| CleanTable ||'" AS CT
+    SET     "EffectiveEndDate" = CASE WHEN CT."EffectiveStartDate"::DATE < stg."HistoryCreated"::DATE
+                                        THEN (stg."HistoryCreated" - interval ''1 day'')::DATE
                                         ELSE CT."EffectiveStartDate"::DATE
                                     END
             ,"StgId" = stg."StgId"
@@ -59,11 +59,10 @@ BEGIN
             ,"Root_Id" = -1
             ,"DataPipeLineTaskQueueId" = ' || CAST(TaskQueueId AS VARCHAR) || '
             ,' || Updatecols || '
-    FROM    ' || CleanTableSchema || '."'|| CleanTable ||'" CT
-    INNER
-    JOIN    ' || StageTableSchema || '."'|| StageTable ||'" stg ON CT."'|| BusinessKeyColumn ||'" = stg."'|| BusinessKeyColumn ||'"
+    FROM    ' || StageTableSchema || '."'|| StageTable ||'" stg
     WHERE   1 = 1
-    AND     CT."EffectiveStartDate"::DATE <= stg."HistoryDate"::DATE
+    AND     "CT."'|| BusinessKeyColumn ||'" = stg."'|| BusinessKeyColumn ||'"
+    AND     CT."EffectiveStartDate"::DATE <= stg."HistoryCreated"::DATE
     AND     CT."EffectiveEndDate" = ''12-31-9999''
     AND     CT."RowDeleted" = false
     AND     stg."StgRowDeleted" = false
