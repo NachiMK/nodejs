@@ -52,7 +52,7 @@ BEGIN
     sql_code := 'UPDATE ' || CleanTableSchema || '."'|| CleanTable ||'" AS CT
     SET     "EffectiveEndDate" = CASE WHEN CT."EffectiveStartDate"::DATE < stg."HistoryCreated"::DATE
                                         THEN (stg."HistoryCreated" - interval ''1 day'')::DATE
-                                        ELSE CT."EffectiveStartDate"::DATE
+                                        ELSE CT."EffectiveEndDate"::DATE
                                     END
             ,"StgId" = stg."StgId"
             ,"Parent_Id" = -1
@@ -61,7 +61,7 @@ BEGIN
             ,' || Updatecols || '
     FROM    ' || StageTableSchema || '."'|| StageTable ||'" stg
     WHERE   1 = 1
-    AND     "CT."'|| BusinessKeyColumn ||'" = stg."'|| BusinessKeyColumn ||'"
+    AND     CT."'|| BusinessKeyColumn ||'" = stg."'|| BusinessKeyColumn ||'"
     AND     CT."EffectiveStartDate"::DATE <= stg."HistoryCreated"::DATE
     AND     CT."EffectiveEndDate" = ''12-31-9999''
     AND     CT."RowDeleted" = false
@@ -69,8 +69,7 @@ BEGIN
     AND     stg."DataPipeLineTaskQueueId" = ' || CAST(PreStageToStageTaskId as VARCHAR) || '
     RETURNING CT."StgId", CT."' || PrimaryKeyName || '" as "TableId";';
     RAISE NOTICE 'SQL Code to update %', sql_code;
-
-    sql_code := 'SELECT CAST(1 as bigint), CAST(1 as bigint)';
+    
     RETURN QUERY EXECUTE sql_code;
 
 END;

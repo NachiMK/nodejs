@@ -68,6 +68,7 @@
     "@hixme/role-authorizer-middleware": "^1.3.4",
     "@hixme/role-policy": "^5.10.0",
     "@hixme/sanitizer-middleware": "^1.0.0",
+    "@hixme/service-request": "^1.0.0-beta.6",
     "@hixme/stage-middleware": "^3.0.0",
     "@hixme/tables": "^6.1.0",
     "@hixme/validator-middleware": "^1.4.1",

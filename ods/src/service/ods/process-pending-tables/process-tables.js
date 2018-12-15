@@ -1,6 +1,6 @@
-import awsInvkLambda from 'aws-sdk'
 import odsLogger from '../../../modules/log/ODSLogger'
 import { GetPendingPipeLineTables } from '../../../data/ODSConfig/PendingTables/getPendingTables'
+import { invokeLambda } from '../../../modules/aws-lambda/invoke-lambda'
 
 export async function processPendingTables(event = {}) {
   try {
@@ -15,7 +15,6 @@ export async function processPendingTables(event = {}) {
         2
       )}, now processing them`
     )
-    const lambda = new awsInvkLambda.Lambda({ region: 'us-west-2' })
     // process these tables
     await Promise.all(
       pendingTables.map((tableName) => {
@@ -25,8 +24,7 @@ export async function processPendingTables(event = {}) {
         // find the lambda to invoke
         const lambdaParams = {
           FunctionName: `ods-service-${stg.toLowerCase()}-json-to-psql`,
-          InvocationType: 'Event',
-          Payload: JSON.stringify(payLoad, null, 2),
+          region: 'us-west-2',
         }
         odsLogger.log(
           'info',
@@ -37,7 +35,7 @@ export async function processPendingTables(event = {}) {
           )}`
         )
         // invoke submit lambda
-        return lambda.invoke(lambdaParams).promise()
+        return invokeLambda(lambdaParams, payLoad)
       })
     )
     odsLogger.log('info', `Completed Invoking Lambda for All given Tables.`)
