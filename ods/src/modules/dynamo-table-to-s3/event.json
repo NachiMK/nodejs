@@ -1,0 +1,9 @@
+{
+    "DynamoTableName": "dev-clients",
+    "S3OutputBucket": "dev-ods-data",
+    "S3FilePrefix": "unit-test/clients/initial-clients-",
+    "AppendDateTime": true,
+    "LogLevel": "info",
+    "ChunkSize": 25,
+    "LambdaFunctionToSave" : ""
+}
