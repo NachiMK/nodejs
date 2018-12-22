@@ -80,6 +80,7 @@ provider:
         - arn:aws:lambda:us-west-2:409076796536:function:*${self:custom.service.STAGE}*process-tables*
         - arn:aws:lambda:us-west-2:409076796536:function:*${self:custom.service.STAGE}*json-to-psql*
         - arn:aws:lambda:us-west-2:409076796536:function:*${self:custom.service.STAGE}*export-dynamo-table*
+        - arn:aws:lambda:us-west-2:409076796536:function:*${self:custom.service.STAGE}*queue-initial-import*
     - Effect: Allow
       Action:
         - lambda:CreateEventSourceMapping
@@ -167,7 +168,17 @@ functions:
       subnetIds:
         - subnet-f8bf74b1
         - subnet-1aaa1b7d
-  
+  queue-initial-import:
+    handler: lib/controller/queue-initial-import/queue-initial-import.queueInitialImport
+    description: "Queue Initial Import setup of export initial load tables"
+    timeout: 599
+    vpc:
+      securityGroupIds:
+        - sg-0c3aa668
+      subnetIds:
+        - subnet-f8bf74b1
+        - subnet-1aaa1b7d
+
   export-mulitple-tables:
     handler: lib//modules/dynamo-table-to-s3/export-mulitple-table.exportMultipleTables
     description: "Exports given Array of tables into S3 bucket as json files."

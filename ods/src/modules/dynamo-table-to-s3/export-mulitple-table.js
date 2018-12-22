@@ -11,7 +11,7 @@ export async function exportMultipleTables(event = {}) {
         const exportParams = {
           DynamoTableName: tableName,
           S3OutputBucket: `${stg.toLowerCase()}-ods-data`,
-          S3FilePrefix: `/${tblName}/initial/${moment().format(`DDMMYYYY`)}/${tblName}-`,
+          S3FilePrefix: `dynamodb/${tblName}/initial/${moment().format(`DDMMYYYY`)}/${tblName}-`,
           AppendDateTime: true,
           LogLevel: event.LogLevel || 'warn',
           ChunkSize: event.ChunkSize || 25,
