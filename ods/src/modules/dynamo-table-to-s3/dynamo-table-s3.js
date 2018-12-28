@@ -130,7 +130,7 @@ export class ExportDynamoTableToS3 {
           FunctionName: this.lambdaToSave,
           region: 'us-west-2',
         }
-        const lambdaCallResp = await invokeLambda(lambdaParams, saveResult.Files)
+        const lambdaCallResp = await invokeLambda(lambdaParams, saveResult)
         saveResult.CalledLambda = !_.isUndefined(lambdaCallResp) ? 'Yes' : 'No'
         saveResult.LambdaResponse = lambdaCallResp
       }

@@ -102,7 +102,7 @@ export class JsonToJsonFlattner {
               jsonRowWithId
             )
             rowsArrayWithIds.push(_.cloneDeep(jsonRowWithId))
-            this.LogString('Done adding IDs to objects.', 'info')
+            this.LogString('Done adding IDs to objects.', 'debug')
             this.LogJson('json_row_with_id:', _.cloneDeep(jsonRowWithId), 'debug')
           }
         })
@@ -113,7 +113,7 @@ export class JsonToJsonFlattner {
         rowsArrayWithIds.forEach((jsonRowWithId) => {
           if (!_.isEmpty(jsonRowWithId)) {
             this.normalizeMe(_.cloneDeep(jsonRowWithId), this.TableName)
-            this.LogString('Done normalizing data.', 'info')
+            this.LogString('Done normalizing data.', 'debug')
             // extract various tables and JSON schema paths for those tables.
             this.UpdateOuputAddKeysAndPath()
           }
@@ -137,7 +137,7 @@ export class JsonToJsonFlattner {
     try {
       // get normalized data
       await this.getNormalizedDataset()
-      this.LogString('Normalized Data is available.', 'info')
+      this.LogString('Normalized Data is available.', 'debug')
       if (
         this.ModuleStatus !== 'success' ||
         !this.Output.NormalizedDataSet ||
@@ -197,7 +197,7 @@ export class JsonToJsonFlattner {
       let idx = 0
       _.forIn(this.Output.NormalizedDataSet, (rows, tblName) => {
         let path = ''
-        console.log(`table: ${tblName}, size: ${_.size(rows)}, idx: ${idx}`)
+        this.logger.log('debug', `table: ${tblName}, size: ${_.size(rows)}, idx: ${idx}`)
         if (!_.isEmpty(rows) && _.size(rows) > 0) {
           path = rows[0][this.globalDefaultUriPath] || '~Unknown'
           if (!_.isUndefined(path) && path.length > 0) {

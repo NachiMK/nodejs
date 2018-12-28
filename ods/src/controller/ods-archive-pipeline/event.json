@@ -1,0 +1,8 @@
+{
+    "Tables": "persons",
+    "S3ArchiveBucket": "",
+    "MaxTasksToArchive": 25,
+    "CutOffDays": 15,
+    "S3LifeCycleOption": "Delete",
+    "LogLevel": "warn"
+}

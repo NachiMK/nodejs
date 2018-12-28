@@ -29,7 +29,8 @@ JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" = 'Dynamo.TableName'
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 INSERT INTO
     ods."TaskAttribute"
@@ -49,7 +50,8 @@ JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" LIKE 'S3%BucketName'
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 INSERT INTO
     ods."TaskAttribute"
@@ -72,7 +74,8 @@ INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" LIKE 'Prefix.%File'
 AND     A."AttributeName" != 'Prefix.StageSchemaFile'
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 INSERT INTO
     ods."TaskAttribute"
@@ -94,7 +97,8 @@ JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" = 'Prefix.StageSchemaFile'
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 INSERT INTO
     ods."TaskAttribute"
@@ -116,7 +120,8 @@ JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" = 'Prefix.CleanSchemaFile'
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 INSERT INTO
     ods."TaskAttribute"
@@ -136,7 +141,8 @@ JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" LIKE 'psql.PreStageTable.Prefix'
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 INSERT INTO
     ods."TaskAttribute"
@@ -156,7 +162,8 @@ JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" IN ('psql.StageTable.Prefix', 'psql.CleanTable.Prefix')
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 INSERT INTO
     ods."TaskAttribute"
@@ -176,7 +183,8 @@ JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" LIKE 'LogLevel'
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 INSERT INTO
     ods."TaskAttribute"
@@ -196,7 +204,8 @@ JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" IN ('DBSchemaClean', 'DBSchemaStage')
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 INSERT INTO
     ods."TaskAttribute"
@@ -216,6 +225,7 @@ JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT
 INNER
 JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
 WHERE   A."AttributeName" IN ('BusinessKeyColumn')
-AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
 
 SELECT * FROM ods."TaskAttribute";

@@ -66,6 +66,7 @@ BEGIN
             ,T."S3File"
             ,CURRENT_TIMESTAMP AS "CreatedDtTm"
         FROM  Tmp_FilesToSave AS T
+        WHERE EXISTS (SELECT 1 FROM ods."DynamoTablesHelper" AS D WHERE D."CleanTableName" = T."SourceEntity")
         ON  CONFLICT ON CONSTRAINT UNQ_DataPiplelineInitialImport_Seq
         DO  UPDATE
             SET  "S3File" = EXCLUDED."S3File"

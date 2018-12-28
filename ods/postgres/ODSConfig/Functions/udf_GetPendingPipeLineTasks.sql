@@ -26,32 +26,59 @@ BEGIN
     INNER
     JOIN    ods."DataPipeLineTaskConfig"   DPC ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
     WHERE   "SourceEntity" = TableName
-    AND     DPC."TaskName" = TaskConfigName;
+    AND     DPC."TaskName" = TaskConfigName
+    AND     DPL."DeletedFlag"  = false;
 
     RAISE NOTICE 'GetPendingTasks DataPipeLineTaskId: --> %', DataPipeLineTaskId;
 
-    SELECT  MIN("DataPipeLineTaskQueueId")
+    -- If we need to load initial import queues
+    -- process those first and then process regular pipe line tasks
+    SELECT  J2Q."DataPipeLineTaskQueueId"
     INTO    ParentQueueID
-    FROM    ods."DataPipeLineTaskQueue" AS Q
+    FROM    ods."DataPipeLineInitialImport" AS IQ
     INNER
-    JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
-    WHERE   Q."DataPipeLineTaskId" = DataPipeLineTaskId
-    AND     T."TaskStatusDesc" IN ('Ready')
-    AND     NOT EXISTS 
-            (
-                SELECT  *
-                FROM    ods."DataPipeLineTaskQueue" AS Q
-                INNER
-                JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
-                WHERE   "DataPipeLineTaskId" = DataPipeLineTaskId
-                AND     "TaskStatusDesc" IN ('Processing', 'Error')
-            );
+    JOIN    ods."DataPipeLineTaskQueue"     AS  S3Q ON  S3Q."DataPipeLineTaskQueueId" = IQ."DataPipeLineTaskQueueId"
+    INNER
+    JOIN    ods."TaskQueueAttributeLog"     AS  TL  ON  TL."AttributeName" = 'PreviousTaskId'
+                                                    AND TL."AttributeValue" = CAST(S3Q."DataPipeLineTaskQueueId" AS VARCHAR)
+    INNER
+    JOIN    ods."DataPipeLineTaskQueue"     AS  J2Q ON  J2Q."DataPipeLineTaskQueueId" > IQ."DataPipeLineTaskQueueId"
+                                                    AND J2Q."DataPipeLineTaskQueueId" = TL."DataPipeLineTaskQueueId"
 
-    RAISE NOTICE 'GetPendingTasks ParentQueueID: --> %', ParentQueueID;
+    INNER
+    JOIN    ods."TaskStatus"                AS T    ON  T."TaskStatusId" = J2Q."TaskStatusId"
+    WHERE   J2Q."DataPipeLineTaskId" = COALESCE(DataPipeLineTaskId, -1)
+    AND     IQ."SourceEntity" = TableName
+    AND     T."TaskStatusDesc" IN ('Ready')
+    ORDER BY
+            IQ."ImportSequence"
+    LIMIT 1;
+    RAISE NOTICE 'Initial Import ParentQueueID: --> %', ParentQueueID;
+
+-- if not initial task then proceed to find regular task
+    IF ParentQueueID IS NULL AND DataPipeLineTaskId IS NOT NULL THEN
+        SELECT  MIN("DataPipeLineTaskQueueId")
+        INTO    ParentQueueID
+        FROM    ods."DataPipeLineTaskQueue" AS Q
+        INNER
+        JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
+        WHERE   Q."DataPipeLineTaskId" = DataPipeLineTaskId
+        AND     T."TaskStatusDesc" IN ('Ready')
+        AND     NOT EXISTS 
+                (
+                    SELECT  *
+                    FROM    ods."DataPipeLineTaskQueue" AS Q
+                    INNER
+                    JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
+                    WHERE   "DataPipeLineTaskId" = DataPipeLineTaskId
+                    AND     "TaskStatusDesc" IN ('Processing', 'Error')
+                );
+        RAISE NOTICE 'GetPendingTasks ParentQueueID: --> %', ParentQueueID;
+    END IF;
 
     -- are there any task that is been stuck?
     -- if so Parent can be in Processing and Child can be in On Hold.
-    IF ParentQueueID IS NULL THEN
+    IF ParentQueueID IS NULL AND DataPipeLineTaskId IS NOT NULL THEN
         SELECT  MIN("DataPipeLineTaskQueueId")
         INTO    AlternateParentQueueID
         FROM    ods."DataPipeLineTaskQueue" AS Q

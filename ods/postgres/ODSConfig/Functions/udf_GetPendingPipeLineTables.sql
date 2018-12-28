@@ -24,6 +24,7 @@ BEGIN
             JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
             WHERE   DPC."TaskName" = 'Process JSON to Postgres'
             AND     T."TaskStatusDesc" IN ('Ready')
+            AND     DPL."DeletedFlag" = false
             AND     NOT EXISTS 
                     (
                         SELECT  *

@@ -25,8 +25,6 @@ class QueueInitialImport {
     this.consoleTransport = new _transports.Console()
     this.consoleTransport.level = params.LogLevel || 'info'
     this.logger.add(this.consoleTransport)
-    console.log(`Params: ${JSON.stringify(params, null, 2)}`)
-    console.log(`Is Array: ${_.isArray(params[Object.keys(params)[0]].Files)}`)
   }
 
   IsValidParameters() {
@@ -55,7 +53,7 @@ class QueueInitialImport {
           retRS.rows.map(async (dataRow) => {
             const retVal = {
               DataPipeLineInitialImportId: dataRow.DataPipeLineInitialImportId,
-              SourceEntity  : dataRow.SourceEntity,
+              SourceEntity: dataRow.SourceEntity,
               S3File: dataRow.S3File,
               ImportSequence: dataRow.ImportSequence,
               DataPipeLineTaskQueueId: dataRow.DataPipeLineTaskQueueId,

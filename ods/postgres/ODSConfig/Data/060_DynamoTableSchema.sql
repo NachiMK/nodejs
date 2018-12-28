@@ -32,4 +32,5 @@ JOIN    ods."DataPipeLineTask" DPL ON DPL."SourceEntity" = H."CleanTableName"
 INNER
 JOIN    ods."DataPipeLineTaskConfig"   DPC ON  DPC."DataPipeLineTaskConfigId" = DPL."DataPipeLineTaskConfigId"
 WHERE   DPC."TaskName" = 'JSON History Data to JSON Schema'
-AND     NOT EXISTS (SELECT 1 FROM ods."DynamoTableSchema" WHERE "SourceEntity" = DPL."SourceEntity");
+AND     NOT EXISTS (SELECT 1 FROM ods."DynamoTableSchema" WHERE "SourceEntity" = DPL."SourceEntity")
+AND     DPL."DeletedFlag" = false;
