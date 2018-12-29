@@ -1,6 +1,13 @@
 import _ from 'lodash'
 import moment from 'moment'
-import { s3FileParser, uploadFileToS3, s3BucketFactory, s3FileExists } from '../s3/index'
+import {
+  s3FileParser,
+  uploadFileToS3,
+  s3BucketFactory,
+  s3FileExists,
+  copyS3toS3,
+  moveS3toS3,
+} from '../s3/index'
 
 export const GetJSONFromS3Path = async (s3FilePath) => {
   try {
@@ -143,4 +150,67 @@ export function getFileName(
   // remove repeatative characters
   filename = filename.replace('--', '-').replace('-_', '-')
   return filename
+}
+
+export async function copyS3({ SourceFullPath, TargetBucket, TargetKey }) {
+  if (_.isUndefined(SourceFullPath) || _.isEmpty(SourceFullPath)) {
+    throw new Error(`Invalid Param. SourceFullPath: ${SourceFullPath} is required.`)
+  }
+  if (_.isUndefined(TargetBucket) || _.isEmpty(TargetBucket)) {
+    throw new Error(`Invalid Param. Target Bucket: ${TargetBucket} is required.`)
+  }
+  // extract path and key
+  const { Bucket, Key } = await s3FileParser(SourceFullPath)
+  if (_.isUndefined(Bucket) || _.isUndefined(Key)) {
+    throw new Error(
+      `Invalid Param. SourcefullPath doesnt have bucket/key name. Bucket: ${Bucket}, key: ${Key}`
+    )
+  }
+  // if target key is not provided then
+  // set source key as target key
+  let target = !_.isUndefined(TargetKey) && !_.isEmpty(TargetKey) ? TargetKey : Key
+  const copyResp = await copyS3toS3({
+    SourceBucket: Bucket,
+    SourceKey: Key,
+    TargetBucket,
+    TargetKey: target,
+  })
+  // if copied successfully then return full path of the copied target path
+  if (!_.isUndefined(copyResp) && !_.isUndefined(copyResp.ETag)) {
+    return `${TargetBucket}/${target}`
+  }
+  return ''
+}
+
+export async function ArchiveS3File({ SourceFullPath, TargetBucket, TargetKey }) {
+  if (_.isUndefined(SourceFullPath) || _.isEmpty(SourceFullPath)) {
+    throw new Error(`Invalid Param. SourceFullPath: ${SourceFullPath} is required.`)
+  }
+  if (_.isUndefined(TargetBucket) || _.isEmpty(TargetBucket)) {
+    throw new Error(`Invalid Param. Target Bucket: ${TargetBucket} is required.`)
+  }
+  // extract path and key
+  const { Bucket, Key } = await s3FileParser(SourceFullPath)
+
+  if (_.isUndefined(Bucket) || _.isUndefined(Key)) {
+    throw new Error(
+      `Invalid Param. SourcefullPath doesnt have bucket/key name. Bucket: ${Bucket}, key: ${Key}`
+    )
+  }
+  // get only file name and ignore all subfolders related to pipeline tasks.
+  const filename = Key.replace(/\/\d+\//gi, '/')
+  // if target key is not provided then
+  // set source key as target key
+  let target = !_.isUndefined(TargetKey) && !_.isEmpty(TargetKey) ? TargetKey : filename
+  const moveResp = await moveS3toS3({
+    SourceBucket: Bucket,
+    SourceKey: Key,
+    TargetBucket,
+    TargetKey: target,
+  })
+  // if copied successfully then return full path of the copied target path
+  if (!_.isUndefined(moveResp) && !_.isUndefined(moveResp.ETag)) {
+    return `${TargetBucket}/${target}`
+  }
+  return ''
 }

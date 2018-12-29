@@ -60,21 +60,16 @@ describe('ODS Archive - Unit Tests', () => {
       const archTasks = await objArch.GetTasksToArchive(cTasks)
       const archAttributes = await objArch.GetAttributesToArchive(cTasks)
       let totalCount = _.size(archTasks) + _.size(archAttributes)
-      objArch
-        .ArchiveTasksAndAttributes(archTasks, archAttributes)
-        .then((res) => {
-          console.log(`archIDs: ${JSON.stringify(res, null, 2)}`)
-          expect(res).toBeDefined()
-          expect(_.isArray(res)).toBe(true)
-          expect(_.size(res)).toBeGreaterThan(0)
-          expect(_.size(res)).toBe(totalCount)
-        })
-        .catch((err) => {
-          console.log('error', err.message)
-          expect(err).toBeUndefined()
-        })
+      expect.assertions(4)
+      const saveResp = await objArch.ArchiveTasksAndAttributes(archTasks, archAttributes)
+      console.log(`Counts: ${_.size(saveResp)}, expected: ${totalCount}`)
+      expect(saveResp).toBeDefined()
+      expect(_.isArray(saveResp)).toBe(true)
+      expect(_.size(saveResp)).toBeGreaterThan(0)
+      expect(_.size(saveResp)).toBe(totalCount)
     } catch (err) {
       console.log('error', err.message)
+      expect(err).toBeUndefined()
     }
   })
 })

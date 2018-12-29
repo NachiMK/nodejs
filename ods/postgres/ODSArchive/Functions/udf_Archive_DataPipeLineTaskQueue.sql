@@ -25,12 +25,18 @@ BEGIN
         SELECT   archiveTime as "ArchiveDtTm"
                 ,CAST(CAST(value->'DataPipeLineTaskQueueId' as VARCHAR(40)) AS INT) as "DataPipeLineTaskQueueId"
                 ,CAST(CAST(value->'DataPipeLineTaskId' as VARCHAR(40)) AS INT) as "DataPipeLineTaskId"
-                ,CAST(CAST(value->'ParentTaskId' as VARCHAR(40)) AS INT) as "ParentTaskId"
+                ,CASE WHEN CAST(value->'ParentTaskId' as VARCHAR(40)) = 'null' 
+                    THEN null 
+                    ELSE CAST(CAST(value->'ParentTaskId' as VARCHAR(40)) AS INT) 
+                 END as "ParentTaskId"
                 ,CAST(CAST(value->'RunSequence' as VARCHAR(40)) AS INT) as "RunSequence"
                 ,CAST(CAST(value->'TaskStatusId' as VARCHAR(40)) AS INT) as "TaskStatusId"
                 ,CAST(CAST(value->'StartDtTm' as VARCHAR(40)) AS TIMESTAMP) as "StartDtTm"
                 ,CAST(CAST(value->'EndDtTm' as VARCHAR(40)) AS TIMESTAMP) as "EndDtTm"
-                ,value->'Error' as "Error"
+                ,CASE WHEN CAST(value->'Error' as TEXT) = 'null' 
+                    THEN CAST(null as jsonb)
+                    ELSE value->'Error' 
+                 END as "Error"
                 ,CAST(CAST(value->'CreatedDtTm' as VARCHAR(40)) AS TIMESTAMP) as "CreatedDtTm"
                 ,CAST(CAST(value->'UpdatedDtTm' as VARCHAR(40)) AS TIMESTAMP) as "UpdatedDtTm"
         FROM    jsonb_array_elements(Tasks)

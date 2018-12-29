@@ -215,19 +215,30 @@ export class ODSArchive {
   async ArchiveTasksAndAttributes(tasks, attributes) {
     const archivedTasks = await this.saveToArchiveDB('DataPipeLineTaskQueue', tasks)
     const archivedAttributes = await this.saveToArchiveDB('TaskQueueAttributeLog', attributes)
-    return Object.assign(archivedTasks, archivedAttributes)
+    this.logger.log(
+      'debug',
+      `Results archived tasks: ${_.size(archivedTasks)}, attributes archive id: ${_.size(
+        archivedAttributes
+      )}`
+    )
+    return archivedTasks.concat(archivedAttributes)
   }
 
   async saveToArchiveDB(recordType, recordsToSave) {
     let ArchiveIDs = []
     try {
-      this.logger.log('debug', `Archiving ${recordType}.`)
+      this.logger.log(
+        'debug',
+        `Archiving ${recordType}. No of records to archive: ${_.size(recordsToSave)}`
+      )
       //if no files to save then skip
-      if (_.size(this.recordsToSave) <= 0) {
+      if (_.size(recordsToSave) <= 0) {
         return ArchiveIDs
       }
-      if (recordType !== 'DataPipeLineTaskQueue' || recordType !== 'TaskQueueAttributeLog') {
-        throw new Error(`Invalid Param. Record type to Archive is not Allowed type.`)
+      if (recordType !== 'DataPipeLineTaskQueue' && recordType !== 'TaskQueueAttributeLog') {
+        throw new Error(
+          `Invalid Param. Record type : ${recordType} to Archive is not Allowed type.`
+        )
       }
       const proc =
         recordType === 'DataPipeLineTaskQueue'
@@ -239,6 +250,7 @@ export class ODSArchive {
         BatchKey: undefined,
         DoNotLog: true,
       }
+      this.logger.log(`debug`, `Running query: ${JSON.stringify(qParams)} to save to DB.`)
       const retRS = await executeQueryRS(qParams)
       if (retRS.rows.length > 0) {
         ArchiveIDs = await Promise.all(
@@ -263,6 +275,70 @@ export class ODSArchive {
     }
   }
 
-  async QueueS3FilesToArchive() {}
-  async DeleteArchivedTasks() {}
+  async QueueS3FilesToArchive(attributes) {
+    try {
+      if (_.size(attributes) > 0) {
+        // find which files to archive
+        // loop through and archive them
+      }
+    } catch (err) {
+      this.logger.log('error', `Error in Archiving Fiels to S3: ${err.message}`)
+      throw new Error(`Error in Archiving Fiels to S3: ${err.message}`)
+    }
+  }
+
+  async DeleteArchivedTasks(archivedTasks, archivedAttriubutes, archiveIDs) {
+    if (_.size(archivedTasks) > 0 && _.size(archivedAttriubutes) > 0 && _.size(archiveIDs) > 0) {
+      const totalCount = _.size(archivedTasks) + _.size(archivedAttriubutes)
+      if (totalCount !== _.size(archiveIDs)) {
+        throw new Error(
+          `Deletion of Archive IDs stopped. Archive Count: ${_.size(
+            archiveIDs
+          )} doesnt match with Total Count :${totalCount}`
+        )
+      }
+      // delete
+      let qParams = {
+        Query: `SELECT ods."udf_Delete_DataPipeLineTaskQueue"('${JSON.stringify(
+          archivedTasks
+        )}'::jsonb);`,
+        ConnectionString: this.ConfigDBConnection,
+        BatchKey: undefined,
+        DoNotLog: true,
+      }
+      let retRS = await executeScalar(qParams)
+      this.logger.log(
+        `debug`,
+        `DB Response for deleting tasks: ${retRS.completed}, error: ${retRS.error}`
+      )
+      if (retRS.completed !== true) {
+        this.logger.log(
+          `error`,
+          `DB Response for deleting attributes: ${retRS.completed}, error: ${retRS.error}`
+        )
+      }
+      // delete attributes
+      qParams = {
+        Query: `SELECT ods."udf_Delete_TaskQueueAttributeLog"('${JSON.stringify(
+          archivedAttriubutes
+        )}'::jsonb);`,
+        ConnectionString: this.ConfigDBConnection,
+        BatchKey: undefined,
+        DoNotLog: true,
+      }
+      retRS = await executeScalar(qParams)
+      this.logger.log(
+        `debug`,
+        `DB Response for deleting attributes: ${retRS.completed}, error: ${retRS.error}`
+      )
+      if (retRS.completed !== true) {
+        this.logger.log(
+          `error`,
+          `DB Response for deleting attributes: ${retRS.completed}, error: ${retRS.error}`
+        )
+      }
+    } else {
+      this.logger.log('warn', 'Nothing to Delete after archiving.')
+    }
+  }
 }

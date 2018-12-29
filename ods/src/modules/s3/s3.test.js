@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { s3FileParser, uploadFileToS3 } from './index'
+import { s3FileParser, uploadFileToS3, copyS3toS3, moveS3toS3 } from './index'
 
 describe('s3 - get bucket', () => {
   it('should find bucket name', () => {
@@ -14,6 +14,30 @@ describe('s3 - get bucket', () => {
     )
     const resp = await uploadFileToS3({ Bucket, Key, Body: '{test:"value"}' })
     console.log('resp:', resp)
+    expect(resp).toHaveProperty('ETag')
+  })
+
+  it('should copy file to bucket', async () => {
+    const params = {
+      SourceBucket: 'dev-ods-data',
+      SourceKey: 'unit-test/clients/test-clients-Schema-20180925_154121235.json',
+      TargetBucket: 'dev-archive-ods-data',
+    }
+    const resp = await copyS3toS3(params)
+    console.log('resp:', resp)
+    expect(resp).toHaveProperty('ETag')
+  })
+
+  it('should move file', async () => {
+    const params = {
+      SourceBucket: 'dev-archive-ods-data',
+      SourceKey: 'unit-test/clients/test-archive.json',
+      TargetBucket: 'dev-archive-ods-data',
+      TargetKey: 'dynamodb/clients/test-clients-Schema-20180925_154121235.json',
+    }
+    const resp = await moveS3toS3(params)
+    console.log('resp:', resp)
+    expect(resp).toBeDefined()
     expect(resp).toHaveProperty('ETag')
   })
 })
