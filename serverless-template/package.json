@@ -1,6 +1,6 @@
 {
   "name": "serverless-template",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Serverless Template",
   "author": "Hixme.com",
   "contributors": [
@@ -80,7 +80,7 @@
     "knex:migrate:dev": "babel-node node_modules/.bin/knex migrate:latest --env dev",
     "knex:migrate:int": "babel-node node_modules/.bin/knex migrate:latest --env int",
     "knex:migrate:prod": "babel-node node_modules/.bin/knex migrate:latest --env prod",
-    
+    "prettier": "prettier --config .prettierrc --write src/**/*.js",
     "release:major": "TYPE=major ./devops/release.sh",
     "release:minor": "TYPE=minor ./devops/release.sh",
     "release:patch": "TYPE=patch ./devops/release.sh",
@@ -135,7 +135,9 @@
     "eslint-config-airbnb-base": "12.1.0",
     "eslint-config-prettier": "3.0.1",
     "eslint-plugin-import": "2.9.0",
+    "husky": "1.2.1",
     "jest-cli": "22.4.2",
+    "lint-staged": "8.1.0",
     "merge-yaml-cli": "1.1.1",
     "prettier": "1.14.2",
     "rimraf": "2.6.2",
@@ -151,6 +153,13 @@
     "webpack": "^3.5.5",
     "webpack-node-externals": "^1.6.0",
     "yargs": "11.0.0"
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write",
+      "eslint",
+      "git add"
+    ]
   },
   "jest": {
     "testEnvironment": "node",

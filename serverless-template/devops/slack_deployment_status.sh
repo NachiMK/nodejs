@@ -13,7 +13,8 @@ if [ $BITBUCKET_BRANCH = develop ]; then
   slack $SLACK_SERVICE_CHANNEL "$MESSAGE"
   slack $SLACK_RELEASE_CHANNEL "$MESSAGE"
 elif [ $BITBUCKET_BRANCH = master ]; then
-  MESSAGE="<!channel> $APP_NAME/prod: deployed with branch \`$BITBUCKET_BRANCH\` by $USERNAME."
+  VERSION=$(getPackageVersion)
+  MESSAGE="<!channel> $APP_NAME/prod: deployed version \`$VERSION\` with branch \`$BITBUCKET_BRANCH\` by $USERNAME."
   slack $SLACK_SERVICE_CHANNEL "$MESSAGE"
   slack $SLACK_RELEASE_CHANNEL "$MESSAGE"
 fi

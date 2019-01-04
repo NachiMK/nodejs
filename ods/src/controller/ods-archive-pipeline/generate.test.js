@@ -52,7 +52,7 @@ describe('ODS Archive - Unit Tests', () => {
       expect(err).toBeUndefined()
     }
   })
-  it.only('ODS Archive - Save to Archive DB', async () => {
+  it.skip('ODS Archive - Save to Archive DB', async () => {
     getAndSetVarsFromEnvFile(false)
     try {
       const objArch = new ODSArchive(event)
@@ -67,6 +67,19 @@ describe('ODS Archive - Unit Tests', () => {
       expect(_.isArray(saveResp)).toBe(true)
       expect(_.size(saveResp)).toBeGreaterThan(0)
       expect(_.size(saveResp)).toBe(totalCount)
+    } catch (err) {
+      console.log('error', err.message)
+      expect(err).toBeUndefined()
+    }
+  })
+  it.only('ODS Archive - Entire Archive Process', async () => {
+    getAndSetVarsFromEnvFile(false)
+    try {
+      const objArch = new ODSArchive(event)
+      expect.assertions(1)
+      const archResp = await objArch.ArchiveTasksAndFiles()
+      console.log(`archResp: ${JSON.stringify(archResp, null, 2)}`)
+      expect(archResp).toBeDefined()
     } catch (err) {
       console.log('error', err.message)
       expect(err).toBeUndefined()

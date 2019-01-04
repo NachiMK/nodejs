@@ -7,6 +7,7 @@ import {
   s3FileExists,
   copyS3toS3,
   moveS3toS3,
+  DeleteFile,
 } from '../s3/index'
 
 export const GetJSONFromS3Path = async (s3FilePath) => {
@@ -213,4 +214,26 @@ export async function ArchiveS3File({ SourceFullPath, TargetBucket, TargetKey })
     return `${TargetBucket}/${target}`
   }
   return ''
+}
+
+export async function deleteS3({ SourceFullPath }) {
+  if (_.isUndefined(SourceFullPath) || _.isEmpty(SourceFullPath)) {
+    throw new Error(`Invalid Param. SourceFullPath: ${SourceFullPath} is required.`)
+  }
+  // extract path and key
+  const { Bucket, Key } = await s3FileParser(SourceFullPath)
+  if (_.isUndefined(Bucket) || _.isUndefined(Key)) {
+    throw new Error(
+      `Invalid Param. SourcefullPath doesnt have bucket/key name. Bucket: ${Bucket}, key: ${Key}`
+    )
+  }
+  const delResp = await DeleteFile({
+    SourceBucket: Bucket,
+    SourceKey: Key,
+  })
+  // if deleted successfully then return full path of the copied target path
+  if (!_.isUndefined(delResp) && !_.isUndefined(delResp.Deleted) && delResp.Deleted === true) {
+    return { S3FullPath: `${delResp.Bucket}/${delResp.Key}`, Deleted: true }
+  }
+  return { S3FullPath: `${Bucket}/${Key}`, Deleted: false }
 }

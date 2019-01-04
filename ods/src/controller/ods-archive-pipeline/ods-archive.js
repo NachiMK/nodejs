@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { format as _format, transports as _transports, createLogger } from 'winston'
 import { getConnectionString, executeScalar, executeQueryRS } from '../../data/psql'
+import { ArchiveS3File, deleteS3 } from '../../modules/s3ODS/index'
 
 export class ODSArchive {
   logger = createLogger({
@@ -75,7 +76,7 @@ export class ODSArchive {
     `
   }
   IsValidParams() {
-    if (this.S3LifeCycleOption !== 'Archive' || this.S3LifeCycleOption !== 'Delete') {
+    if (this.S3LifeCycleOption !== 'Archive' && this.S3LifeCycleOption !== 'Delete') {
       throw new Error(
         `Invalid Param. S3LifeCycleOption should be Archive/Delete and case sensitive.`
       )
@@ -105,6 +106,7 @@ export class ODSArchive {
       const archiveResp = await this.ArchiveTasksAndAttributes(tasks, attributes)
       // Delete the Task/Attributes
       await this.DeleteArchivedTasks(tasks, attributes, archiveResp)
+      return 'success'
     } catch (err) {
       this.logger.log(`error`, `Error in Archiving: ${err.message}`)
       throw new Error(`Error in Archiving: ${err.message}`)
@@ -276,10 +278,84 @@ export class ODSArchive {
   }
 
   async QueueS3FilesToArchive(attributes) {
+    const regExDataFile = new RegExp(/S3DataFile.*/, 'gi')
+    const regExSchema = new RegExp(/S3RAWJsonSchemaFile.*/, 'gi')
+    const regExS3 = new RegExp(/S3.*/, 'gi')
+    const regExAtt = new RegExp(/S3:.*/, 'gi')
     try {
       if (_.size(attributes) > 0) {
         // find which files to archive
+        const filesToArchive = attributes.filter((attribute) => {
+          return (
+            !_.isUndefined(attribute.AttributeName) && regExDataFile.test(attribute.AttributeName)
+          )
+        })
+        const filesToDelete = attributes.filter((attribute) => {
+          const name = attribute.AttributeName
+          const val = attribute.AttributeValue
+          const blnFiltered =
+            regExS3.test(name) &&
+            !regExDataFile.test(name) &&
+            !regExSchema.test(name) &&
+            regExAtt.test(val)
+          this.logger.log(
+            'info',
+            `Name: ${name}, Value: ${attribute.AttributeValue}, Filtered: ${blnFiltered}`
+          )
+          this.logger.log(
+            'debug',
+            `regExS3.test(name) : ${regExS3.test(name)}
+            !regExDataFile.test(name) : ${!regExDataFile.test(name)}
+            !regExSchema.test(name) : ${!regExSchema.test(name)}
+            regExAtt.test(val) : ${regExAtt.test(val)}
+            `
+          )
+          return blnFiltered
+        })
         // loop through and archive them
+        const unqArcFiles = _.uniqBy(filesToArchive, 'AttributeValue')
+        console.log(`Unique Archived Files: ${JSON.stringify(unqArcFiles, null, 2)}`)
+        if (_.size(unqArcFiles) > 0) {
+          const archivedFiles = await Promise.all(
+            unqArcFiles.map(async (file) => {
+              // archive the file
+              console.log(`Archiving S3DataFile: ${file.AttributeValue}`)
+              this.logger.log('info', `Archiving S3DataFile: ${file.AttributeValue}`)
+              const s3FileToArchive = file.AttributeValue.replace(
+                'https://s3-us-west-2.amazonaws.com/',
+                's3://'
+              )
+              const archResp = await ArchiveS3File({
+                SourceFullPath: s3FileToArchive,
+                TargetBucket: this.S3ArchiveBucket,
+              })
+              return archResp
+            })
+          )
+          this.logger.log('info', `Files Archive: ${JSON.stringify(archivedFiles, null, 2)}`)
+        }
+        // delete the rest of them
+        const unqDelFiles = _.uniqBy(filesToDelete, 'AttributeValue')
+        console.log(`Unique Deleted Files: ${JSON.stringify(unqDelFiles, null, 2)}`)
+        if (_.size(unqDelFiles) > 0) {
+          const deletedFiles = await Promise.all(
+            unqDelFiles.map(async (file) => {
+              // archive the file
+              console.log(`Deleting S3File ${file.AttributeName}: ${file.AttributeValue}`)
+              this.logger.log(
+                'info',
+                `Deleting S3File ${file.AttributeName}: ${file.AttributeValue}`
+              )
+              const s3FileToDelete = file.AttributeValue.replace(
+                'https://s3-us-west-2.amazonaws.com/',
+                's3://'
+              )
+              const delResp = await deleteS3({ SourceFullPath: s3FileToDelete })
+              return delResp
+            })
+          )
+          this.logger.log('info', `Files Deleted: ${JSON.stringify(deletedFiles, null, 2)}`)
+        }
       }
     } catch (err) {
       this.logger.log('error', `Error in Archiving Fiels to S3: ${err.message}`)
@@ -294,7 +370,7 @@ export class ODSArchive {
         throw new Error(
           `Deletion of Archive IDs stopped. Archive Count: ${_.size(
             archiveIDs
-          )} doesnt match with Total Count :${totalCount}`
+          )} doesn't match with Total Count :${totalCount}`
         )
       }
       // delete
@@ -310,26 +386,6 @@ export class ODSArchive {
       this.logger.log(
         `debug`,
         `DB Response for deleting tasks: ${retRS.completed}, error: ${retRS.error}`
-      )
-      if (retRS.completed !== true) {
-        this.logger.log(
-          `error`,
-          `DB Response for deleting attributes: ${retRS.completed}, error: ${retRS.error}`
-        )
-      }
-      // delete attributes
-      qParams = {
-        Query: `SELECT ods."udf_Delete_TaskQueueAttributeLog"('${JSON.stringify(
-          archivedAttriubutes
-        )}'::jsonb);`,
-        ConnectionString: this.ConfigDBConnection,
-        BatchKey: undefined,
-        DoNotLog: true,
-      }
-      retRS = await executeScalar(qParams)
-      this.logger.log(
-        `debug`,
-        `DB Response for deleting attributes: ${retRS.completed}, error: ${retRS.error}`
       )
       if (retRS.completed !== true) {
         this.logger.log(

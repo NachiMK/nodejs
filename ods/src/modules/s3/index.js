@@ -54,17 +54,17 @@ export const getS3JSON = async ({ Bucket, Key }) => {
 
 export const s3FileExists = async ({ Bucket, Key }) => {
   try {
-    const findFile = await getS3JSON({
-      Bucket,
-      Key,
-    })
-
-    return true && typeof findFile === 'object'
+    const headobj = await awsS3.headObject({ Bucket, Key }).promise()
+    return typeof headobj === 'object' && typeof headobj.ETag !== 'undefined'
   } catch (e) {
-    if (e.code === 'NoSuchKey') {
+    if (
+      e.code === 'NoSuchKey' ||
+      e.code === 'Forbidden' ||
+      e.code === 'NotFound' ||
+      e.code === 'NoSuchBucket'
+    ) {
       return false
     }
-
     throw e
   }
 }
@@ -95,7 +95,9 @@ export const copyS3toS3 = async ({ SourceBucket, SourceKey, TargetBucket, Target
     return retVal
   } catch (err) {
     const error = new Error(
-      `Error copying file from S3: ${SourceBucket}/${SourceKey} to S3: ${TargetBucket}/${TargetKey} err.message`
+      `Error copying file from S3: ${SourceBucket}/${SourceKey} to S3: ${TargetBucket}/${TargetKey}, message: ${
+        err.message
+      }`
     )
     error.status = err.status
     console.error(JSON.stringify(error, null, 2))
@@ -119,7 +121,56 @@ export const moveS3toS3 = async ({ SourceBucket, SourceKey, TargetBucket, Target
     }
   } catch (err) {
     const error = new Error(
-      `Error moving file from S3: ${SourceBucket}/${SourceKey} to S3: ${TargetBucket}/${TargetKey} err.message`
+      `Error moving file from S3: ${SourceBucket}/${SourceKey} to S3: ${TargetBucket}/${TargetKey}, message: ${
+        err.message
+      }`
+    )
+    error.status = err.status
+    console.error(JSON.stringify(error, null, 2))
+    throw error
+  }
+}
+
+export const DeleteFile = async ({ SourceBucket, SourceKey }) => {
+  try {
+    const blnExists = await s3FileExists({ Bucket: SourceBucket, Key: SourceKey })
+    if (blnExists) {
+      console.log(`File Exists ${SourceBucket}/${SourceKey}, Deleting..`)
+      // delete source object
+      const retVal = await awsS3
+        .deleteObject({
+          Bucket: SourceBucket,
+          Key: SourceKey,
+        })
+        .promise()
+      console.log(`Deleted File Result: ${JSON.stringify(retVal, null, 2)}`)
+      if (retVal) {
+        return {
+          Bucket: SourceBucket,
+          Key: SourceKey,
+          KeyExists: true,
+          Deleted: true,
+          DeleteResponse: retVal,
+        }
+      } else {
+        return {
+          Bucket: SourceBucket,
+          Key: SourceKey,
+          KeyExists: true,
+          Deleted: false,
+          DeleteResponse: retVal,
+        }
+      }
+    } else {
+      return {
+        Bucket: SourceBucket,
+        Key: SourceKey,
+        KeyExists: false,
+      }
+    }
+  } catch (err) {
+    const error = new Error(
+      `Error Deleting file from S3: ${SourceBucket}/${SourceKey}, error: ${err.message}`
     )
     error.status = err.status
     console.error(JSON.stringify(error, null, 2))
