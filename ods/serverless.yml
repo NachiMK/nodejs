@@ -65,6 +65,7 @@ provider:
         - dynamodb:PutItem
       Resource:
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}*
+        - arn:aws:dynamodb:us-west-2:409076796536:table/prod-*
     # - Effect: Allow
     #   Action:
     #     - sts:AssumeRole
@@ -97,6 +98,7 @@ provider:
         - dynamodb:UpdateTable
       Resource:
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-*
+        - arn:aws:dynamodb:us-west-2:409076796536:table/prod-*
     - Effect: Allow
       Action:
         - logs:CreateLogGroup
@@ -137,6 +139,12 @@ functions:
     handler: lib/service/dbadmin/dynamo/schema/index.handler
     description: ${self:custom.documentation.summary}
     timeout: 600
+    vpc:
+      securityGroupIds:
+        - sg-0c3aa668
+      subnetIds:
+        - subnet-f8bf74b1
+        - subnet-1aaa1b7d
   
   json-to-psql:
     handler: lib/service/ods/json-to-psql/index.JsonToPSQL

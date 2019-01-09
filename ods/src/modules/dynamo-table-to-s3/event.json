@@ -1,9 +1,10 @@
 {
-    "DynamoTableName": "dev-clients",
-    "S3OutputBucket": "dev-ods-data",
-    "S3FilePrefix": "unit-test/clients/initial-clients-",
+    "DynamoTableName": "int-bundle-event-offers",
+    "S3OutputBucket": "int-ods-data",
+    "S3FilePrefix": "dynamodb/bundle/initial/09012019/bundle-",
     "AppendDateTime": true,
-    "LogLevel": "info",
-    "ChunkSize": 25,
-    "LambdaFunctionToSave" : ""
+    "LogLevel": "debug",
+    "ChunkSize": 50,
+    "LambdaFunctionToSave": "",
+    "Stage": "int"
 }

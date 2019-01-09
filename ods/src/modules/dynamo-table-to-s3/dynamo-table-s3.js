@@ -83,7 +83,9 @@ export class ExportDynamoTableToS3 {
   async Export() {
     this.logger.log('debug', `Export Started for ${this.dynamoTable}`)
     this.IsValidParams()
-    const [prefix, sourceTable] = this.dynamoTable.split('-')
+    const [prefix, ...tblNameArray] = this.dynamoTable.split('-')
+    const sourceTable = tblNameArray.join('-')
+    this.logger.log('debug', `Prefix: ${prefix}, sourceTable: ${sourceTable}`)
     let data = [{ Id: '9876543210', Value: 'NO DATA FOUND FOR INITIAL LOAD' }]
     try {
       // use @hixme/table Create function to get a handler to dynamo table
@@ -130,9 +132,36 @@ export class ExportDynamoTableToS3 {
           FunctionName: this.lambdaToSave,
           region: 'us-west-2',
         }
-        const lambdaCallResp = await invokeLambda(lambdaParams, saveResult)
-        saveResult.CalledLambda = !_.isUndefined(lambdaCallResp) ? 'Yes' : 'No'
-        saveResult.LambdaResponse = lambdaCallResp
+        // if we have way too many files, then let us chunk it
+        if (_.size(saveResult.Files) > 0) {
+          // chunk only if too big (like more than 100 items)
+          const fileChunks = saveResult.Files.chunk(100)
+          if (_.size(fileChunks) > 0) {
+            const dbTblName = this.dynamoTable
+            const fileChunkSaveResult = await Promise.all(
+              fileChunks.map((files) => {
+                const currentChunk = {
+                  [dbTblName]: {
+                    TotalRecords: _.size(files),
+                    Files: files,
+                    CalledLambda: 'No',
+                    LambdaResponse: {},
+                  },
+                }
+                const lambdaCallResp = await invokeLambda(lambdaParams, currentChunk)
+                currentChunk.CalledLambda = !_.isUndefined(lambdaCallResp) ? 'Yes' : 'No'
+                currentChunk.LambdaResponse = lambdaCallResp
+                return currentChunk
+              })
+            )
+            if (fileChunkSaveResult) {
+              saveResult.CalledLambda = _.some(fileChunkSaveResult, CalledLambda === 'No')
+                ? 'No'
+                : 'Yes'
+              // saveResult.LambdaResponse = fileChunkSaveResult[0].LambdaResponse
+            }
+          }
+        }
       }
     } catch (err2) {
       saveResult.CalledLambda = 'No-Errored'
