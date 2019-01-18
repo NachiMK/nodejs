@@ -35,10 +35,10 @@ BEGIN
     FROM    public."vwColumnDefinition" as CT
     INNER
     JOIN    public."vwColumnDefinition" as ST ON CT."ColumnName" = ST."ColumnName"
-    WHERE   CT."TableSchema" ~ CleanTableSchema
-    AND     ST."TableSchema" ~ StageTableSchema
-    AND     CT."TableName"   ~ CleanTable
-    AND     ST."TableName"   ~ StageTable
+    WHERE   CT."TableSchema" = CleanTableSchema
+    AND     ST."TableSchema" = StageTableSchema
+    AND     CT."TableName"   = CleanTable
+    AND     ST."TableName"   = StageTable
     AND     CT."ColumnName" !~ PrimaryKeyName
     AND     CT."ColumnName" !~ BusinessKeyColumn
     AND     CT."ColumnName" !~ 'DataPipeLineTaskQueueId'

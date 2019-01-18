@@ -211,7 +211,7 @@ export class JsonSchemaToDBSchema {
     const timestamp = this.AppendDateTimeToTable ? `_${moment().format('YYMMDD_HHmmss')}` : ''
     const tblName = `${this.TableNamePrefix}${batch}${timestamp}`
       .replace(/[\W]+/g, '')
-      .replace('__', '_')
+      .replace(/__/gi, '_')
     return tblName.substring(0, 63)
   }
 

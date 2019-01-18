@@ -225,11 +225,11 @@ BEGIN
         USING HINT = 'Please provide valid column names';
     END IF;
 
-    IF NOT (((LENGTH(CleanParentTableName) > 0) AND (LENGTH(StageParentTableName) > 0))
+    IF NOT (((LENGTH(CleanParentTableName) > 0) AND (LENGTH(ParentStgTableName) > 0))
             OR (LENGTH(BusinessKeyColumn) > 0)) THEN
       RAISE EXCEPTION 'Invalid DB Param. Either CleanParentTableName: % & StageParentTableName: % 
                       should be provided or Business Key: % should be provided.'
-                      , CleanParentTableName, StageParentTableName, BusinessKeyColumn;
+                      , CleanParentTableName, ParentStgTableName, BusinessKeyColumn;
     END IF;
     
     WITH CTEPublicSchema

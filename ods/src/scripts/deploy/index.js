@@ -79,7 +79,8 @@ export function getTablesToDeploy(envStage) {
         'prod-waived-benefits',
       ]
     } else if (envStage === 'int') {
-      retArray = [
+      retArray = ['int-clients']
+      retArray2 = [
         'int-benefit-change-events',
         'int-benefits',
         'int-bundle-event-offers',

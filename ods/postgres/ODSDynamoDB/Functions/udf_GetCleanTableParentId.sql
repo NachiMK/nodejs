@@ -50,7 +50,10 @@ BEGIN
 
     -- Get Stage Count
     sql_code := 'SELECT   COUNT(*) FROM '|| StageTableSchema || '."' || StageTableName || '" sc1
-                 WHERE    sc1."DataPipeLineTaskQueueId" = '|| CAST(PreStageToStageTaskId AS VARCHAR);
+                 WHERE    sc1."DataPipeLineTaskQueueId" = '|| CAST(PreStageToStageTaskId AS VARCHAR) || '
+                 AND      sc1."ODS_Parent_Path" = (SELECT "ODS_Path" 
+                                                   FROM '|| StageTableSchema || '."' || StageTableParentName || '" 
+                                                   WHERE "ODS_Batch_Id" = SC1."ODS_Batch_Id" LIMIT 1);';
     EXECUTE sql_code INTO StgRowCount;
     RAISE NOTICE 'Count: %, by SQL: %', StgRowCount, sql_code;
     RAISE NOTICE 'CleanTableParentName: %, StageTableParentName: %', CleanTableParentName, StageTableParentName;
@@ -95,8 +98,8 @@ BEGIN
                                     FROM    pg_class pc
                                     INNER 
                                     JOIN    pg_namespace pr on pr.oid = pc.relnamespace
-                                    WHERE   relname     ~ '''|| CleanTableParentName || '''
-                                    AND     pr.nspname  ~ '''|| CleanTableSchema || '''
+                                    WHERE   relname     = '''|| CleanTableParentName || '''
+                                    AND     pr.nspname  = '''|| CleanTableSchema || '''
                                     AND     relkind = ''r''
                                 )
             AND    i.indisprimary;';
@@ -110,15 +113,15 @@ BEGIN
             sql_code := '
                 SELECT  column_name 
                 FROM    INFORMATION_SCHEMA.COLUMNS C
-                WHERE   C.table_schema ~ ''' || CleanTableSchema || '''
-                AND     C.table_name ~ ''' || CleanTableName || '''
+                WHERE   C.table_schema = ''' || CleanTableSchema || '''
+                AND     C.table_name = ''' || CleanTableName || '''
                 AND     C.column_name ~ ''Root_.*Id''
                 AND     EXISTS 
                         (
                             SELECT  1
                             FROM    INFORMATION_SCHEMA.COLUMNS AS R
                             WHERE   R.table_schema = c.table_schema
-                            AND     R.table_name ~ ''' || RootTableName || '''
+                            AND     R.table_name = ''' || RootTableName || '''
                             AND     R.column_name ~ REPLACE(C.column_name, ''Root_'', '''')
                         );';
             RAISE NOTICE 'SQL Query to get Root Column: %', sql_code;

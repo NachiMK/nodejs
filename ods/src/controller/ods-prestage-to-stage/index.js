@@ -78,7 +78,7 @@ export class OdsPreStageToStage {
         }
         if (AttributeName.match(regExJ)) {
           const [idx] = filtered[item].split('-')
-          const tblname = filtered[item].replace(/\d+-/gi, '').replace('-', '_')
+          const tblname = filtered[item].replace(/\d+-/gi, '').replace(/-/gi, '_')
           retCollection[fileCommonKey] = {
             [JsonObjectNameEnum]: filtered[item],
             [StageTablePrefix]: `${stgParentPrefix}${tblname}`,

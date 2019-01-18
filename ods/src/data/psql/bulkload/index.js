@@ -36,11 +36,17 @@ export const UploadS3FileToDB = async (params = {}) => {
         .getObject(s3params)
         .createReadStream()
         .pipe(res)
+      // const end = new Promise(function(resolve, reject) {
+      //   res.on('end', () => resolve('success'))
+      //   awsS3.on('error', reject)
+      // })
+      // let streamEnd = await end
+      // retResp.status = streamEnd === 'success' ? 'success' : 'error'
       retResp.status = 'success'
       // get count after upload
       retResp.CountAfterUpload = await getRowCnt(client, TableName)
     } catch (err1) {
-      console.log(`Error in connecting to DB and streaming: ${err1.message}`)
+      console.error(`Error in connecting to DB and streaming: ${err1.message}`)
       retResp.status = 'error'
       throw new Error(`Error in connecting to DB and streaming: ${err1.message}`)
     } finally {
@@ -48,7 +54,7 @@ export const UploadS3FileToDB = async (params = {}) => {
     }
     return retResp
   } catch (err) {
-    console.log('Error uploading file or getting row counts.', err.message)
+    console.error('Error uploading file or getting row counts.', err.message)
     retResp.status = 'error'
     throw new Error(`Error in UploadS3FileToDB, ${err.message}`)
   }

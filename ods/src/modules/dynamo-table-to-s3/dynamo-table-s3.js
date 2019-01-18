@@ -8,6 +8,10 @@ import { invokeLambda } from '../aws-lambda/invoke-lambda'
 
 const AwsExpDynamoDB = new AWS.DynamoDB({ region: 'us-west-2' })
 const DEFAULT_RECORD_CREATION = '01/01/2016'
+const DEFAULT_SCAN_LIMIT = 10000
+const DEFAULT_ROWS_PER_FILE = 100
+const DEFAULT_EXP_LOGLEVEL = 'warn'
+const DEFAULT_MAX_LAMBDA_RECURSION = 5000
 
 /**
  * @class ExportTableToS3
@@ -38,18 +42,21 @@ export class ExportDynamoTableToS3 {
     this.s3OutputBucket = params.S3OutputBucket || ''
     this.s3FilePrefix = params.S3FilePrefix || ''
     this.appendDateTime = params.AppendDateTime || true
-    this.loglevel = params.LogLevel || 'warn'
-    this.chunkSize = !isNaN(parseInt(params.ChunkSize)) ? params.ChunkSize : 25
+    this.loglevel = params.LogLevel || DEFAULT_EXP_LOGLEVEL
+    this.rowsPerFile = !isNaN(parseInt(params.RowsPerFile))
+      ? params.RowsPerFile
+      : DEFAULT_ROWS_PER_FILE
     this.defaultRecordCreatedDtTm = !isNaN(Date.parse(params.DefaultRecordCreated))
       ? new Date(Date.parse(params.DefaultRecordCreated))
       : new Date(Date.parse(DEFAULT_RECORD_CREATION))
+    // key to start downloading from
+    this.lastEvaluatedKey = params.LastEvaluatedKey || ''
     // should we save outcome to DB
     this.lambdaToSave = params.LambdaFunctionToSave || process.env.LambdaFunctionToSave || ''
     // initialize non params
     this.consoleTransport = new _transports.Console()
-    this.consoleTransport.level = params.LogLevel || 'info'
+    this.consoleTransport.level = params.LogLevel || DEFAULT_EXP_LOGLEVEL
     this.logger.add(this.consoleTransport)
-    console.log(`Params: ${JSON.stringify(params, null, 2)}`)
   }
 
   ParamsToString() {
@@ -59,8 +66,9 @@ export class ExportDynamoTableToS3 {
     s3FilePrefix: ${this.s3FilePrefix}
     appendDateTime: ${this.appendDateTime}
     loglevel: ${this.loglevel}
-    chunkSize: ${this.chunkSize}
+    RowsPer File: ${this.rowsPerFile}
     defaultRecordCreatedDtTm: ${this.defaultRecordCreatedDtTm}
+    lastEvaluatedKey: ${this.lastEvaluatedKey}
     `
   }
 
@@ -80,43 +88,53 @@ export class ExportDynamoTableToS3 {
     this.logger.log('debug', `All Parameters are valid ${this.ParamsToString()}`)
   }
 
-  async Export() {
-    this.logger.log('debug', `Export Started for ${this.dynamoTable}`)
+  async Export(exportParams = {}) {
+    this.logger.log('info', `Export Started for ${this.dynamoTable}, Params: ${exportParams}`)
+    const { LastEvaluatedKey, StartIndex = 1, ScanLimit = DEFAULT_SCAN_LIMIT } = exportParams
     this.IsValidParams()
     const [prefix, ...tblNameArray] = this.dynamoTable.split('-')
     const sourceTable = tblNameArray.join('-')
     this.logger.log('debug', `Prefix: ${prefix}, sourceTable: ${sourceTable}`)
-    let data = [{ Id: '9876543210', Value: 'NO DATA FOUND FOR INITIAL LOAD' }]
+
+    const lastKey = !_.isUndefined(LastEvaluatedKey) ? LastEvaluatedKey : undefined
+    const startIndex = !isNaN(parseInt(StartIndex)) ? StartIndex : 1
+
     try {
       // use @hixme/table Create function to get a handler to dynamo table
       const hixmeTable = table.create(sourceTable, { tablePrefix: prefix })
       // this may take a while if the table is too big
       this.logger.log(
-        'debug',
+        'info',
         `Getting All data for ${this.dynamoTable}. hixmeTable: ${hixmeTable}...`
       )
-      data = await hixmeTable.getAll()
+      const scanResp = await hixmeTable.getAll({
+        ExclusiveStartKey: lastKey,
+        MaxLimit: ScanLimit,
+      })
       const creationTime = await this.getTableCreationTime(this.dynamoTable)
       this.logger.log(
-        'debug',
-        `Received Data from dynamo table ${this.dynamoTable}, Records: ${_.size(data)}`
+        'info',
+        `Received Data from dynamo table ${this.dynamoTable}, Records: ${_.size(scanResp.Items)}`
       )
-      const chunkResults = await this.chunkAndSave(data, sourceTable, creationTime)
+      const chunkResults = await this.chunkAndSave(
+        scanResp.Items,
+        sourceTable,
+        creationTime,
+        startIndex
+      )
       const saveResult = {
         [this.dynamoTable]: {
-          TotalRecords: _.size(data),
+          TotalRecords: _.size(scanResp.Items),
           Files: chunkResults,
-          CalledLambda: 'No',
-          LambdaResponse: {},
         },
       }
-      this.logger.log('info', `saveResults: ${JSON.stringify(saveResult, null, 2)}`)
+      this.logger.log('debug', `Export -> saveResults:`, saveResult)
 
       // If a lambda is provided to queue imports then call it.
-      await this.saveToDatabase(saveResult)
+      const savedbResp = await this.saveToDatabase(saveResult)
 
       // let us split the data into smaller chunk files and save to s3
-      return saveResult
+      return { LastEvaluatedKey: scanResp.LastEvaluatedKey, SaveResponse: savedbResp }
     } catch (err) {
       const e = new Error(`Error exporting Json data from dynamo to S3: ${err.message}`)
       this.logger.log('error', e.message)
@@ -133,33 +151,29 @@ export class ExportDynamoTableToS3 {
           region: 'us-west-2',
         }
         // if we have way too many files, then let us chunk it
-        if (_.size(saveResult.Files) > 0) {
+        if (_.size(saveResult[Object.keys(saveResult)[0]].Files) > 0) {
           // chunk only if too big (like more than 100 items)
-          const fileChunks = saveResult.Files.chunk(100)
+          const fileChunks = _.chunk(saveResult[Object.keys(saveResult)[0]].Files, 100)
           if (_.size(fileChunks) > 0) {
             const dbTblName = this.dynamoTable
+            this.logger.log('info', `Number of Lambda Calls: ${_.size(fileChunks)}`)
             const fileChunkSaveResult = await Promise.all(
-              fileChunks.map((files) => {
+              fileChunks.map(async (files) => {
+                this.logger.log('debug', `Files in current batch: ${_.size(files)}`)
                 const currentChunk = {
                   [dbTblName]: {
                     TotalRecords: _.size(files),
                     Files: files,
-                    CalledLambda: 'No',
-                    LambdaResponse: {},
                   },
                 }
                 const lambdaCallResp = await invokeLambda(lambdaParams, currentChunk)
                 currentChunk.CalledLambda = !_.isUndefined(lambdaCallResp) ? 'Yes' : 'No'
                 currentChunk.LambdaResponse = lambdaCallResp
+                this.logger.log('debug', `currentChunk: ${JSON.stringify(currentChunk, null, 2)}`)
                 return currentChunk
               })
             )
-            if (fileChunkSaveResult) {
-              saveResult.CalledLambda = _.some(fileChunkSaveResult, CalledLambda === 'No')
-                ? 'No'
-                : 'Yes'
-              // saveResult.LambdaResponse = fileChunkSaveResult[0].LambdaResponse
-            }
+            return fileChunkSaveResult
           }
         }
       }
@@ -173,12 +187,12 @@ export class ExportDynamoTableToS3 {
     }
   }
 
-  async chunkAndSave(data, sourceTable, creationTime) {
-    const arrOfChunks = _.chunk(data, this.chunkSize)
+  async chunkAndSave(data, sourceTable, creationTime, indexToStart = 1) {
+    const arrOfChunks = _.chunk(data, this.rowsPerFile)
     this.logger.log('info', `Total # of Files to Create: ${_.size(arrOfChunks)}`)
     const saveResult = await Promise.all(
       arrOfChunks.map(async (currentChunk, idx) => {
-        const startIdx = idx * this.chunkSize + 1
+        const startIdx = idx * this.rowsPerFile + indexToStart
         const endIdx = startIdx + _.size(currentChunk) - 1
         this.logger.log('debug', `Processing records from ${startIdx} to ${endIdx}`)
         // save to s3
@@ -194,7 +208,7 @@ export class ExportDynamoTableToS3 {
           StartIndex: startIdx,
           EndIndex: endIdx,
           RowCountInBatch: _.size(currentChunk),
-          ImportSequence: idx,
+          ImportSequence: indexToStart + idx - 1,
           S3File: s3Resp,
         }
       })
@@ -273,7 +287,34 @@ export class ExportDynamoTableToS3 {
 export async function exportDynamoTable(event = {}) {
   try {
     const objExport = new ExportDynamoTableToS3(event)
-    const resp = await objExport.Export()
+    const startIdx = !isNaN(parseInt(event.StartIndex)) ? parseInt(event.StartIndex) : 1
+    const stg = event.STAGE || process.env.STAGE || 'dev'
+    const cnt = event.RecursionCount || 1
+    const maxRecursion = event.MaxRecursion || DEFAULT_MAX_LAMBDA_RECURSION
+    const scanLimit = event.ScanLimit || DEFAULT_SCAN_LIMIT
+    const resp = await objExport.Export({
+      LastEvaluatedKey: event.LastEvaluatedKey,
+      StartIndex: startIdx,
+      ScanLimit: scanLimit,
+    })
+    if (resp.LastEvaluatedKey && cnt <= maxRecursion) {
+      // call lambda again (which basically calls this function again)
+      const payload = Object.assign(event, {
+        LastEvaluatedKey: resp.LastEvaluatedKey,
+        StartIndex: startIdx + event.ScanLimit,
+        RecursionCount: cnt + 1,
+        MaxRecursion: maxRecursion,
+        ScanLimit: scanLimit,
+      })
+      console.debug(`Processing Table: ${objExport.dynamoTable}, payload:${payload}`)
+      resp.RecursiveCallResponse = await invokeLambda(
+        {
+          FunctionName: `ods-service-${stg.toLowerCase()}-export-dynamo-table`,
+          region: 'us-west-2',
+        },
+        payload
+      )
+    }
     return resp
   } catch (err) {
     console.log(`error: ${err.message}`)

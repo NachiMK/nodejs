@@ -234,8 +234,8 @@ export async function getJSONFileKeyName(
   FilePrefix = FilePrefix.charAt(0) === '/' ? FilePrefix.substring(1) : FilePrefix
   if (AppendDtTm) {
     return `${FilePrefix}_${await getDataTimeStamp(DateTimeFormat)}.json`
-      .replace('__', '_')
-      .replace('-_', '-')
+      .replace(/__/gi, '_')
+      .replace(/-_/gi, '-')
   }
 
   return `${FilePrefix}.json`

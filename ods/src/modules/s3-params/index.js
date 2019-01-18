@@ -133,7 +133,7 @@ export class S3Params {
       filename += FileExtension
 
     // remove repeatative characters
-    filename = filename.replace('--', '-').replace('-_', '-')
+    filename = filename.replace(/--/gi, '-').replace(/-_/gi, '-')
     return filename
   }
 }

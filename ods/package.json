@@ -55,10 +55,9 @@
     "release:dev:enablehistory": "run-func /lib/scripts/deploy/index.js DeployEnableHistoryOnTables dev",
     "release:int:enablehistory": "run-func /lib/scripts/deploy/index.js DeployEnableHistoryOnTables int",
     "release:prod:enablehistory": "run-func /lib/scripts/deploy/index.js DeployEnableHistoryOnTables prod",
-    "release:dev:migratehistory": "run-func /lib/scripts/deploy/index.js DeployMigrateHistoryAllTables dev",
-    "release:int:migratehistory": "run-func /lib/scripts/deploy/index.js DeployMigrateHistoryAllTables int",
-    "release:prod:migratehistory": "run-func /lib/scripts/deploy/index.js DeployMigrateHistoryAllTables prod",
-    "release:dev:linktrigger": "run-func /lib/scripts/deploy/trigger.js DeployLinkTriggerOnTables dev"
+    "release:dev:linktrigger": "run-func /lib/scripts/deploy/trigger.js DeployLinkTriggerOnTables dev",
+    "release:int:linktrigger": "run-func /lib/scripts/deploy/trigger.js DeployLinkTriggerOnTables int",
+    "release:prod:linktrigger": "run-func /lib/scripts/deploy/trigger.js DeployLinkTriggerOnTables prod"
   },
   "dependencies": {
     "@hixme/aws-utils": "^1.1.0",
@@ -70,7 +69,7 @@
     "@hixme/sanitizer-middleware": "^1.0.0",
     "@hixme/service-request": "^1.0.0-beta.6",
     "@hixme/stage-middleware": "^3.0.0",
-    "@hixme/tables": "^6.1.0",
+    "@hixme/tables": "^6.3.0-beta.1",
     "@hixme/validator-middleware": "^1.4.1",
     "aws-sdk": "^2.374.0",
     "babel-runtime": "^6.23.0",

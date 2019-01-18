@@ -78,6 +78,8 @@ if [ "${resetdata}" = "ResetData:TRUE" ]; then
         echo "Deploying Data:" $filename
         psql ${dbhostname} -d odsconfig_${stagename} -f "$filename"
     done
+    echo "Post Deployment.. Update TaskAttribute"
+    psql ${dbhostname} -d odsconfig_${stagename} -c "UPDATE ods.\"TaskAttribute\" TA  SET \"AttributeValue\" = REPLACE(TA.\"AttributeValue\", 'dev-', '$stagename-') WHERE   TA.\"AttributeValue\" like 'dev-%';"
 else
     echo "Not Resetting Data. To Reset send param ResetData:TRUE"
 fi

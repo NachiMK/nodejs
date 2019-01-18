@@ -306,7 +306,7 @@ function getDefaultBatchKey(Query) {
 
 function QuoteSQL(Query) {
   if (Query && typeof Query === 'string') {
-    return Query.replace('?', '\\?')
+    return Query.replace(/\?/gi, '\\?')
   }
   return Query
 }

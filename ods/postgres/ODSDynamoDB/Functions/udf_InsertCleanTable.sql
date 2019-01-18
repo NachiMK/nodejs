@@ -64,10 +64,10 @@ BEGIN
     FROM    public."vwColumnDefinition" as CT
     INNER
     JOIN    public."vwColumnDefinition" as ST ON CT."ColumnName" = ST."ColumnName"
-    WHERE   CT."TableSchema" ~ CleanTableSchema
-    AND     ST."TableSchema" ~ StageTableSchema
-    AND     CT."TableName"   ~ CleanTableName
-    AND     ST."TableName"   ~ StageTableName
+    WHERE   CT."TableSchema" = CleanTableSchema
+    AND     ST."TableSchema" = StageTableSchema
+    AND     CT."TableName"   = CleanTableName
+    AND     ST."TableName"   = StageTableName
     AND     CT."ColumnName" !~ PrimaryKeyName
     AND     ((LENGTH(BusinessKeyColumn) > 0  AND CT."ColumnName" !~ BusinessKeyColumn) OR (LENGTH(BusinessKeyColumn) = 0))
     AND     CT."ColumnName" !~ 'DataPipeLineTaskQueueId';
@@ -97,16 +97,16 @@ BEGIN
         SELECT  column_name
         INTO    ParentColName
         FROM    INFORMATION_SCHEMA.COLUMNS
-        WHERE   table_schema ~ CleanTableSchema
-        AND     table_name   ~ CleanTableName
+        WHERE   table_schema = CleanTableSchema
+        AND     table_name   = CleanTableName
         AND     column_name ~ 'Parent_.*Id';
 
         -- find my Root Column from my parent.
         SELECT  column_name
         INTO    RootColName
         FROM    INFORMATION_SCHEMA.COLUMNS
-        WHERE   table_schema ~ CleanTableSchema
-        AND     table_name   ~ CleanTableName
+        WHERE   table_schema = CleanTableSchema
+        AND     table_name   = CleanTableName
         AND     column_name ~ 'Root_.*Id';
 
         -- update the Target col list for inserting

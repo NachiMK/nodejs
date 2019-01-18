@@ -1,16 +1,32 @@
 import { exportDynamoTable } from './dynamo-table-s3'
+import { exportMultipleTables } from './export-mulitple-table'
 
-const eventData = require('./event.json')
-
-console.time(`dynamo-export`)
-exportDynamoTable(eventData)
-  .then((res) => {
-    console.log(`Results: ${JSON.stringify(res, null, 2)}`)
+// npm run build && clear && jest src/modules/dynamo-table-to-s3/generate-test.js
+describe('dyanmo-table-initial Load - Unit Tests', () => {
+  it.skip('Single Table - should return Success', async () => {
+    console.time(`dynamo-export`)
+    const eventData = require('./event.json')
+    try {
+      expect.assertions(1)
+      // get connection string
+      const resp = await exportDynamoTable(eventData)
+      console.log('resp', JSON.stringify(resp, null, 2))
+      expect(resp).toBeDefined()
+    } catch (err) {
+      expect(err).toBeUndefined()
+    }
     console.timeEnd(`dynamo-export`)
   })
-  .catch((err) => {
-    console.log(`Error: ${JSON.stringify(err, null, 2)}`)
-    console.timeEnd(`dynamo-export`)
+  it.only('Multiple Table - should return Success', async () => {
+    const eventData = require('./multiple-table-event.json')
+    try {
+      expect.assertions(1)
+      // get connection string
+      const resp = await exportMultipleTables(eventData)
+      console.log('resp', JSON.stringify(resp, null, 2))
+      expect(resp).toBeDefined()
+    } catch (err) {
+      expect(err).toBeUndefined()
+    }
   })
-
-// npm run build && clear && node lib/modules/dynamo-table-to-s3/generate-test.js
+})

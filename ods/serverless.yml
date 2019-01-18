@@ -155,6 +155,8 @@ functions:
     handler: lib/service/ods/process-pending-tables/process-tables.processPendingTables
     description: "ODS PipeLine Lambda to Run Pending Dynamo history through pipeline"
     timeout: 299
+    environment:
+      TableLimit: 5
     vpc:
       securityGroupIds:
         - sg-0c3aa668
@@ -169,13 +171,15 @@ functions:
   export-dynamo-table:
     handler: lib/modules/dynamo-table-to-s3/dynamo-table-s3.exportDynamoTable
     description: "Exports all rows in a dynamo table to mulutiple Json file(s) in S3"
-    timeout: 599
+    timeout: 899
+    memorySize: 3000
     vpc:
       securityGroupIds:
         - sg-0c3aa668
       subnetIds:
         - subnet-f8bf74b1
         - subnet-1aaa1b7d
+
   queue-initial-import:
     handler: lib/controller/queue-initial-import/queue-initial-import.queueInitialImport
     description: "Queue Initial Import setup of export initial load tables"
