@@ -35,7 +35,7 @@ const GetTableList = async (params) => {
   return tablelist
 }
 
-const CreateSchema = async (tableRequest) => {
+export const CreateSchema = async (tableRequest) => {
   ODSLogger.log('info', `Creating Schema for Table: ${tableRequest}`)
   const { DynamoTableName, S3JsonSchemaPath } = tableRequest
   const pattern = /-+\d+_+\d+.json+/i

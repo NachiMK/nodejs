@@ -118,6 +118,13 @@ function ConvertSimpleArraysToObjects(jsonSchema) {
           switch (typeOfObj) {
             case 'object':
               ConvertSimpleArraysToObjects(currAttributeObj)
+              // some times objects have both arrays and properties :)
+              if (
+                !_.isUndefined(currAttributeObj.items) &&
+                currAttributeObj.items.type === 'object'
+              ) {
+                ConvertSimpleArraysToObjects(currAttributeObj.items)
+              }
               break
             case 'array':
               if (
