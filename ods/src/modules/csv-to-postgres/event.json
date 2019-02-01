@@ -1,19 +1,40 @@
-{
+[
+  {
     "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/csv/test-clients-CSVFile-0-clients.csv",
-    "TableNamePrefix" : "clients_raw",
+    "TableNamePrefix": "clients_raw",
     "DBConnection": "",
-    "BatchId" : 44,
+    "BatchId": 44,
     "LogLevel": "info",
     "S3Options": {
-        "SaveIntermediatFilesToS3": true,
-        "S3OutputBucket": "dev-ods-data",
-        "S3OutputKeyPrefix": "unit-test/clients/dbschema/clients-"
+      "SaveIntermediatFilesToS3": true,
+      "S3OutputBucket": "dev-ods-data",
+      "S3OutputKeyPrefix": "unit-test/clients/dbschema/clients-"
     },
-    "DBOptions" : {
-        "TableSchema" : "raw",
-        "IgnoreColumns" : [],
-        "AppendDateTimeToTable" : true,
-        "AppendBatchId" : true,
-        "DropTableIfExists": true
+    "DBOptions": {
+      "TableSchema": "raw",
+      "IgnoreColumns": [],
+      "AppendDateTimeToTable": true,
+      "AppendBatchId": true,
+      "DropTableIfExists": true
     }
-}
+  },
+  {
+    "S3DataFilePath": "s3://int-ods-data/unit-test/testtable-1/data760/CSVFile-0-int-ods-testtable-1.csv",
+    "TableNamePrefix": "testtable_1",
+    "DBConnection": "postgres://odsddb_user:H!xme_ddb_ah_dev1@primary-01.cluster-cwoqm2lwdsxk.us-west-2.rds.amazonaws.com/odsdynamodb_dev",
+    "BatchId": 44,
+    "LogLevel": "info",
+    "S3Options": {
+      "SaveIntermediatFilesToS3": true,
+      "S3OutputBucket": "int-ods-data",
+      "S3OutputKeyPrefix": "unit-test/testtable-1/data760/dbschema-testtable_1-"
+    },
+    "DBOptions": {
+      "TableSchema": "raw",
+      "IgnoreColumns": [],
+      "AppendDateTimeToTable": true,
+      "AppendBatchId": true,
+      "DropTableIfExists": true
+    }
+  }
+]

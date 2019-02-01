@@ -1,5 +1,10 @@
 import AWS from 'aws-sdk'
 
+Object.defineProperty(AWS, 'config', {
+  get: function() {
+    return {}
+  },
+})
 const awsS3 = new AWS.S3({ region: 'us-west-2' })
 const { Pool } = require('pg')
 const copyFrom = require('pg-copy-streams').from

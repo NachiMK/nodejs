@@ -149,7 +149,7 @@ functions:
             description: Example of how to proxy a request to another api and return that API's response as our own.
 
   schedule:
-    handler: build/routes/schedule/index.schedule
+    handler: build/triggers/schedule/index.schedule
     description: ${self:custom.documentation.summary}
     events:
       - schedule:

@@ -31,7 +31,7 @@ const proxy = exports.proxy = (0, _warewolf2.default)(_beforeAfterMiddleware.bef
   event.response = formatAcronymResult(json);
 }, _beforeAfterMiddleware.after);
 
-const formatAcronymResult = acronymAPIResult => {
+function formatAcronymResult(acronymAPIResult) {
   if (!acronymAPIResult || acronymAPIResult == null || !(acronymAPIResult.length > 0)) {
     return {};
   }
@@ -43,5 +43,5 @@ const formatAcronymResult = acronymAPIResult => {
     input,
     acronyms
   };
-};
+}
 //# sourceMappingURL=index.js.map

@@ -1,4 +1,4 @@
-import { GetSchemaByDataPath } from './index'
+import { GetSchemaOfSimplePropByDataPath } from './index'
 
 const arryOfTestPaths = [
   '',
@@ -18,8 +18,8 @@ const jSchema = require('./testSchema.json')
 arryOfTestPaths.forEach((val, idx) => {
   try {
     const opts = { ExcludeObjects: true, ExcludeArrays: true }
-    const stgResp = GetSchemaByDataPath(jSchema, val, opts)
-    console.log(`Path: ${val}, Index: ${idx}, Schema: ${JSON.stringify(stgResp, null, 2)}`)
+    const stgResp = GetSchemaOfSimplePropByDataPath(jSchema, val, opts)
+    console.log(`Path: ${val}, Index: ${idx}, Schema: ${JSON.stringify(stgResp.Schema, null, 2)}`)
   } catch (err) {
     console.log('error', err.message)
     // continue on error for testing other paths

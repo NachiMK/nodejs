@@ -28,9 +28,25 @@ function FilterOutSpecificType(schemaToFilter, typeToFilter = '') {
   return schemaCopy
 }
 
-export function GetSchemaByDataPath(jsonSchema, dataPath, opts = {}) {
-  let retSchema = {}
+export function GetSchemaOfSimplePropByDataPath(jsonSchema, dataPath, opts = {}) {
+  let retSchema = GetSchemaByPath(jsonSchema, dataPath)
+  let filteredSchema
   const { ExcludeObjects = false, ExcludeArrays = false } = opts
+  let RemovedNestedProperties = false
+  if (ExcludeObjects) {
+    RemovedNestedProperties = true
+    filteredSchema = FilterObjects(retSchema)
+  }
+  if (ExcludeArrays) {
+    RemovedNestedProperties = true
+    filteredSchema = FilterArrays(filteredSchema)
+  }
+  let HadNestedProperties = !_.isEqual(filteredSchema, retSchema)
+  return { Schema: filteredSchema, HadNestedProperties, RemovedNestedProperties }
+}
+
+function GetSchemaByPath(jsonSchema, dataPath) {
+  let retSchema = {}
   if (!_.isUndefined(jsonSchema) && !_.isUndefined(dataPath)) {
     // Get the first part of the path.
     const [firstKey] = dataPath.split('.', 1)
@@ -47,7 +63,7 @@ export function GetSchemaByDataPath(jsonSchema, dataPath, opts = {}) {
         const strRE = `^${firstKey}{1}\\.?`
         const regExPath = new RegExp(strRE, 'gi')
         const remainingPath = dataPath.replace(regExPath, '')
-        retSchema = GetSchemaByDataPath(firstKeySchema, remainingPath, opts)
+        retSchema = GetSchemaByPath(firstKeySchema, remainingPath)
       } else {
         // if simple array then add artifical columns for Array elements
         retSchema = firstKeySchema
@@ -63,12 +79,6 @@ export function GetSchemaByDataPath(jsonSchema, dataPath, opts = {}) {
     }
   } else {
     throw new Error('Invalid Param, jsonSchema or dataPath is empty.')
-  }
-  if (ExcludeObjects) {
-    retSchema = FilterObjects(retSchema)
-  }
-  if (ExcludeArrays) {
-    retSchema = FilterArrays(retSchema)
   }
   return retSchema
 }

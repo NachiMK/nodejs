@@ -5,7 +5,7 @@ const params = {
   DynamoTableSchemaId: 8,
   DataPipeLineTaskId: 107,
   DynamoTableName: 'int-client-benefits',
-  S3JsonSchemaPath: 's3://int-ods-data/dynamotableschema/client-benefits-20190108_184629866.json',
+  S3JsonSchemaPath: 's3://int-ods-data/dynamotableschema/client-benefits-20190125_161542727.json',
 }
 
 getAndSetVarsFromEnvFile(false)

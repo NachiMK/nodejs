@@ -1,6 +1,8 @@
 //@ts-check
 import pickBy from 'lodash/pickBy'
 import isUndefined from 'lodash/isUndefined'
+import size from 'lodash/size'
+import isEqual from 'lodash/isEqual'
 import odsLogger from '../../modules/log/ODSLogger'
 import {
   DynamicAttributeEnum,
@@ -13,7 +15,7 @@ import {
 } from '../../modules/ODSErrors/StageError'
 import { IsValidString } from '../../utils/string-utils/index'
 import { SchemaDiff } from '../../modules/json-sql-schema-diff'
-import { GetSchemaByDataPath } from '../../modules/json-schema-utils'
+import { GetSchemaOfSimplePropByDataPath } from '../../modules/json-schema-utils'
 import { executeCommand, getConnectionString } from '../../data/psql'
 import { KnexTable } from '../../data/psql/table/knexTable'
 import { getPreStageDefaultCols } from '../../modules/ODSConstants'
@@ -127,7 +129,7 @@ export class OdsPreStageToStage {
     }
     try {
       const tables = this.TablesToStage
-      this.LogMsgToODSLogger(`Staging Data, No Of Tables to Stage: ${tables.length}`)
+      this.LogMsgToODSLogger(`Staging Data, No Of Tables to Stage: ${size(tables)}`)
       // get JSON data from the S3 File
       if (isUndefined(this._JsonFroms3SchemaFile)) {
         this._JsonFroms3SchemaFile = await GetJSONFromS3Path(this.TaskAttributes[S3SchemaFileEnum])
@@ -184,7 +186,8 @@ export class OdsPreStageToStage {
     try {
       const jsonschema = await this.getTableJsonSchema(stgTblSchemaPath, table.Index)
       const objSchemaDiff = new SchemaDiff({
-        JsonSchema: jsonschema,
+        JsonSchema: jsonschema.Schema,
+        HadNestedProperties: jsonschema.HadNestedProperties,
         TableName: stgTblPrefix,
         TableSchema: tableSchema,
         DataTypeKey: 'db_type',
@@ -225,15 +228,20 @@ export class OdsPreStageToStage {
       //   return this._JsonFroms3SchemaFile
       // }
       const opts = { ExcludeObjects: true, ExcludeArrays: true }
-      const schema = GetSchemaByDataPath(this._JsonFroms3SchemaFile, pathNoRoot.join('.'), opts)
+      const schemabyDataResp = GetSchemaOfSimplePropByDataPath(
+        this._JsonFroms3SchemaFile,
+        pathNoRoot.join('.'),
+        opts
+      )
+      const schema = schemabyDataResp.Schema
       this.LogMsgToODSLogger(
         `Stage Table Prefix: ${stgTableSchemaPath}, Found in Schema: ${!isUndefined(schema)}`
       )
       if (!isUndefined(schema)) {
         if (schema['type'] === 'array') {
-          return schema.items
+          return { Schema: schema.items, HadNestedProperties: schemabyDataResp.HadNestedProperties }
         } else {
-          return schema
+          return { Schema: schema, HadNestedProperties: schemabyDataResp.HadNestedProperties }
         }
       } else {
         throw new Error(`Table schema at path: ${stgTableSchemaPath} is not Found in JSON Schema`)

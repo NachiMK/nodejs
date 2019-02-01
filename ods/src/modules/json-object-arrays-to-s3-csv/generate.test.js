@@ -3,7 +3,7 @@ let event = require('./event.json')
 
 describe('JsonObjectArrayToS3CSV - Unit Tests', () => {
   it.only('JsonObjectArrayToS3CSV should create CSV Files', async () => {
-    let curEvent = event[1]
+    let curEvent = event[2]
     const objJsonToCSV = new JsonObjectArrayToS3CSV(curEvent)
     expect.assertions(3)
     await objJsonToCSV.CreateFiles()

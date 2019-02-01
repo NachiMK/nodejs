@@ -176,6 +176,9 @@ export class ExportDynamoTableToS3 {
             return fileChunkSaveResult
           }
         }
+      } else {
+        // no lambda was provided so return the results that was sent in.
+        return saveResult
       }
     } catch (err2) {
       saveResult.CalledLambda = 'No-Errored'

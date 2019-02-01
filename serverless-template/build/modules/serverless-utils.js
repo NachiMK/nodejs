@@ -65,7 +65,7 @@ function getSubdomainPrefix(apiRootName = 'api', stage) {
   if (stage === 'int') return `int-${apiRootName}`;
   if (stage === 'dev') return `dev-${apiRootName}`;
 
-  centerText('WARNING: Couldn\'t detect STAGE');
+  centerText("WARNING: Couldn't detect STAGE");
   return `dev-${apiRootName}`;
 }
 //# sourceMappingURL=serverless-utils.js.map

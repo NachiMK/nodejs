@@ -81,10 +81,11 @@
     "knex:migrate:int": "babel-node node_modules/.bin/knex migrate:latest --env int",
     "knex:migrate:prod": "babel-node node_modules/.bin/knex migrate:latest --env prod",
     "prettier": "prettier --config .prettierrc --write src/**/*.js",
-    "release:major": "TYPE=major ./devops/release.sh",
-    "release:minor": "TYPE=minor ./devops/release.sh",
-    "release:patch": "TYPE=patch ./devops/release.sh",
-    "hotfix": "./devops/hotfix.sh"
+    "release:major": "TYPE=major ./node_modules/@hixme/bitbucket-scripts/devops/release.sh",
+    "release:minor": "TYPE=minor ./node_modules/@hixme/bitbucket-scripts/devops/release.sh",
+    "release:patch": "TYPE=patch ./node_modules/@hixme/bitbucket-scripts/devops/release.sh",
+    "release:unwind": "./node_modules/@hixme/bitbucket-scripts/devops/release.sh -u",
+    "hotfix": "./node_modules/@hixme/bitbucket-scripts/devops/hotfix.sh"
   },
   "dependencies": {
     "@hixme/before-after-middleware": "^2.2.1",
@@ -105,14 +106,14 @@
     "node-fetch": "2.0.0",
     "objection": "1.2.2",
     "pg": "7.4.3",
-    "sqlite3": "4.0.2",
     "serverless-content-encoding": "1.1.0",
     "strip-ansi": "4.0.0",
     "uuid": "3.2.1",
-    "warewolf": "2.0.6"
+    "warewolf": "2.0.6",
+    "winston": "3.2.1"
   },
   "devDependencies": {
-    "@hixme/pull-request-docs": "0.6.0",
+    "@hixme/bitbucket-scripts": "^6.2.4",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.0",
     "babel-eslint": "8.2.2",
@@ -160,6 +161,11 @@
       "eslint",
       "git add"
     ]
+  },
+  "hixmeDevScripts": {
+    "slackServiceChannel": "eng-services",
+    "slackReleaseChannel": "releases-services",
+    "slackHook": "https://hooks.slack.com/services/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"
   },
   "jest": {
     "testEnvironment": "node",

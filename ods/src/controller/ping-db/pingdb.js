@@ -7,7 +7,7 @@ require('dotenv').config()
 pg.types.setTypeParser(20, 'text', parseInt)
 pg.types.setTypeParser(1700, parseFloat)
 
-const Query = 'SELECT "AttributeId" FROM ods."Attribute" LIMIT 1;'
+const Query = 'SELECT CURRENT_TIMESTAMP AS "ServerCurrentTime"'
 const { STAGE } = process.env
 const dbConnString = process.env[`${STAGE}_ODSCONFIG_PG`]
 

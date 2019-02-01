@@ -1,0 +1,55 @@
+{
+  "DynamoTableName": "int-ods-testtable-1",
+  "S3Bucket": "int-ods-data",
+  "RawSchema": "s3://int-ods-data/unit-test/testtable-1/data760/testtable-1-ObjNoProp-raw-schema.json",
+  "CombinedOutput": "s3://int-ods-data/unit-test/testtable-1/data760/testtable-1-ObjNoProp-combined-",
+  "DynamoTableToS3Params": {
+    "S3FilePrefix": "unit-test/testtable-1/data760/testtable-1-ObjNoProp-",
+    "AppendDateTime": false,
+    "LogLevel": "info",
+    "RowsPerFile": 250,
+    "LambdaFunctionToSave": "",
+    "Stage": "int",
+    "ScanLimit": 250,
+    "StartIndex": 1,
+    "RecursionCount": 0,
+    "MaxRecursion": 50
+  },
+  "JsonDataNormalizerParams": {
+    "Overwrite": "yes",
+    "S3UniformJsonPrefix": "unit-test/testtable-1/data760/UniformJSON-",
+    "S3FlatJsonPrefix": "unit-test/testtable-1/data760/FlatJSON-",
+    "BatchId": 888,
+    "LogLevel": "info"
+  },
+  "FlatToCSV": {
+    "S3OutputKeyPrefix": "unit-test/testtable-1/data760/CSVFile-",
+    "LogLevel": "info",
+    "Options": {
+      "splitEachArrayToSeparateFile": true,
+      "appendObjectKeyToFileName": true,
+      "appendDateTimeToFileName": false,
+      "dateTimeFormat": "YYYYMMDD_HHmmssSSS",
+      "delimiter": ",",
+      "eol": "\n",
+      "fileExtentions": ".csv"
+    }
+  },
+  "CSVToPostgres": {
+    "DBConnection": "postgres://odsddb_user:H!xme_ddb_ah_dev1@primary-01.cluster-cwoqm2lwdsxk.us-west-2.rds.amazonaws.com/odsdynamodb_dev",
+    "BatchId" : 44,
+    "LogLevel": "info",
+    "S3Options": {
+        "SaveIntermediatFilesToS3": true,
+        "S3OutputBucket": "int-ods-data",
+        "S3OutputKeyPrefix": "unit-test/testtable-1/data760/dbschema-"
+    },
+    "DBOptions" : {
+        "TableSchema" : "raw",
+        "IgnoreColumns" : [],
+        "AppendDateTimeToTable" : true,
+        "AppendBatchId" : true,
+        "DropTableIfExists": true
+    }
+}
+}

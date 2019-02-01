@@ -30,6 +30,7 @@ export class SchemaDiff {
     this._tableName = params.TableName || ''
     this._tableSchema = params.TableSchema || 'public'
     this._dataTypeKey = params.DataTypeKey || 'db_type'
+    this._hadNestedProperties = params.HadNestedProperties || false
     this._dbConnection = params.DBConnection || ''
     this._dbTypesFromJson = undefined
   }
@@ -50,6 +51,9 @@ export class SchemaDiff {
   }
   get DataTypeKey() {
     return this._dataTypeKey
+  }
+  get HadNestedProperties() {
+    return this._hadNestedProperties
   }
 
   async TableExists() {
@@ -178,6 +182,19 @@ export class SchemaDiff {
         NewTable: {},
       }
       jDiff.NewTable = sourceSchema
+      // DATA-760, Solution 2:
+      if (
+        (Object.keys(sourceSchema).length === 0 && this.HadNestedProperties) ||
+        Object.keys(sourceSchema).length > 0
+      ) {
+        jDiff.CreateNewTable = true
+      } else {
+        throw new Error(
+          `FinScheamDiff, Issue in diff for New Table. SourceSchema Length: ${
+            Object.keys(sourceSchema).length
+          }, JsonSchema Had Nested Props: ${this.HadNestedProperties}`
+        )
+      }
     } else {
       // compare and find diff
       jDiff = this.GetJsonDiff(tblSchema, sourceSchema)
@@ -277,7 +294,10 @@ export class SchemaDiff {
     try {
       if (jsonDiff) {
         const objtbl = new KnexTable({ TableName: this.TableName, TableSchema: this.TableSchema })
-        if (!isUndefined(jsonDiff.NewTable) && size(jsonDiff.NewTable) > 0) {
+        // Fixing DATA-760, Solution 2: Some time New table doesn't have any columns
+        // if the original objects didn't have any simple properties.
+        //if (!isUndefined(jsonDiff.NewTable) && size(jsonDiff.NewTable) > 0) {
+        if (!isUndefined(jsonDiff.NewTable) && jsonDiff.CreateNewTable) {
           // create new table with all columns
           if (!isEmpty(defaultColsForNewTable)) {
             Object.assign(defaultColsForNewTable, jsonDiff.NewTable)

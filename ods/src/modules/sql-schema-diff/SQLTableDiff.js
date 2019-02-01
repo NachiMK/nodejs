@@ -91,6 +91,7 @@ export class SQLTableDiff {
         })
         if (isEmpty(defOutput.TargetDefintion)) {
           jDiff.NewTable = {}
+          jDiff.CreateNewTable = true
           Object.assign(jDiff.NewTable, defOutput.SourceDefinition)
         } else {
           jDiff = await objSchDiff.GetJsonDiff(
