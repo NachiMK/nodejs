@@ -1,7 +1,7 @@
 {
-    "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/csv/test-clients-CSVFile-0-clients.csv",
-    "S3OutputBucket": "dev-ods-data",
-    "S3OutputKeyPrefix": "unit-test/clients/dbschema/clients-schema-bycsv-",
+    "S3DataFilePath": "s3://int-ods-data/unit-test/carrier-messages/10354-10357-CSV-0-carrier-messages.csv",
+    "S3OutputBucket": "int-ods-data",
+    "S3OutputKeyPrefix": "unit-test/carrier-messages/10354-10357-schema-bycsv-",
     "LogLevel": "info",
     "Options": {
         "appendDateTimeToFileName": true,

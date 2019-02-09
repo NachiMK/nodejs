@@ -11,7 +11,7 @@ async function TestModules() {
   let event = getEventFromParams()
   getAndSetVarsFromEnvFile(false)
   try {
-    event.JsonSchemaFilePath = '' //await Step1_CreateSchema(event)
+    event.JsonSchemaFilePath = await Step1_CreateSchema(event)
     event.DataFile = await Step2_GetDataFile(event)
     event.CombinedSchemaFile = await Step3_CreateSchemaFromData(event)
     event.S3FlatJsonFile = await Step4_NormalizeData(event)

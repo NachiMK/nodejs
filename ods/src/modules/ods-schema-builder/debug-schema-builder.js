@@ -8,6 +8,12 @@ const FileOptions = {
     Output:
       's3://int-ods-data/unit-test/client-benefits/schema-builder/client-benefits-simple-combined-',
   },
+  clientpp: {
+    DataFile:
+      's3://int-ods-data/dynamodb/client-price-points/initial/15012019/client-price-points-1-to-100-20190115_225249855.json',
+    Output: 's3://int-ods-data/unit-test/client-price-points/test-clients-Schema-',
+    RawSchema: 's3://int-ods-data/dynamotableschema/client-price-points-20190108_101006666.json',
+  },
   Full: {
     DataFile:
       's3://int-ods-data/unit-test/client-benefits/schema-builder/client-benefits-full-data.json',
@@ -33,9 +39,9 @@ process.argv.forEach((val, index) => {
 let schemParams
 if (process.argv && process.argv.length > 2 && process.argv[2] && process.argv[2].length > 0) {
   console.log(`File Type to process as per command line Args: ${process.argv[2]}`)
-  schemParams = FileOptions[process.argv[2]]
+  schemParams = FileOptions[`${process.argv[2]}`]
 }
-if (schemParams) {
+if (!schemParams) {
   schemParams = FileOptions.Bare
   console.error(`Invalid Option was sent, set to Simple/Full/Bare, for now running with Bare files`)
 }

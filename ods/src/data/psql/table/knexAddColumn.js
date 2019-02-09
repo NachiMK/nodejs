@@ -34,8 +34,13 @@ export function addBigSerial(knexTable, colName) {
   knexTable.specificType(colName, 'bigserial')
 }
 
-export function addString(knexTable, colName, opts = { length: 510 }) {
-  knexTable.string(colName, opts.length)
+export function addString(knexTable, colName, opts = { length: 512 }) {
+  //DATA-742
+  if (opts.length && opts.length > 512) {
+    knexTable.text(colName)
+  } else {
+    knexTable.string(colName, opts.length)
+  }
 }
 
 export function addBool(knexTable, colName) {

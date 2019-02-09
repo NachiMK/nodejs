@@ -264,9 +264,10 @@ export class SchemaDiff {
         }
       })
       // compare, position of column does not matter
-      forEach(dynamoJsonSchema, (dynamoCol, srcColName) => {
+      forEach(dynamoJsonSchema, (dynamoCol, srcFullColName) => {
         // const srcColName = Object.keys(dynamoCol)[0]
         // column exists
+        const srcColName = srcFullColName.substr(0, 63)
         const targetCol = sqlTableSchema[srcColName]
         if (!isUndefined(targetCol)) {
           // Get updated type
@@ -299,9 +300,7 @@ export class SchemaDiff {
         //if (!isUndefined(jsonDiff.NewTable) && size(jsonDiff.NewTable) > 0) {
         if (!isUndefined(jsonDiff.NewTable) && jsonDiff.CreateNewTable) {
           // create new table with all columns
-          if (!isEmpty(defaultColsForNewTable)) {
-            Object.assign(defaultColsForNewTable, jsonDiff.NewTable)
-          }
+          Object.assign(defaultColsForNewTable, jsonDiff.NewTable)
           dbScript = await objtbl.getCreateTableSQL(defaultColsForNewTable)
         } else {
           // alter table - ADD columns

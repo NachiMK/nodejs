@@ -15,9 +15,9 @@
     "log_tailing_interval": 5000,
     "region": "us-west-2",
     "runtime": "nodejs8.10",
-    "STAGE": "dev",
-    "stage": "dev",
-    "log_dbname": "ODSLog_dev",
+    "STAGE": "int",
+    "stage": "int",
+    "log_dbname": "ODSLog_int",
     "odsloglevel": "info"
   },
   "scripts": {

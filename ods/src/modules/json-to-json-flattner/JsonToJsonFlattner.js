@@ -201,8 +201,9 @@ export class JsonToJsonFlattner {
         if (!_.isEmpty(rows) && _.size(rows) > 0) {
           path = rows[0][this.globalDefaultUriPath] || '~Unknown'
           if (!_.isUndefined(path) && path.length > 0) {
-            // path = path.substring(1)
-            path = path.substring(1).replace(/\//gi, '.')
+            // only replace if there is a single Slash
+            // if the slash is escaped then dont replace it.
+            path = path.substring(1).replace(/([^\^]{1}[^~]{1})\//gi, '$1.')
           }
         }
         // extract ods_path
@@ -357,7 +358,7 @@ export class JsonToJsonFlattner {
     )
 
     if (childObj && !_.isUndefined(parentId)) {
-      childObj[this.globalDefaultParentPath] = `/${parentName}`
+      childObj[this.globalDefaultParentPath] = `/${parentName.replace(/\//gi, '^~/')}`
       childObj[this.gloablDefaultParentUri] = `/${parentId}`
 
       this.LogJson(`after adding parent at level: ${parentLevel} to me :`, childObj, 'debug')
@@ -413,7 +414,7 @@ export class JsonToJsonFlattner {
   addUriPath(objToAdd, objName) {
     if (!_.isUndefined(objToAdd) && _.isObject(objToAdd)) {
       if (!objToAdd[this.globalDefaultUriPath]) {
-        objToAdd[this.globalDefaultUriPath] = `/${objName}`
+        objToAdd[this.globalDefaultUriPath] = `/${objName.replace(/\//gi, '^~/')}`
       }
     }
   }

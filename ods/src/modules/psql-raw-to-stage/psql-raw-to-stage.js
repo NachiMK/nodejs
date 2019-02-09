@@ -198,10 +198,12 @@ export class PostgresRawToStage {
     if (this._JsonFroms3SchemaFile && stgTableSchemaPath) {
       // strip the first part
       const [, ...pathNoRoot] = stgTableSchemaPath.split('.')
+      // remove escape characters
+      const dataPath = pathNoRoot.join('.').replace(/\^~/gi, '')
       const opts = { ExcludeObjects: true, ExcludeArrays: true }
       const schemaByDataResp = GetSchemaOfSimplePropByDataPath(
         this._JsonFroms3SchemaFile,
-        pathNoRoot.join('.'),
+        dataPath,
         opts
       )
       const schema = schemaByDataResp.Schema

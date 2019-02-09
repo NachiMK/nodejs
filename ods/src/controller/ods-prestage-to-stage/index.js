@@ -80,12 +80,15 @@ export class OdsPreStageToStage {
         }
         if (AttributeName.match(regExJ)) {
           const [idx] = filtered[item].split('-')
-          const tblname = filtered[item].replace(/\d+-/gi, '').replace(/-/gi, '_')
+          const tblname = filtered[item]
+            .replace(/\d+-/gi, '')
+            .replace(/-/gi, '_')
+            .replace(/[\W]+/gi, '')
           retCollection[fileCommonKey] = {
             [JsonObjectNameEnum]: filtered[item],
             [StageTablePrefix]: `${stgParentPrefix}${tblname}`,
             Index: parseInt(idx),
-            S3OuputPrefix: `${s3Prefix}-${filtered[item]}-db`,
+            S3OuputPrefix: `${s3Prefix}-${filtered[item].replace(/[^\w-]/gm, '')}-db`,
             [JsonSchemaPathPropName]: filtered[`${JsonSchemaPathEnum.replace(/#/gi, idx)}`],
           }
         } else if (AttributeName.match(regExT)) {
@@ -224,13 +227,12 @@ export class OdsPreStageToStage {
     if (this._JsonFroms3SchemaFile && stgTableSchemaPath) {
       // strip the first part
       const [, ...pathNoRoot] = stgTableSchemaPath.split('.')
-      // if (rootItem) {
-      //   return this._JsonFroms3SchemaFile
-      // }
+      // remove escape characters
+      const dataPath = pathNoRoot.join('.').replace(/\^~/gi, '')
       const opts = { ExcludeObjects: true, ExcludeArrays: true }
       const schemabyDataResp = GetSchemaOfSimplePropByDataPath(
         this._JsonFroms3SchemaFile,
-        pathNoRoot.join('.'),
+        dataPath,
         opts
       )
       const schema = schemabyDataResp.Schema

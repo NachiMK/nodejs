@@ -161,10 +161,17 @@ export class KnexTable {
     let retType // = 'VARCHAR(256)'
     if (column) {
       const datatypeEnum = DataTypeTransferEnum[column.DataType]
+      const textEnum = DataTypeTransferEnum['text']
+      const useText = !isUndefined(datatypeEnum.UseTextForLongerStrings)
+        ? datatypeEnum.UseTextForLongerStrings
+        : false
       if (datatypeEnum) {
         // check if provided column has any length information
         if (!isUndefined(column.DataLength) && column.DataLength > 0) {
-          retType = `${datatypeEnum.postgresType}(${column.DataLength})`
+          retType =
+            useText && column.DataLength > 512
+              ? textEnum.postgresType
+              : `${datatypeEnum.postgresType}(${column.DataLength})`
         } else if (!isUndefined(column.precision) && column.precision > 0) {
           // precision
           const scale = column.scale || 0

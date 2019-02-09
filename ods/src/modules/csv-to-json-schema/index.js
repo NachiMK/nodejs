@@ -1,7 +1,8 @@
 import CSVParser from 'csv-parse/lib/sync'
-import jsonSchemaGen from 'json-schema-generator'
+// import jsonSchemaGen from 'json-schema-generator'
 import { format as _format, transports as _transports, createLogger } from 'winston'
 import { GetStringFromS3Path, SaveJsonToS3File } from '../s3ODS/index'
+import { generateSchemaByData } from '../json-schema-utils/index' //DATA-742
 import { S3Params } from '../s3-params/index'
 
 export class CSVToJsonSchema {
@@ -29,7 +30,7 @@ export class CSVToJsonSchema {
     return this.loglevel
   }
 
-  async getJsonSchemaFromCSV() {
+  async getJsonSchemaFromCSV(tableName = '') {
     this.ValidateParams()
     try {
       // Get data from S3
@@ -39,9 +40,13 @@ export class CSVToJsonSchema {
         const jsondata = CSVParser(inputdata, { columns: true })
         // process data.
         this.logger.log('debug', `CSV Data:${JSON.stringify(jsondata)}`)
-        const jsonSchema = jsonSchemaGen(jsondata)
+        //DATA-742
+        const jsonSchema = generateSchemaByData(tableName, jsondata, {
+          GenerateLengths: true,
+          SimpleArraysToObjects: false,
+        })
         this.logger.log('debug', `Json Schema from CSV Data:${JSON.stringify(jsonSchema)}`)
-        return jsonSchema
+        return jsonSchema.schema
       }
     } catch (err) {
       const e = new Error(`Error in getting Json Schema from CSV. ${err.message}`)

@@ -1,10 +1,10 @@
 {
   "DynamoTableName": "int-ods-testtable-1",
   "S3Bucket": "int-ods-data",
-  "RawSchema": "s3://int-ods-data/unit-test/testtable-1/data760/testtable-1-ObjNoProp-raw-schema.json",
-  "CombinedOutput": "s3://int-ods-data/unit-test/testtable-1/data760/testtable-1-ObjNoProp-combined-",
+  "RawSchema": "s3://int-ods-data/unit-test/testtable-1/data768/testtable-1-raw-schema.json",
+  "CombinedOutput": "s3://int-ods-data/unit-test/testtable-1/data768/testtable-1-combined-",
   "DynamoTableToS3Params": {
-    "S3FilePrefix": "unit-test/testtable-1/data760/testtable-1-ObjNoProp-",
+    "S3FilePrefix": "unit-test/testtable-1/data768/initial-",
     "AppendDateTime": false,
     "LogLevel": "info",
     "RowsPerFile": 250,
@@ -17,13 +17,13 @@
   },
   "JsonDataNormalizerParams": {
     "Overwrite": "yes",
-    "S3UniformJsonPrefix": "unit-test/testtable-1/data760/UniformJSON-",
-    "S3FlatJsonPrefix": "unit-test/testtable-1/data760/FlatJSON-",
+    "S3UniformJsonPrefix": "unit-test/testtable-1/data768/UniformJSON-",
+    "S3FlatJsonPrefix": "unit-test/testtable-1/data768/FlatJSON-",
     "BatchId": 888,
     "LogLevel": "info"
   },
   "FlatToCSV": {
-    "S3OutputKeyPrefix": "unit-test/testtable-1/data760/CSVFile-",
+    "S3OutputKeyPrefix": "unit-test/testtable-1/data768/CSVFile-",
     "LogLevel": "info",
     "Options": {
       "splitEachArrayToSeparateFile": true,
@@ -42,7 +42,7 @@
     "S3Options": {
         "SaveIntermediatFilesToS3": true,
         "S3OutputBucket": "int-ods-data",
-        "S3OutputKeyPrefix": "unit-test/testtable-1/data760/dbschema-"
+        "S3OutputKeyPrefix": "unit-test/testtable-1/data768/dbschema-"
     },
     "DBOptions" : {
         "TableSchema" : "raw",

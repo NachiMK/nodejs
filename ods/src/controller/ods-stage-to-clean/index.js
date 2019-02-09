@@ -116,14 +116,17 @@ export class ODSStageToClean {
         }
         if (AttributeName.match(regExJ)) {
           const [idx] = filtered[item].split('-')
-          const tblname = filtered[item].replace(/\d+-/gi, '').replace(/-/gi, '_')
+          const tblname = filtered[item]
+            .replace(/\d+-/gi, '')
+            .replace(/-/gi, '_')
+            .replace(/[\W]+/gi, '')
           retCollection[fileCommonKey] = {
             Index: parseInt(idx),
             [StageTblEnum]: filtered[`${fileCommonKey}.${StageTblEnum}`],
             [JsonSchemaPathPropName]: filtered[`${fileCommonKey}.${JsonSchemaPathPropName}`],
             [JsonObjectNameEnum]: filtered[item],
             [CleanTableNameEnum]: `${ParentPrefix}${tblname}`,
-            S3OutputPrefix: `${s3Prefix}${filtered[item]}-db`,
+            S3OutputPrefix: `${s3Prefix}${filtered[item].replace(/[^\w-]/gm, '')}-db`,
             StageRowCount: filtered[`${fileCommonKey}.${RowCntEnum}`],
           }
         }
@@ -273,10 +276,11 @@ export class ODSStageToClean {
       IsRoot: false,
     }
     const [...lineagePath] = jsonSchemaPath.split('.')
-    const tbl =
-      Array.isArray(lineagePath) && lineagePath.length > 0
-        ? lineagePath[lineagePath.length - 1].replace(/-/gi, '_')
-        : ''
+    const tbl = table[CleanTableNameEnum]
+    // const tbl =
+    //   Array.isArray(lineagePath) && lineagePath.length > 0
+    //     ? lineagePath[lineagePath.length - 1].replace(/-/gi, '_')
+    //     : ''
     let parentid = ''
     let rootid = ''
     let IsRootTable = true

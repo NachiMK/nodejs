@@ -175,7 +175,8 @@ export class CsvToPostgres {
     }
     const objJsonSchemaGen = new CSVToJsonSchema(objParams)
     // get schema
-    this._jsonschema = await objJsonSchemaGen.getJsonSchemaFromCSV()
+    // DATA-742 fix
+    this._jsonschema = await objJsonSchemaGen.getJsonSchemaFromCSV(this.TableNamePrefix)
     // save file
     if (this.S3Options._saveIntermediatFilesToS3) {
       const s3filepath = await objJsonSchemaGen.saveJsonSchemaFromCSV()

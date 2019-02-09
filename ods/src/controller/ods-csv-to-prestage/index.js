@@ -97,7 +97,7 @@ export class OdsCsvToPreStage {
 
   async saveFile(csvFileAndKey) {
     const csvFile = csvFileAndKey[DynamicAttributeEnum.csvFileName.value]
-    const jsonkey = csvFileAndKey[DynamicAttributeEnum.JsonObjectName.value]
+    const jsonkey = csvFileAndKey[DynamicAttributeEnum.JsonObjectName.value].replace(/[\W]+/gi, '')
     odsLogger.log('debug', `CSV to Postgres File: ${csvFile}, Json Key: ${{ jsonkey }}`)
     const event = this.getCsvToPostgresInput(csvFile, jsonkey.replace('-', '_'))
     const objCsvToPsql = new CsvToPostgres(event)

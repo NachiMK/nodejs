@@ -36,5 +36,24 @@
       "AppendBatchId": true,
       "DropTableIfExists": true
     }
+  },
+  {
+    "S3DataFilePath": "s3://int-ods-data/unit-test/carrier-messages/10354-10357-CSV-0-carrier-messages.csv",
+    "TableNamePrefix": "carrier_msgs",
+    "DBConnection": "",
+    "BatchId": 10357,
+    "LogLevel": "info",
+    "S3Options": {
+      "SaveIntermediatFilesToS3": true,
+      "S3OutputBucket": "int-ods-data",
+      "S3OutputKeyPrefix": "unit-test/data742/10354-10357-dbschema-carrier-messages-"
+    },
+    "DBOptions": {
+      "TableSchema": "raw",
+      "IgnoreColumns": [],
+      "AppendDateTimeToTable": true,
+      "AppendBatchId": true,
+      "DropTableIfExists": true
+    }
   }
 ]

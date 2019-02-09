@@ -125,7 +125,8 @@ BEGIN
         -- Delete Attributes
         DELETE  FROM ods."TaskQueueAttributeLog"
         WHERE   "DataPipeLineTaskQueueId" in (SELECT "ResetId" FROM TmpKeysToUpdate AS T WHERE T."ResetId" > 0)
-        AND     "AttributeName" != 'PreviousTaskId';
+        AND     "AttributeName" != 'PreviousTaskId'
+        AND     "DataPipeLineTaskQueueId" != ParentTaskId;
 
     ELSIF ResetOption IN ('DeleteTask', 'DeleteTaskAndSibilings') THEN
         -- Delete Attributes First

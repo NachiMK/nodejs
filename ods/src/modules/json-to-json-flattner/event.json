@@ -1,8 +1,7 @@
 {
-    "xS3DataFilePath": "s3://dev-ods-data/unit-test/clients/test-clients-UniformJson-20181010_172935739.json",
-    "S3DataFilePath": "s3://dev-ods-data/unit-test/client-census/474-476-client-census-UniformJSON-20181004_225238115.json",
-    "TableName": "client-census",
-    "BatchId": "476",
+    "S3DataFilePath": "s3://int-ods-data/dynamodb/ods-testtable-1/initial/30012019/ods-testtable-1-1-to-1-20190130_233301421.json",
+    "TableName": "ods-testtable-1",
+    "BatchId": "999871",
     "OutputType": "Return-in-output",
     "LogLevel": "warn"
 }

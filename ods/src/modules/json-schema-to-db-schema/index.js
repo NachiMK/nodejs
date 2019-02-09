@@ -1,6 +1,4 @@
-import isArray from 'lodash/isArray'
-import isNumber from 'lodash/isNumber'
-import isEmpty from 'lodash/isEmpty'
+import _ from 'lodash'
 import moment from 'moment'
 import { isObject } from 'util'
 import { format as _format, transports as _transports, createLogger } from 'winston'
@@ -74,7 +72,7 @@ export class JsonSchemaToDBSchema {
       appendBatchId: true,
     }
     let ignoreColumns = []
-    if (opts.IgnoreColumns && isArray(opts.IgnoreColumns) && opts.IgnoreColumns.length > 0) {
+    if (opts.IgnoreColumns && _.isArray(opts.IgnoreColumns) && opts.IgnoreColumns.length > 0) {
       ignoreColumns = opts.IgnoreColumns
     }
     this._dbOptions = {
@@ -105,9 +103,12 @@ export class JsonSchemaToDBSchema {
     }
 
     async function getColumnsAndType(jsonSchema, dataTypeKey) {
-      if (jsonSchema && jsonSchema.items && dataTypeKey) {
-        // extract all columns and types based on type column\
-        const matchingSchema = ExtractMatchingKeyFromSchema(jsonSchema.items, dataTypeKey)
+      if (jsonSchema && dataTypeKey) {
+        // extract all columns and types based on type column
+        //DATA-742
+        const matchingSchema = ExtractMatchingKeyFromSchema(jsonSchema, dataTypeKey, {
+          IncludeMaxLength: true,
+        })
         // console.log(`Matching schema: ${JSON.stringify(matchingSchema)}`)
         // if we didnt find any columns, throw error
         if (matchingSchema && isObject(matchingSchema) && Object.keys(matchingSchema).length > 0) {
@@ -120,7 +121,9 @@ export class JsonSchemaToDBSchema {
         }
       } else {
         throw new Error(
-          `Invalid Param. JsonSchema: ${jsonSchema} or dataTypeKey: ${dataTypeKey} was not provided to get Columns and Types.`
+          `Invalid Param. JsonSchema: ${JSON.stringify(
+            jsonSchema
+          )} or dataTypeKey: ${dataTypeKey} was not provided to get Columns and Types.`
         )
       }
     } // end of getSchema
@@ -145,8 +148,22 @@ export class JsonSchemaToDBSchema {
               for (const colIndex in colNames) {
                 try {
                   // find what action to take
-                  const objEnum = JsonToKnexDataTypeEnum[colsAndTypes[colNames[colIndex]]]
+                  //DATA-742
+                  const objEnum = _.cloneDeep(
+                    JsonToKnexDataTypeEnum[colsAndTypes[colNames[colIndex]].type]
+                  )
                   // create column by calling appropriate function
+                  // do we have a length if so use it? DATA-742
+                  if (
+                    objEnum.opts &&
+                    !_.isUndefined(objEnum.opts['length']) &&
+                    !_.isUndefined(colsAndTypes[colNames[colIndex]].maxLength)
+                  ) {
+                    objEnum.opts['length'] =
+                      objEnum.opts['length'] >= colsAndTypes[colNames[colIndex]].maxLength
+                        ? objEnum.opts['length']
+                        : colsAndTypes[colNames[colIndex]].maxLength
+                  }
                   objEnum.AddColFunction(table, colNames[colIndex], objEnum.opts || {})
                 } catch (err) {
                   const e = new Error(
@@ -207,7 +224,7 @@ export class JsonSchemaToDBSchema {
   }
 
   getTableName() {
-    const batch = this.AppendBatchId && isNumber(this.BatchId) ? `_${this.BatchId}` : ''
+    const batch = this.AppendBatchId && _.isNumber(this.BatchId) ? `_${this.BatchId}` : ''
     const timestamp = this.AppendDateTimeToTable ? `_${moment().format('YYMMDD_HHmmss')}` : ''
     const tblName = `${this.TableNamePrefix}${batch}${timestamp}`
       .replace(/[\W]+/g, '')
@@ -221,7 +238,7 @@ export class JsonSchemaToDBSchema {
       // TODO
       this.S3Parameters.ValidateOutputFiles()
       let schema = schemaToSave
-      if (!schemaToSave || isEmpty(schemaToSave)) {
+      if (!schemaToSave || _.isEmpty(schemaToSave)) {
         schema = await this.createTableScriptByS3SchemaFile()
       }
       if (schema) {

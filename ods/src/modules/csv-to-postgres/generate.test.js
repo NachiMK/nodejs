@@ -2,7 +2,20 @@ import { CsvToPostgres } from './index'
 import { getAndSetVarsFromEnvFile } from '../../../env'
 
 describe('CsvToPostgres - Unit Tests', () => {
-  it.only('CsvToPostgres - should Load testtable-1', async () => {
+  it.only('CsvToPostgres - should Load carrier-messages', async () => {
+    await getAndSetVarsFromEnvFile(false)
+    const key = `int_odsdynamodb_PG`.toUpperCase()
+    const event = require('./event.json')
+    event[2].DBConnection = process.env[key]
+    const obj = new CsvToPostgres(event[2])
+    expect.assertions(3)
+    const resp = await obj.LoadData()
+    console.log('resp', JSON.stringify(resp, null, 2))
+    expect(resp).toBeDefined()
+    expect(resp.RowCount).toBeDefined()
+    expect(resp.RowCount).toBeGreaterThan(0)
+  })
+  it.skip('CsvToPostgres - should Load testtable-1', async () => {
     await getAndSetVarsFromEnvFile(false)
     const event = require('./event.json')
     const obj = new CsvToPostgres(event[1])
