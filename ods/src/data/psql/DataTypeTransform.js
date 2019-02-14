@@ -526,3 +526,16 @@ export function GetNewType(existingType, changeToType) {
   // return it
   return retNewType
 }
+
+/**
+ * Removes any characters that are NOT
+ *  a-z
+ *  A-Z
+ *  0-9
+ *  _ (underscore)
+ *  - (hypen)
+ */
+export function GetCleanColumnName(colName) {
+  // remove any char other than [a-z,A-Z,0-9,_,-]
+  return colName.replace(/[^a-zA-Z0-9_-]/gi, '')
+}

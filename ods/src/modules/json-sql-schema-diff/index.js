@@ -11,6 +11,7 @@ import {
   DataTypeTransferEnum,
   JsonPostgreTypeMappingEnum,
   IsValidTypeObject,
+  GetCleanColumnName,
 } from '../../data/psql/DataTypeTransform'
 
 /**
@@ -137,7 +138,7 @@ export class SchemaDiff {
    *    "datetimePrecision": -1
    *  }
    */
-  async JsonSchemaToDBSchema() {
+  async JsonSchemaToDBSchema(cleanColNames) {
     const dbSchema = {}
     try {
       // get json schema
@@ -152,7 +153,8 @@ export class SchemaDiff {
               `No Postgres Type available for Column: ${colName} and Type: ${colType.type}`
             )
           }
-          dbSchema[colName] = {
+          const cleanedName = cleanColNames ? GetCleanColumnName(colName) : colName
+          dbSchema[cleanedName] = {
             Position: idx,
             IsNullable: true,
             DataType: psqlTypeEnum.postgres.dataType,
@@ -170,10 +172,10 @@ export class SchemaDiff {
     return dbSchema
   }
 
-  async FindSchemaDiff() {
+  async FindSchemaDiff(cleanColNames) {
     let jDiff
     // convert to DB Schema
-    const sourceSchema = await this.JsonSchemaToDBSchema()
+    const sourceSchema = await this.JsonSchemaToDBSchema(cleanColNames)
     // get table schema
     const tblSchema = await this.TableSchemaToJson()
     if (isEmpty(tblSchema)) {
@@ -290,7 +292,11 @@ export class SchemaDiff {
     return output
   }
 
-  async GenerateSQLFromJsonDiff(jsonDiff, defaultColsForNewTable = {}) {
+  async GenerateSQLFromJsonDiff(
+    jsonDiff,
+    defaultColsForNewTable = {},
+    RemoveNonAlphaNumericCharsInColumnNames = true
+  ) {
     let dbScript = ''
     try {
       if (jsonDiff) {
@@ -301,15 +307,28 @@ export class SchemaDiff {
         if (!isUndefined(jsonDiff.NewTable) && jsonDiff.CreateNewTable) {
           // create new table with all columns
           Object.assign(defaultColsForNewTable, jsonDiff.NewTable)
-          dbScript = await objtbl.getCreateTableSQL(defaultColsForNewTable)
+          dbScript = await objtbl.getCreateTableSQL(
+            defaultColsForNewTable,
+            RemoveNonAlphaNumericCharsInColumnNames
+          )
         } else {
           // alter table - ADD columns
           if (!isUndefined(jsonDiff.AddedColumns) && size(jsonDiff.AddedColumns) > 0) {
-            dbScript = await objtbl.getAlterTableSQL(jsonDiff.AddedColumns, true)
+            dbScript = await objtbl.getAlterTableSQL(
+              jsonDiff.AddedColumns,
+              true,
+              RemoveNonAlphaNumericCharsInColumnNames
+            )
           }
           // alter table - modify columns
           if (!isUndefined(jsonDiff.AlteredColumns) && size(jsonDiff.AlteredColumns) > 0) {
-            dbScript = dbScript + (await objtbl.getAlterTableSQL(jsonDiff.AlteredColumns))
+            dbScript =
+              dbScript +
+              (await objtbl.getAlterTableSQL(
+                jsonDiff.AlteredColumns,
+                false,
+                RemoveNonAlphaNumericCharsInColumnNames
+              ))
           }
         }
       }
@@ -351,10 +370,14 @@ export class SchemaDiff {
     let script
     try {
       this.ValidParameters()
-      const jDiff = await this.FindSchemaDiff()
+      const jDiff = await this.FindSchemaDiff(opts.RemoveNonAlphaNumericCharsInColumnNames)
       // generate script
       const addCols = this.getTrackingCols(opts)
-      script = await this.GenerateSQLFromJsonDiff(jDiff, addCols)
+      script = await this.GenerateSQLFromJsonDiff(
+        jDiff,
+        addCols,
+        opts.RemoveNonAlphaNumericCharsInColumnNames
+      )
     } catch (err) {
       throw new Error(`Error in finding SQL Diff. ${err.message}`)
     }

@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Address": {
+      "type": "string",
+      "faker": "address.streetAddress"
+    },
+    "City": {
+      "type": "string",
+      "faker": "address.city"
+    },
+    "ChildrenCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "ZipCode": {
+      "type": "string",
+      "faker": "address.zipCode"
+    },
+    "FirstName": { "type": "string", "faker": "name.firstName" },
+    "Id": { "type": "string", "faker": "random.uuid" },
+    "LastName": { "type": "string", "faker": "name.lastName" },
+    "Family": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "properties": {
+          "Relation": {
+            "type": "string",
+            "chance": {
+              "pickone": [["Spouse", "Child"]]
+            }
+          },
+          "Name": {
+            "type": "string",
+            "faker": "name.firstName"
+          }
+        },
+        "required": ["Relation", "Name"]
+      }
+    },
+    "Benefits": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "properties": {
+          "Plan Rate": { "type": "number", "minimum": 100, "maximum": 600 },
+          "BenefitName": {
+            "type": "string",
+            "chance": {
+              "pickone": [
+                ["Health Insurance", "Short Term Disability", "Dental", "Vision", "Aflac"]
+              ]
+            }
+          },
+          "Math": {
+            "type": "object",
+            "properties": {
+              "MathName": { "type": "string" },
+              "Formulas": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 2,
+                "items": {
+                  "type": "string",
+                  "chance": {
+                    "pickone": [
+                      [
+                        "Math.EmployerPriceLife = Benefit * lookupRateForProduct(\"Life\", Math.Family.MonthlyRates) / 1000",
+                        "Math.EmployerPriceAdd = Benefit * lookupRateForProduct(\"ADD\", Math.Family.MonthlyRates) / 1000",
+                        "Math.EmployerPrice = Math.EmployerPriceAdd + Math.EmployerPriceLife",
+                        "Math.TotalPrice = Math.EmployerPriceAdd + Math.EmployerPriceLife",
+                        "Math.WorkerPrice = 0"
+                      ]
+                    ]
+                  }
+                }
+              },
+              "IsExempt": { "type": "boolean" }
+            },
+            "required": ["MathName", "Formulas", "IsExempt"]
+          },
+          "Plan Id": { "type": "integer", "minimum": 1, "maximum": 1000 }
+        },
+        "required": ["Plan Rate", "BenefitName", "Math", "Plan Id"]
+      }
+    },
+    "Beneficiaries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "faker": "name.firstName"
+      }
+    }
+  },
+  "required": [
+    "Address",
+    "City",
+    "ChildrenCount",
+    "ZipCode",
+    "FirstName",
+    "Id",
+    "LastName",
+    "Family",
+    "Beneficiaries",
+    "Benefits"
+  ]
+}

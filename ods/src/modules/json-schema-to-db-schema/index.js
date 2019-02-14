@@ -9,6 +9,7 @@ import { CleanUpBool } from '../../utils/bool-utils/index'
 import { ExtractMatchingKeyFromSchema } from '../json-extract-matching-keys'
 import { JsonToKnexDataTypeEnum } from '../../data/psql/table/json-to-knex-mapping'
 import { knexNoDB } from '../../data/psql/index'
+import { GetCleanColumnName } from '../../data/psql/DataTypeTransform'
 
 export class JsonSchemaToDBSchema {
   logger = createLogger({
@@ -63,6 +64,9 @@ export class JsonSchemaToDBSchema {
   get OutputTableName() {
     return this._outputTableName
   }
+  get CleanColumnNames() {
+    return this._dbOptions.removeNonAlphaNumericCharsInColumnNames
+  }
 
   setDBOptions(opts = {}) {
     const retOpts = {
@@ -70,6 +74,7 @@ export class JsonSchemaToDBSchema {
       dataTypeKey: 'type',
       appendDateTimeToTable: true,
       appendBatchId: true,
+      removeNonAlphaNumericCharsInColumnNames: true,
     }
     let ignoreColumns = []
     if (opts.IgnoreColumns && _.isArray(opts.IgnoreColumns) && opts.IgnoreColumns.length > 0) {
@@ -83,6 +88,10 @@ export class JsonSchemaToDBSchema {
       dataTypeKey: CleanUpString(opts.DataTypeKey, retOpts.dataTypeKey),
       appendDateTimeToTable: CleanUpBool(opts.AppendDateTimeToTable, retOpts.appendDateTimeToTable),
       appendBatchId: CleanUpBool(opts.AppendBatchId, retOpts.appendBatchId),
+      removeNonAlphaNumericCharsInColumnNames: CleanUpBool(
+        opts.RemoveNonAlphaNumericCharsInColumnNames,
+        retOpts.removeNonAlphaNumericCharsInColumnNames
+      ),
     }
   }
 
@@ -96,7 +105,8 @@ export class JsonSchemaToDBSchema {
       const dbScript = await this.getCreateTableSQL(
         this.TableSchema,
         this.OutputTableName,
-        colsAndTypes
+        colsAndTypes,
+        this.CleanColumnNames
       )
       this.logger.log('debug', `SQL Script:${dbScript}`)
       return dbScript
@@ -129,7 +139,7 @@ export class JsonSchemaToDBSchema {
     } // end of getSchema
   }
 
-  async getCreateTableSQL(tableSchema, tableName, colsAndTypes) {
+  async getCreateTableSQL(tableSchema, tableName, colsAndTypes, cleanColumnNames = true) {
     let knex
     let dbScript
     if (tableName && colsAndTypes) {
@@ -164,7 +174,10 @@ export class JsonSchemaToDBSchema {
                         ? objEnum.opts['length']
                         : colsAndTypes[colNames[colIndex]].maxLength
                   }
-                  objEnum.AddColFunction(table, colNames[colIndex], objEnum.opts || {})
+                  const nameOfColumn = cleanColumnNames
+                    ? GetCleanColumnName(colNames[colIndex])
+                    : colNames[colIndex]
+                  objEnum.AddColFunction(table, nameOfColumn, objEnum.opts || {})
                 } catch (err) {
                   const e = new Error(
                     `Error in adding column: ${colIndex} to Table: ${tableName}, error: ${

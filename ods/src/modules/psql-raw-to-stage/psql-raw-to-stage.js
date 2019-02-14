@@ -110,7 +110,7 @@ export class PostgresRawToStage {
     `
   }
 
-  async LoadData() {
+  async LoadData(RemoveNonAlphaNumericCharsInColumnNames = true) {
     this.IsValidParam()
     const retResp = {
       status: {
@@ -125,7 +125,7 @@ export class PostgresRawToStage {
 
       retResp.Attributes.StageTableName = `${this.StageTableName}`
       retResp.Attributes.JsonSchemaPath = this.PathToSchema
-      const tblDiff = await this.GetTableDiffScript()
+      const tblDiff = await this.GetTableDiffScript(RemoveNonAlphaNumericCharsInColumnNames)
 
       // default values for attributes
       retResp.Attributes.TableDiffExists = false
@@ -157,7 +157,7 @@ export class PostgresRawToStage {
     return retResp
   }
 
-  async GetTableDiffScript() {
+  async GetTableDiffScript(RemoveNonAlphaNumericCharsInColumnNames) {
     const output = {}
     const stgTblPrefix = this.StageTableName
     const stgTblSchemaPath = this.PathToSchema
@@ -172,7 +172,10 @@ export class PostgresRawToStage {
         DBConnection: this.DBConnection,
       })
       // get script
-      output.DBScript = await objSchemaDiff.SQLScript(this.getDefaultTrackingCols())
+      output.DBScript = await objSchemaDiff.SQLScript({
+        ...this.getDefaultTrackingCols(),
+        RemoveNonAlphaNumericCharsInColumnNames,
+      })
       output.TableSchema = this.StageTableSchema
       output.TableName = stgTblPrefix
       // save file

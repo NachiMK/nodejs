@@ -8,7 +8,8 @@ import {
 import { SaveStringToS3File } from '../../modules/s3ODS'
 import { SQLTableDiff } from '../../modules/sql-schema-diff/SQLTableDiff'
 import { IsValidString } from '../../utils/string-utils/index'
-import { executeCommand, getConnectionString, executeScalar, executeQueryRS } from '../../data/psql'
+import { executeCommand, getConnectionString, executeQueryRS } from '../../data/psql'
+import { GetCleanColumnName } from '../../data/psql/DataTypeTransform'
 import { getCleanTableDefaultCols, getPreStageDefaultCols } from '../../modules/ODSConstants'
 
 const JsonObjectNameEnum = DynamicAttributeEnum.JsonObjectName.value
@@ -137,7 +138,7 @@ export class ODSStageToClean {
     return {}
   }
 
-  async LoadData() {
+  async LoadData(RemoveNonAlphaNumericCharsInColumnNames = true) {
     const output = {
       status: {
         message: 'processing',
@@ -158,7 +159,11 @@ export class ODSStageToClean {
           const defaultColumns = this.getDefaultTrackingCols(table, tables)
           const colsToIgnore = getPreStageDefaultCols()
           // apply schema difference
-          const diffScript = await sqlTblDiffObj.GetSQLDiffScript(defaultColumns, colsToIgnore)
+          const diffScript = await sqlTblDiffObj.GetSQLDiffScript(
+            defaultColumns,
+            colsToIgnore,
+            RemoveNonAlphaNumericCharsInColumnNames
+          )
           let applyResp = false
           // Sync Clean table with stage table
           if (IsValidString(diffScript)) {
@@ -277,10 +282,10 @@ export class ODSStageToClean {
     }
     const [...lineagePath] = jsonSchemaPath.split('.')
     const tbl = table[CleanTableNameEnum]
-    // const tbl =
-    //   Array.isArray(lineagePath) && lineagePath.length > 0
-    //     ? lineagePath[lineagePath.length - 1].replace(/-/gi, '_')
-    //     : ''
+    const pkColName =
+      Array.isArray(lineagePath) && lineagePath.length > 0
+        ? GetCleanColumnName(lineagePath[lineagePath.length - 1])
+        : ''
     let parentid = ''
     let rootid = ''
     let IsRootTable = true

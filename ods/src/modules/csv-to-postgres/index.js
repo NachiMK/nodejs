@@ -74,6 +74,7 @@ export class CsvToPostgres {
       _appendDateTimeToTable: true,
       _appendBatchId: true,
       _dropTableIfExists: true,
+      _removeNonAlphaNumericCharsInColumnNames: true,
     }
     let ignoreColumns = []
     if (opts.IgnoreColumns && isArray(opts.IgnoreColumns) && opts.IgnoreColumns.length > 0) {
@@ -90,6 +91,10 @@ export class CsvToPostgres {
       ),
       _appendBatchId: CleanUpBool(opts.AppendBatchId, retOpts._appendBatchId),
       _dropTableIfExists: CleanUpBool(opts.DropTableIfExists, retOpts._dropTableIfExists),
+      _removeNonAlphaNumericCharsInColumnNames: CleanUpBool(
+        opts.RemoveNonAlphaNumericCharsInColumnNames,
+        retOpts._removeNonAlphaNumericCharsInColumnNames
+      ),
     }
   }
 
@@ -194,6 +199,8 @@ export class CsvToPostgres {
         IgnoreColumns: this.DBOptions._ignoreColumns,
         AppendDateTimeToTable: this.DBOptions._appendDateTimeToTable,
         AppendBatchId: this.DBOptions._appendBatchId,
+        RemoveNonAlphaNumericCharsInColumnNames: this.DBOptions
+          ._removeNonAlphaNumericCharsInColumnNames,
       },
     }
 

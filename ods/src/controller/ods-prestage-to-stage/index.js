@@ -122,7 +122,11 @@ export class OdsPreStageToStage {
    * IF stage table is missing then - InvalidSTageTableError is thrown
    * IF stage table schema couldnt be synced with PreStage then StageSchemaUpdateError is thrown
    */
-  async StageData(parallelRuns = 1, tableSchema = 'stg') {
+  async StageData(
+    parallelRuns = 1,
+    tableSchema = 'stg',
+    RemoveNonAlphaNumericCharsInColumnNames = true
+  ) {
     this.ValidateParam()
     const retResp = {
       status: {
@@ -143,7 +147,11 @@ export class OdsPreStageToStage {
         retResp.TaskQueueAttributes[`${item}.StageTableName`] = `${table.StageTablePrefix}`
         retResp.TaskQueueAttributes[`${item}.${JsonSchemaPathPropName}`] =
           table[JsonSchemaPathPropName]
-        const tblDiff = await this.GetTableDiffScript(table, tableSchema)
+        const tblDiff = await this.GetTableDiffScript(
+          table,
+          tableSchema,
+          RemoveNonAlphaNumericCharsInColumnNames
+        )
 
         // default values for attributes
         retResp.TaskQueueAttributes[`${item}.TableDiffExists`] = false
@@ -182,7 +190,7 @@ export class OdsPreStageToStage {
     return retResp
   }
 
-  async GetTableDiffScript(table, tableSchema) {
+  async GetTableDiffScript(table, tableSchema, RemoveNonAlphaNumericCharsInColumnNames) {
     const output = {}
     const stgTblPrefix = table[StageTablePrefix]
     const stgTblSchemaPath = table[JsonSchemaPathPropName]
@@ -197,7 +205,10 @@ export class OdsPreStageToStage {
         DBConnection: this.DBConnection,
       })
       // get script
-      output.DBScript = await objSchemaDiff.SQLScript(this.getDefaultTrackingCols())
+      output.DBScript = await objSchemaDiff.SQLScript({
+        ...this.getDefaultTrackingCols(),
+        RemoveNonAlphaNumericCharsInColumnNames,
+      })
       output.TableSchema = tableSchema
       output.TableName = stgTblPrefix
       // save file

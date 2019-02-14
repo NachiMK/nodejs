@@ -1,7 +1,7 @@
 {
-  "S3FakerSchemaFile": "s3://int-ods-data/faker-schema/persons-faker-schema.json",
-  "RowsToGenerate": 100,
+  "S3FakerSchemaFile": "s3://int-ods-data/faker-schema/ods-testtable-1.json",
+  "RowsToGenerate": 10,
   "S3OutputBucket": "int-ods-data",
-  "S3OutputKey": "fake-data/persons/persons-20190207_1202.json",
+  "S3OutputKey": "fake-data/ods-testtable-v2/testtable-20190212_1412.json",
   "LogLevel": "warn"
 }

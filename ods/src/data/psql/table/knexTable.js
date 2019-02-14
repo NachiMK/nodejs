@@ -4,7 +4,7 @@ import { knexByConnectionString, executeScalar } from '..'
 import { UploadS3FileToDB } from '../bulkload'
 import { IsValidString, CleanUpString } from '../../../utils/string-utils'
 import { knexNoDB } from '..'
-import { DataTypeTransferEnum, IsValidTypeObject } from '../DataTypeTransform'
+import { DataTypeTransferEnum, IsValidTypeObject, GetCleanColumnName } from '../DataTypeTransform'
 
 export class KnexTable {
   constructor(params) {
@@ -206,7 +206,7 @@ export class KnexTable {
    * }
    *
    */
-  async getCreateTableSQL(columnSchema) {
+  async getCreateTableSQL(columnSchema, cleanColumnName = true) {
     let knex
     let dbScript
     const tableSchema = this.TableSchema
@@ -224,13 +224,14 @@ export class KnexTable {
           .withSchema(tableSchema)
           .createTable(tableName, (table) => {
             forEach(columnSchema, (column, colName) => {
+              const cleanColName = cleanColumnName ? GetCleanColumnName(colName) : colName
               try {
                 // is data type defined
                 if (IsValidTypeObject(column) && DataTypeTransferEnum[column.DataType]) {
                   // get data type, with length
                   const dtType = this.getPostgresColType(column)
                   // add column
-                  table.specificType(colName, dtType)
+                  table.specificType(cleanColName, dtType)
                 } else {
                   throw new Error(
                     `Invalid Datatype: ${column.DataType} provided for Table:${tableName}`
@@ -239,7 +240,9 @@ export class KnexTable {
               } catch (err) {
                 // on error quit
                 const e = new Error(
-                  `Error in adding column: ${colName} to Table: ${tableName}, error: ${err.message}`
+                  `Error in adding clean col: ${cleanColName} for key: ${colName} to Table: ${tableName}, error: ${
+                    err.message
+                  }`
                 )
                 console.log(e.message)
                 throw e
@@ -267,7 +270,7 @@ export class KnexTable {
     }
   }
 
-  async getAlterTableSQL(columnSchema, addColumns = false) {
+  async getAlterTableSQL(columnSchema, addColumns = false, cleanColumnName = true) {
     let knex
     let dbScript
     const tableSchema = this.TableSchema
@@ -284,6 +287,7 @@ export class KnexTable {
           .withSchema(tableSchema)
           .alterTable(tableName, (table) => {
             forEach(columnSchema, (column, colName) => {
+              const cleanColName = cleanColumnName ? GetCleanColumnName(colName) : colName
               try {
                 // is data type defined
                 if (IsValidTypeObject(column) && DataTypeTransferEnum[column.DataType]) {
@@ -291,9 +295,9 @@ export class KnexTable {
                   const dtType = this.getPostgresColType(column)
                   // add column
                   if (addColumns) {
-                    table.specificType(colName, dtType)
+                    table.specificType(cleanColName, dtType)
                   } else {
-                    table.specificType(colName, dtType).alter()
+                    table.specificType(cleanColName, dtType).alter()
                   }
                 } else {
                   throw new Error(
@@ -303,7 +307,9 @@ export class KnexTable {
               } catch (err) {
                 // on error quit
                 const e = new Error(
-                  `Error in adding column: ${colName} to Table: ${tableName}, error: ${err.message}`
+                  `Error in adding clean col: ${cleanColName} for key: ${colName} to Table: ${tableName}, error: ${
+                    err.message
+                  }`
                 )
                 console.log(e.message)
                 throw e
