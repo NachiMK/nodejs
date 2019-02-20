@@ -89,12 +89,12 @@ BEGIN
     EXECUTE sql_code INTO UpdatedAllCols;
 
     sql_code :='
-    SELECT   CAST(T->''StgId'' AS BIGINT) AS "StgId"
-            ,CAST(T->''TableId'' AS BIGINT) AS "TableId"
+    SELECT   CAST(CAST(T->''StgId'' AS VARCHAR(20)) AS BIGINT) AS "StgId"
+            ,CAST(CAST(T->''TableId'' AS VARCHAR(20)) AS BIGINT) AS "TableId"
     FROM    json_array_elements($1) as T
     UNION
-    SELECT   CAST(T->''StgId'' AS BIGINT) AS "StgId"
-            ,CAST(T->''TableId'' AS BIGINT) AS "TableId"
+    SELECT   CAST(CAST(T->''StgId'' AS VARCHAR(20)) AS BIGINT) AS "StgId"
+            ,CAST(CAST(T->''TableId'' AS VARCHAR(20)) AS BIGINT) AS "TableId"
     FROM    json_array_elements($2) as T';
 
     RETURN QUERY EXECUTE sql_code USING UpdatedEndDate, UpdatedAllCols;

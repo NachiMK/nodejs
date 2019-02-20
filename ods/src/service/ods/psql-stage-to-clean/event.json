@@ -1,8 +1,8 @@
 {
-    "DataPipeLineTaskQueueId": 480,
+    "DataPipeLineTaskQueueId": 32,
     "TaskConfigName": "Stage to Clean",
     "RunSequence": 2060,
     "Status": "On Hold",
-    "TableName": "client-census",
+    "TableName": "benefit-change-events",
     "LogLevel": "warn"
 }

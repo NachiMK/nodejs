@@ -9,7 +9,6 @@ import { SaveStringToS3File } from '../../modules/s3ODS'
 import { SQLTableDiff } from '../../modules/sql-schema-diff/SQLTableDiff'
 import { IsValidString } from '../../utils/string-utils/index'
 import { executeCommand, getConnectionString, executeQueryRS } from '../../data/psql'
-import { GetCleanColumnName } from '../../data/psql/DataTypeTransform'
 import { getCleanTableDefaultCols, getPreStageDefaultCols } from '../../modules/ODSConstants'
 
 const JsonObjectNameEnum = DynamicAttributeEnum.JsonObjectName.value
@@ -281,11 +280,9 @@ export class ODSStageToClean {
       IsRoot: false,
     }
     const [...lineagePath] = jsonSchemaPath.split('.')
+    const ParentPrefix = this.TaskAttributes[CleanTablePrefixEnum]
+    const prefixRegEx = new RegExp(`^${ParentPrefix}`, 'gi')
     const tbl = table[CleanTableNameEnum]
-    const pkColName =
-      Array.isArray(lineagePath) && lineagePath.length > 0
-        ? GetCleanColumnName(lineagePath[lineagePath.length - 1])
-        : ''
     let parentid = ''
     let rootid = ''
     let IsRootTable = true
@@ -296,7 +293,7 @@ export class ODSStageToClean {
       IsRootTable = false
     }
     output.TableName = tbl
-    output.PrimaryKeyName = `${tbl}Id`
+    output.PrimaryKeyName = `${tbl.replace(prefixRegEx, '')}Id`
     output.ParentId = `Parent_${parentid}Id`
     output.RootId = `Root_${rootid}Id`
     if (!IsRootTable) {
@@ -335,10 +332,12 @@ export class ODSStageToClean {
 
   getDefaultTrackingCols(table, tableList) {
     const c = this.getLienageColsAndTables(table, tableList)
+    const ParentPrefix = this.TaskAttributes[CleanTablePrefixEnum]
+    const prefixRegEx = new RegExp(`^${ParentPrefix}`, 'gi')
     let jstr = JSON.stringify(getCleanTableDefaultCols())
     const backtojson = JSON.parse(
       jstr
-        .replace(/{TableName}/gi, c.TableName)
+        .replace(/{TableName}/gi, c.TableName.replace(prefixRegEx, ''))
         .replace(/{Parent}/gi, c.ParentId)
         .replace(/{Root}/gi, c.RootId)
     )

@@ -534,8 +534,8 @@ export function GetNewType(existingType, changeToType) {
  *  0-9
  *  _ (underscore)
  *  - (hypen)
+ *  ' '(blank space)
  */
 export function GetCleanColumnName(colName) {
-  // remove any char other than [a-z,A-Z,0-9,_,-]
-  return colName.replace(/[^a-zA-Z0-9_-]/gi, '')
+  return colName.replace(/[^a-zA-Z0-9_ -]/gi, '')
 }
