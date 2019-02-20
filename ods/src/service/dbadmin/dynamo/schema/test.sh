@@ -3,10 +3,8 @@
 npm run build
 clear
 export odsloglevel=info
-export STAGE=dev
+export STAGE=int
 export log_dbname=ODSLog
-export DEV_ODSLOG_PG='postgres://odslog_user:H!xme_0ds_ah_dev1@localhost/odslog_dev'
-export DEV_ODSCONFIG_PG='postgres://odsconfig_user:H!xme_0ds_ah_dev1@localhost/odsconfig_dev'
-# odsloglevel=info STAGE=dev log_dbname=ODSLog DEV_ODSLOG_PG='postgres://odslog_user:H!xme_0ds_ah_dev1@localhost/odslog_dev' DEV_ODSCONFIG_PG='postgres://odsconfig_user:H!xme_0ds_ah_dev1@localhost/odsconfig_dev'
+export INT_ODSLOG_PG='postgres://odslog_user:int_H!xme_0ds_ah@datalake.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com/odslog_int'
+export INT_ODSCONFIG_PG='postgres://odsconfig_user:int_H!xme_0ds_ah@datalake.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com/odsconfig_int'
 node lib/service/dbadmin/dynamo/schema/generate-test.js
-# npm test -- -u -t="should create schema and returns success"

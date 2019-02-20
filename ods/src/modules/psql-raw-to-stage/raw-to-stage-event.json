@@ -1,0 +1,14 @@
+{
+    "StageTableSchema" : "stg",
+    "StageTableName" : "testtable_1",
+    "S3SchemaFile" : "s3://int-ods-data/unit-test/testtable-1/data760/testtable-1-ObjNoProp-combined-20190129_112151455.json",
+    "PathToSchema" : "ods-testtable-1",
+    "DBConnection" : "",
+    "S3OutputBucket" : "int-ods-data",
+    "S3OutputKeyPrefix" : "unit-test/testtable-1/data760/stg-schema-1-",
+    "RawTableName" : "raw.testtable_1_44_190129_112153",
+    "LogLevel" : "info",
+    "DataTypeKey" : "db_type",
+    "AddTrackingCols" : "true",
+    "BatchKey" : "44"
+  }

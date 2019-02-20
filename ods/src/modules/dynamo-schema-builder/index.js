@@ -19,7 +19,8 @@ export async function GetDynamoTableSchema(event = {}) {
   console.log('event', event)
   const retResp = {}
   try {
-    const schema = await generateTableSchema(event.TableName)
+    //DATA-742
+    const schema = await generateTableSchema(event.TableName, { GenerateLengths: true })
     // console.log('schema', JSON.stringify(schema, null, 2));
     if (schema && schema.length > 0) {
       retResp.Status = 'success'
@@ -43,6 +44,11 @@ const generateTableSchema = async (tableName, options = {}) => {
   // this might take a while. TODO: Optimize this part.
   const data = await theTable.getAll()
   let schemas = []
+  //DATA-742
+  let generateLengths = false
+  if (options && !_.isUndefined(options.GenerateLengths)) {
+    generateLengths = options.GenerateLengths || false
+  }
 
   if (options && options.partitionKey) {
     const dataByPartition = _.groupBy(data, options.partitionKey)
@@ -50,10 +56,18 @@ const generateTableSchema = async (tableName, options = {}) => {
     schemas = Object.keys(dataByPartition).map((key) => {
       const dataForPartition = dataByPartition[key]
       // Generate schema for each partition
-      return generateSchemaByData(key, dataForPartition, { SimpleArraysToObjects: true })
+      //DATA-742
+      return generateSchemaByData(key, dataForPartition, {
+        GenerateLengths: generateLengths,
+        SimpleArraysToObjects: true,
+      })
     })
   } else {
-    const schema = generateSchemaByData(tableName, data, { SimpleArraysToObjects: true })
+    //DATA-742
+    const schema = generateSchemaByData(tableName, data, {
+      GenerateLengths: generateLengths,
+      SimpleArraysToObjects: true,
+    })
     schemas.push(schema)
   }
 

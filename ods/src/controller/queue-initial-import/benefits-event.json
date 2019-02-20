@@ -1,0 +1,151 @@
+{
+  "dev-benefits": {
+    "TotalRecords": 859,
+    "Files": [
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 1,
+        "EndIndex": 50,
+        "RowCountInBatch": 50,
+        "ImportSequence": 0,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-1-to-50-20181219_200055792.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 51,
+        "EndIndex": 100,
+        "RowCountInBatch": 50,
+        "ImportSequence": 1,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-51-to-100-20181219_200055810.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 101,
+        "EndIndex": 150,
+        "RowCountInBatch": 50,
+        "ImportSequence": 2,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-101-to-150-20181219_200055813.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 151,
+        "EndIndex": 200,
+        "RowCountInBatch": 50,
+        "ImportSequence": 3,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-151-to-200-20181219_200055816.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 201,
+        "EndIndex": 250,
+        "RowCountInBatch": 50,
+        "ImportSequence": 4,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-201-to-250-20181219_200055818.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 251,
+        "EndIndex": 300,
+        "RowCountInBatch": 50,
+        "ImportSequence": 5,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-251-to-300-20181219_200055829.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 301,
+        "EndIndex": 350,
+        "RowCountInBatch": 50,
+        "ImportSequence": 6,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-301-to-350-20181219_200055831.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 351,
+        "EndIndex": 400,
+        "RowCountInBatch": 50,
+        "ImportSequence": 7,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-351-to-400-20181219_200055834.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 401,
+        "EndIndex": 450,
+        "RowCountInBatch": 50,
+        "ImportSequence": 8,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-401-to-450-20181219_200055838.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 451,
+        "EndIndex": 500,
+        "RowCountInBatch": 50,
+        "ImportSequence": 9,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-451-to-500-20181219_200055849.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 501,
+        "EndIndex": 550,
+        "RowCountInBatch": 50,
+        "ImportSequence": 10,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-501-to-550-20181219_200055853.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 551,
+        "EndIndex": 600,
+        "RowCountInBatch": 50,
+        "ImportSequence": 11,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-551-to-600-20181219_200055855.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 601,
+        "EndIndex": 650,
+        "RowCountInBatch": 50,
+        "ImportSequence": 12,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-601-to-650-20181219_200055870.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 651,
+        "EndIndex": 700,
+        "RowCountInBatch": 50,
+        "ImportSequence": 13,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-651-to-700-20181219_200055872.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 701,
+        "EndIndex": 750,
+        "RowCountInBatch": 50,
+        "ImportSequence": 14,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-701-to-750-20181219_200055875.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 751,
+        "EndIndex": 800,
+        "RowCountInBatch": 50,
+        "ImportSequence": 15,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-751-to-800-20181219_200055888.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 801,
+        "EndIndex": 850,
+        "RowCountInBatch": 50,
+        "ImportSequence": 16,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-801-to-850-20181219_200055890.json"
+      },
+      {
+        "SourceEntity": "dev-benefits",
+        "StartIndex": 851,
+        "EndIndex": 859,
+        "RowCountInBatch": 50,
+        "ImportSequence": 17,
+        "S3File": "s3://dev-ods-data/dynamodb/benefits/initial/benefits-851-to-859-20181219_200055892.json"
+      }
+    ]
+  }
+}

@@ -26,3 +26,5 @@ JsonToPSQL(paramJson)
     console.error('error in json to psq:', err.message)
     console.timeEnd('JsonToPsql')
   })
+
+//STAGE=int node lib/service/ods/json-to-psql/generate.test.js ods-testtable-1

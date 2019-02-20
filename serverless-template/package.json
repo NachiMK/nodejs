@@ -1,6 +1,6 @@
 {
   "name": "serverless-template",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Serverless Template",
   "author": "Hixme.com",
   "contributors": [
@@ -80,11 +80,12 @@
     "knex:migrate:dev": "babel-node node_modules/.bin/knex migrate:latest --env dev",
     "knex:migrate:int": "babel-node node_modules/.bin/knex migrate:latest --env int",
     "knex:migrate:prod": "babel-node node_modules/.bin/knex migrate:latest --env prod",
-    
-    "release:major": "TYPE=major ./devops/release.sh",
-    "release:minor": "TYPE=minor ./devops/release.sh",
-    "release:patch": "TYPE=patch ./devops/release.sh",
-    "hotfix": "./devops/hotfix.sh"
+    "prettier": "prettier --config .prettierrc --write src/**/*.js",
+    "release:major": "TYPE=major ./node_modules/@hixme/bitbucket-scripts/devops/release.sh",
+    "release:minor": "TYPE=minor ./node_modules/@hixme/bitbucket-scripts/devops/release.sh",
+    "release:patch": "TYPE=patch ./node_modules/@hixme/bitbucket-scripts/devops/release.sh",
+    "release:unwind": "./node_modules/@hixme/bitbucket-scripts/devops/release.sh -u",
+    "hotfix": "./node_modules/@hixme/bitbucket-scripts/devops/hotfix.sh"
   },
   "dependencies": {
     "@hixme/before-after-middleware": "^2.2.1",
@@ -105,14 +106,14 @@
     "node-fetch": "2.0.0",
     "objection": "1.2.2",
     "pg": "7.4.3",
-    "sqlite3": "4.0.2",
     "serverless-content-encoding": "1.1.0",
     "strip-ansi": "4.0.0",
     "uuid": "3.2.1",
-    "warewolf": "2.0.6"
+    "warewolf": "2.0.6",
+    "winston": "3.2.1"
   },
   "devDependencies": {
-    "@hixme/pull-request-docs": "0.6.0",
+    "@hixme/bitbucket-scripts": "^6.2.4",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.0",
     "babel-eslint": "8.2.2",
@@ -135,7 +136,9 @@
     "eslint-config-airbnb-base": "12.1.0",
     "eslint-config-prettier": "3.0.1",
     "eslint-plugin-import": "2.9.0",
+    "husky": "1.2.1",
     "jest-cli": "22.4.2",
+    "lint-staged": "8.1.0",
     "merge-yaml-cli": "1.1.1",
     "prettier": "1.14.2",
     "rimraf": "2.6.2",
@@ -151,6 +154,18 @@
     "webpack": "^3.5.5",
     "webpack-node-externals": "^1.6.0",
     "yargs": "11.0.0"
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write",
+      "eslint",
+      "git add"
+    ]
+  },
+  "hixmeDevScripts": {
+    "slackServiceChannel": "eng-services",
+    "slackReleaseChannel": "releases-services",
+    "slackHook": "https://hooks.slack.com/services/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"
   },
   "jest": {
     "testEnvironment": "node",

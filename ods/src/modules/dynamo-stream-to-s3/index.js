@@ -182,12 +182,12 @@ export function UnmarshallByAlternateLibrary(newImage) {
   return unmarshalItem(newImage)
 }
 
-function getRowKey(item) {
+export function getRowKey(item) {
   let retVal
   try {
     if (!_.isUndefined(item) && !_.isUndefined(item.Id)) {
       retVal = item.Id[Object.keys(item.Id)[0]].toString()
-      console.log('id from object', JSON.stringify(retVal))
+      // console.log('id from object', JSON.stringify(retVal))
     } else {
       // some tables have a key that is named *PublicKey/*Name, so for those tables
       // get the value of those keys as the row key
@@ -197,14 +197,14 @@ function getRowKey(item) {
       if (!_.isUndefined(publicKeyAttributes) && publicKeyAttributes.length > 0) {
         const idColName = publicKeyAttributes[0]
         retVal = item[idColName][Object.keys(item[idColName])[0]].toString()
-        console.log('PublicKey/Name', JSON.stringify(retVal))
+        // console.log('PublicKey/Name', JSON.stringify(retVal))
       } else {
         retVal = uuidv4()
-        console.log('uuid', JSON.stringify(retVal))
+        // console.log('uuid', JSON.stringify(retVal))
       }
     }
   } catch (err) {
-    console.log(`Error in Finding "Id" column for Object:.${JSON.stringify(item, null, 2)}`)
+    console.error(`Error in Finding "Id" column for Object:.${JSON.stringify(item, null, 2)}`)
   }
   return retVal
 }
@@ -234,8 +234,8 @@ export async function getJSONFileKeyName(
   FilePrefix = FilePrefix.charAt(0) === '/' ? FilePrefix.substring(1) : FilePrefix
   if (AppendDtTm) {
     return `${FilePrefix}_${await getDataTimeStamp(DateTimeFormat)}.json`
-      .replace('__', '_')
-      .replace('-_', '-')
+      .replace(/__/gi, '_')
+      .replace(/-_/gi, '-')
   }
 
   return `${FilePrefix}.json`

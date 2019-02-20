@@ -65,6 +65,7 @@ provider:
         - dynamodb:PutItem
       Resource:
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}*
+        - arn:aws:dynamodb:us-west-2:409076796536:table/prod-*
     # - Effect: Allow
     #   Action:
     #     - sts:AssumeRole
@@ -74,8 +75,13 @@ provider:
     - Effect: Allow
       Action:
         - lambda:InvokeFunction
+        - lambda:InvokeAsync
       Resource:
-        - arn:aws:lambda:us-west-2:409076796536:function:*dynamodb-to-s3*
+        - arn:aws:lambda:us-west-2:409076796536:function:*${self:custom.service.STAGE}*dynamodb-to-s3*
+        - arn:aws:lambda:us-west-2:409076796536:function:*${self:custom.service.STAGE}*process-tables*
+        - arn:aws:lambda:us-west-2:409076796536:function:*${self:custom.service.STAGE}*json-to-psql*
+        - arn:aws:lambda:us-west-2:409076796536:function:*${self:custom.service.STAGE}*export-dynamo-table*
+        - arn:aws:lambda:us-west-2:409076796536:function:*${self:custom.service.STAGE}*queue-initial-import*
     - Effect: Allow
       Action:
         - lambda:CreateEventSourceMapping
@@ -92,6 +98,7 @@ provider:
         - dynamodb:UpdateTable
       Resource:
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-*
+        - arn:aws:dynamodb:us-west-2:409076796536:table/prod-*
     - Effect: Allow
       Action:
         - logs:CreateLogGroup
@@ -131,16 +138,69 @@ functions:
   dba-save-schema-to-s3:
     handler: lib/service/dbadmin/dynamo/schema/index.handler
     description: ${self:custom.documentation.summary}
-    timeout: 299
+    timeout: 600
+    vpc:
+      securityGroupIds:
+        - sg-0c3aa668
+      subnetIds:
+        - subnet-f8bf74b1
+        - subnet-1aaa1b7d
   
   json-to-psql:
     handler: lib/service/ods/json-to-psql/index.JsonToPSQL
-    description: 
+    description: "ODS PipeLine Lambda to Convert S3 JSON to PSQL"
     timeout: 600
+  
+  process-tables:
+    handler: lib/service/ods/process-pending-tables/process-tables.processPendingTables
+    description: "ODS PipeLine Lambda to Run Pending Dynamo history through pipeline"
+    timeout: 299
+    environment:
+      TableLimit: 5
+    vpc:
+      securityGroupIds:
+        - sg-0c3aa668
+      subnetIds:
+        - subnet-f8bf74b1
+        - subnet-1aaa1b7d
 
   ping-db-ods:
       handler: lib/controller/ping-db/pingdb.pingodsdb
       description: "${self:custom.documentation.summary} | Ping Postgres Endpoint ODS"
+
+  export-dynamo-table:
+    handler: lib/modules/dynamo-table-to-s3/dynamo-table-s3.exportDynamoTable
+    description: "Exports all rows in a dynamo table to mulutiple Json file(s) in S3"
+    timeout: 899
+    memorySize: 3000
+    vpc:
+      securityGroupIds:
+        - sg-0c3aa668
+      subnetIds:
+        - subnet-f8bf74b1
+        - subnet-1aaa1b7d
+
+  queue-initial-import:
+    handler: lib/controller/queue-initial-import/queue-initial-import.queueInitialImport
+    description: "Queue Initial Import setup of export initial load tables"
+    timeout: 599
+    vpc:
+      securityGroupIds:
+        - sg-0c3aa668
+      subnetIds:
+        - subnet-f8bf74b1
+        - subnet-1aaa1b7d
+
+  export-mulitple-tables:
+    handler: lib//modules/dynamo-table-to-s3/export-mulitple-table.exportMultipleTables
+    description: "Exports given Array of tables into S3 bucket as json files."
+    timeout: 599
+    vpc:
+      securityGroupIds:
+        - sg-0c3aa668
+      subnetIds:
+        - subnet-f8bf74b1
+        - subnet-1aaa1b7d
 
 resources:
   Resources:

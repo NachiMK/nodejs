@@ -74,6 +74,7 @@ export class CsvToPostgres {
       _appendDateTimeToTable: true,
       _appendBatchId: true,
       _dropTableIfExists: true,
+      _removeNonAlphaNumericCharsInColumnNames: true,
     }
     let ignoreColumns = []
     if (opts.IgnoreColumns && isArray(opts.IgnoreColumns) && opts.IgnoreColumns.length > 0) {
@@ -90,6 +91,10 @@ export class CsvToPostgres {
       ),
       _appendBatchId: CleanUpBool(opts.AppendBatchId, retOpts._appendBatchId),
       _dropTableIfExists: CleanUpBool(opts.DropTableIfExists, retOpts._dropTableIfExists),
+      _removeNonAlphaNumericCharsInColumnNames: CleanUpBool(
+        opts.RemoveNonAlphaNumericCharsInColumnNames,
+        retOpts._removeNonAlphaNumericCharsInColumnNames
+      ),
     }
   }
 
@@ -175,7 +180,8 @@ export class CsvToPostgres {
     }
     const objJsonSchemaGen = new CSVToJsonSchema(objParams)
     // get schema
-    this._jsonschema = await objJsonSchemaGen.getJsonSchemaFromCSV()
+    // DATA-742 fix
+    this._jsonschema = await objJsonSchemaGen.getJsonSchemaFromCSV(this.TableNamePrefix)
     // save file
     if (this.S3Options._saveIntermediatFilesToS3) {
       const s3filepath = await objJsonSchemaGen.saveJsonSchemaFromCSV()
@@ -193,6 +199,8 @@ export class CsvToPostgres {
         IgnoreColumns: this.DBOptions._ignoreColumns,
         AppendDateTimeToTable: this.DBOptions._appendDateTimeToTable,
         AppendBatchId: this.DBOptions._appendBatchId,
+        RemoveNonAlphaNumericCharsInColumnNames: this.DBOptions
+          ._removeNonAlphaNumericCharsInColumnNames,
       },
     }
 

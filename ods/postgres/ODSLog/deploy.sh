@@ -1,8 +1,8 @@
 #!/bin/bash
 stage="$1"
-reset="$2"
-createdb="$3"
-hosttodeploy="$4"
+hosttodeploy="$2"
+reset="$3"
+createdb="$4"
 
 if [ -z "${stage}" ]; then 
     stagename='dev'
@@ -39,7 +39,7 @@ if [ "${dbhostname}" = "rds" ]; then
     read password
     export PGPASSWORD=$password
 elif [ "${dbhostname}" = "rds2" ]; then 
-    dbhostname='-h datalake-try.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root'
+    dbhostname='-h datalake.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_ods_root'
     echo "Enter psql password for RDS Server ${stage}:"
     read password
     export PGPASSWORD=$password

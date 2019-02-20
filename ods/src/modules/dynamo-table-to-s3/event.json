@@ -1,0 +1,14 @@
+{
+    "DynamoTableName": "dev-client-price-points",
+    "S3OutputBucket": "dev-ods-data",
+    "S3FilePrefix": "dynamodb/client_price_points/initial/14012019/devpricepoints-",
+    "AppendDateTime": true,
+    "LogLevel": "info",
+    "RowsPerFile": 50,
+    "LambdaFunctionToSave": "ods-service-dev-queue-initial-import",
+    "Stage": "int",
+    "ScanLimit": 100,
+    "StartIndex": 1,
+    "RecursionCount": 0,
+    "MaxRecursion": 500
+}

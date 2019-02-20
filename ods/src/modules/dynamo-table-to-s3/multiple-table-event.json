@@ -1,0 +1,8 @@
+{
+  "Tables": ["int-client-census"],
+  "LogLevel": "info",
+  "RowsPerFile": 100,
+  "RecursionCount": 0,
+  "MaxRecursion": 500,
+  "ScanLimit": 10000
+}

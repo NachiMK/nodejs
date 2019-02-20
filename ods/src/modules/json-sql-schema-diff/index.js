@@ -11,6 +11,7 @@ import {
   DataTypeTransferEnum,
   JsonPostgreTypeMappingEnum,
   IsValidTypeObject,
+  GetCleanColumnName,
 } from '../../data/psql/DataTypeTransform'
 
 /**
@@ -30,6 +31,7 @@ export class SchemaDiff {
     this._tableName = params.TableName || ''
     this._tableSchema = params.TableSchema || 'public'
     this._dataTypeKey = params.DataTypeKey || 'db_type'
+    this._hadNestedProperties = params.HadNestedProperties || false
     this._dbConnection = params.DBConnection || ''
     this._dbTypesFromJson = undefined
   }
@@ -50,6 +52,9 @@ export class SchemaDiff {
   }
   get DataTypeKey() {
     return this._dataTypeKey
+  }
+  get HadNestedProperties() {
+    return this._hadNestedProperties
   }
 
   async TableExists() {
@@ -133,7 +138,7 @@ export class SchemaDiff {
    *    "datetimePrecision": -1
    *  }
    */
-  async JsonSchemaToDBSchema() {
+  async JsonSchemaToDBSchema(cleanColNames) {
     const dbSchema = {}
     try {
       // get json schema
@@ -148,7 +153,8 @@ export class SchemaDiff {
               `No Postgres Type available for Column: ${colName} and Type: ${colType.type}`
             )
           }
-          dbSchema[colName] = {
+          const cleanedName = cleanColNames ? GetCleanColumnName(colName) : colName
+          dbSchema[cleanedName] = {
             Position: idx,
             IsNullable: true,
             DataType: psqlTypeEnum.postgres.dataType,
@@ -166,10 +172,10 @@ export class SchemaDiff {
     return dbSchema
   }
 
-  async FindSchemaDiff() {
+  async FindSchemaDiff(cleanColNames) {
     let jDiff
     // convert to DB Schema
-    const sourceSchema = await this.JsonSchemaToDBSchema()
+    const sourceSchema = await this.JsonSchemaToDBSchema(cleanColNames)
     // get table schema
     const tblSchema = await this.TableSchemaToJson()
     if (isEmpty(tblSchema)) {
@@ -178,6 +184,19 @@ export class SchemaDiff {
         NewTable: {},
       }
       jDiff.NewTable = sourceSchema
+      // DATA-760, Solution 2:
+      if (
+        (Object.keys(sourceSchema).length === 0 && this.HadNestedProperties) ||
+        Object.keys(sourceSchema).length > 0
+      ) {
+        jDiff.CreateNewTable = true
+      } else {
+        throw new Error(
+          `FinScheamDiff, Issue in diff for New Table. SourceSchema Length: ${
+            Object.keys(sourceSchema).length
+          }, JsonSchema Had Nested Props: ${this.HadNestedProperties}`
+        )
+      }
     } else {
       // compare and find diff
       jDiff = this.GetJsonDiff(tblSchema, sourceSchema)
@@ -247,9 +266,10 @@ export class SchemaDiff {
         }
       })
       // compare, position of column does not matter
-      forEach(dynamoJsonSchema, (dynamoCol, srcColName) => {
+      forEach(dynamoJsonSchema, (dynamoCol, srcFullColName) => {
         // const srcColName = Object.keys(dynamoCol)[0]
         // column exists
+        const srcColName = srcFullColName.substr(0, 63)
         const targetCol = sqlTableSchema[srcColName]
         if (!isUndefined(targetCol)) {
           // Get updated type
@@ -272,25 +292,43 @@ export class SchemaDiff {
     return output
   }
 
-  async GenerateSQLFromJsonDiff(jsonDiff, defaultColsForNewTable = {}) {
+  async GenerateSQLFromJsonDiff(
+    jsonDiff,
+    defaultColsForNewTable = {},
+    RemoveNonAlphaNumericCharsInColumnNames = true
+  ) {
     let dbScript = ''
     try {
       if (jsonDiff) {
         const objtbl = new KnexTable({ TableName: this.TableName, TableSchema: this.TableSchema })
-        if (!isUndefined(jsonDiff.NewTable) && size(jsonDiff.NewTable) > 0) {
+        // Fixing DATA-760, Solution 2: Some time New table doesn't have any columns
+        // if the original objects didn't have any simple properties.
+        //if (!isUndefined(jsonDiff.NewTable) && size(jsonDiff.NewTable) > 0) {
+        if (!isUndefined(jsonDiff.NewTable) && jsonDiff.CreateNewTable) {
           // create new table with all columns
-          if (!isEmpty(defaultColsForNewTable)) {
-            Object.assign(defaultColsForNewTable, jsonDiff.NewTable)
-          }
-          dbScript = await objtbl.getCreateTableSQL(defaultColsForNewTable)
+          Object.assign(defaultColsForNewTable, jsonDiff.NewTable)
+          dbScript = await objtbl.getCreateTableSQL(
+            defaultColsForNewTable,
+            RemoveNonAlphaNumericCharsInColumnNames
+          )
         } else {
           // alter table - ADD columns
           if (!isUndefined(jsonDiff.AddedColumns) && size(jsonDiff.AddedColumns) > 0) {
-            dbScript = await objtbl.getAlterTableSQL(jsonDiff.AddedColumns, true)
+            dbScript = await objtbl.getAlterTableSQL(
+              jsonDiff.AddedColumns,
+              true,
+              RemoveNonAlphaNumericCharsInColumnNames
+            )
           }
           // alter table - modify columns
           if (!isUndefined(jsonDiff.AlteredColumns) && size(jsonDiff.AlteredColumns) > 0) {
-            dbScript = dbScript + (await objtbl.getAlterTableSQL(jsonDiff.AlteredColumns))
+            dbScript =
+              dbScript +
+              (await objtbl.getAlterTableSQL(
+                jsonDiff.AlteredColumns,
+                false,
+                RemoveNonAlphaNumericCharsInColumnNames
+              ))
           }
         }
       }
@@ -332,10 +370,14 @@ export class SchemaDiff {
     let script
     try {
       this.ValidParameters()
-      const jDiff = await this.FindSchemaDiff()
+      const jDiff = await this.FindSchemaDiff(opts.RemoveNonAlphaNumericCharsInColumnNames)
       // generate script
       const addCols = this.getTrackingCols(opts)
-      script = await this.GenerateSQLFromJsonDiff(jDiff, addCols)
+      script = await this.GenerateSQLFromJsonDiff(
+        jDiff,
+        addCols,
+        opts.RemoveNonAlphaNumericCharsInColumnNames
+      )
     } catch (err) {
       throw new Error(`Error in finding SQL Diff. ${err.message}`)
     }

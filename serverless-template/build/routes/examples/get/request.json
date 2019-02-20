@@ -1,7 +1,0 @@
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "Example GET | Request Schema",
-    "definitions": {},
-    "properties": {},
-    "type": "object"
-}

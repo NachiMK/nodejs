@@ -1,15 +1,47 @@
-{
+[
+    {
     "S3DataFilePath": "s3://dev-ods-data/unit-test/clients/test-clients-FlatJSON-20180820_181935976.json",
     "S3OutputBucket": "dev-ods-data",
     "S3OutputKeyPrefix": "unit-test/clients/csv/test-clients-CSVFile-",
     "LogLevel": "info",
     "Options": {
-        "splitEachArrayToSeparateFile": true,
-        "appendObjectKeyToFileName": true,
-        "appendDateTimeToFileName": true,
-        "dateTimeFormat": "",
-        "delimiter": ",",
-        "eol": "\n",
-        "fileExtentions": ".csv"
+      "splitEachArrayToSeparateFile": true,
+      "appendObjectKeyToFileName": true,
+      "appendDateTimeToFileName": true,
+      "dateTimeFormat": "",
+      "delimiter": ",",
+      "eol": "\n",
+      "fileExtentions": ".csv"
     }
-}
+  },
+  {
+    "S3DataFilePath": "s3://int-ods-data/unit-test/client-benefits/bare-FlatJSON-20190124_165101760.json",
+    "S3OutputBucket": "int-ods-data",
+    "S3OutputKeyPrefix": "unit-test/client-benefits/csv/bare-CSVFile-",
+    "LogLevel": "info",
+    "Options": {
+      "splitEachArrayToSeparateFile": true,
+      "appendObjectKeyToFileName": true,
+      "appendDateTimeToFileName": false,
+      "dateTimeFormat": "YYYYMMDD_HHmmssSSS",
+      "delimiter": ",",
+      "eol": "\n",
+      "fileExtentions": ".csv"
+    }
+  },
+  {
+    "S3DataFilePath": "s3://int-ods-data/unit-test/testtable-1/data760/FlatJSON-20190128_100310412.json",
+    "S3OutputBucket": "int-ods-data",
+    "S3OutputKeyPrefix": "unit-test/testtable-1/data760/CSVFile-",
+    "LogLevel": "info",
+    "Options": {
+      "splitEachArrayToSeparateFile": true,
+      "appendObjectKeyToFileName": true,
+      "appendDateTimeToFileName": false,
+      "dateTimeFormat": "YYYYMMDD_HHmmssSSS",
+      "delimiter": ",",
+      "eol": "\n",
+      "fileExtentions": ".csv"
+    }
+  }
+]

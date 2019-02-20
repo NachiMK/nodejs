@@ -219,7 +219,10 @@ async function generateSchemaFromS3Data({ Datafile, SaveDataSchemaToS3 = true, O
     const data = await GetJSONFromS3Path(Datafile)
 
     if (data) {
-      rawSchemaResp.Schema = await generateSchemaByData('', data, { SimpleArraysToObjects: true })
+      rawSchemaResp.Schema = await generateSchemaByData('', data, {
+        GenerateLengths: true,
+        SimpleArraysToObjects: true,
+      })
       if (SaveDataSchemaToS3 && Output && rawSchemaResp.Schema) {
         // save file
         const saveFileParams = s3FileParser(Output)

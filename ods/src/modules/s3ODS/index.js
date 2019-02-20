@@ -1,6 +1,14 @@
 import _ from 'lodash'
 import moment from 'moment'
-import { s3FileParser, uploadFileToS3, s3BucketFactory, s3FileExists } from '../s3/index'
+import {
+  s3FileParser,
+  uploadFileToS3,
+  s3BucketFactory,
+  s3FileExists,
+  copyS3toS3,
+  moveS3toS3,
+  DeleteFile,
+} from '../s3/index'
 
 export const GetJSONFromS3Path = async (s3FilePath) => {
   try {
@@ -16,7 +24,7 @@ export const GetJSONFromS3Path = async (s3FilePath) => {
     return JSON.parse(file.Body)
   } catch (e) {
     const msg = `Error loading data from s3 Path:${s3FilePath}, error: ${e.message}`
-    console.log(msg)
+    console.error(msg)
     throw new Error(msg)
   }
 }
@@ -33,7 +41,7 @@ export const GetStringFromS3Path = async (s3FilePath) => {
     return file.Body.toString('utf-8')
   } catch (e) {
     const msg = `Error loading data from s3 Path:${s3FilePath}, error: ${e.message}`
-    console.log(msg)
+    console.error(msg)
     throw new Error(msg)
   }
 }
@@ -72,6 +80,7 @@ export async function SaveStringToS3File(params = {}) {
   const DateTimeFormat = params.DateTimeFormat || 'YYYYMMDD_HHmmssSSS'
   const Overwrite = params.Overwrite || 'yes'
   const FileExtension = params.FileExtension || ''
+  let filename = ''
   try {
     if (!stringData) {
       throw new Error('No data to save to S3.')
@@ -84,7 +93,7 @@ export async function SaveStringToS3File(params = {}) {
       )
     }
     // get file name
-    const filename = getFileName(Key, FileExtension, appendDateTime, DateTimeFormat)
+    filename = getFileName(Key, FileExtension, appendDateTime, DateTimeFormat)
     // Handle blocking overwrite if Overwrite is 'No'
     if (Overwrite.toLowerCase() === 'no') {
       const fileFound = await s3FileExists({
@@ -106,8 +115,10 @@ export async function SaveStringToS3File(params = {}) {
     })
     return `s3://${Bucket}/${filename}`
   } catch (err) {
-    const msg = `Error saving data to s3 Path:${S3FullFilePath}, error: ${err.message}`
-    console.log(msg)
+    const msg = `Error saving data of length: ${_.size(
+      stringData
+    )} to s3://${Bucket}/${filename}, error: ${err.message}`
+    console.error(msg)
     throw new Error(msg)
   }
 }
@@ -141,6 +152,91 @@ export function getFileName(
     filename += FileExtension
 
   // remove repeatative characters
-  filename = filename.replace('--', '-').replace('-_', '-')
+  filename = filename.replace(/--/gi, '-').replace(/-_/gi, '-')
   return filename
+}
+
+export async function copyS3({ SourceFullPath, TargetBucket, TargetKey }) {
+  if (_.isUndefined(SourceFullPath) || _.isEmpty(SourceFullPath)) {
+    throw new Error(`Invalid Param. SourceFullPath: ${SourceFullPath} is required.`)
+  }
+  if (_.isUndefined(TargetBucket) || _.isEmpty(TargetBucket)) {
+    throw new Error(`Invalid Param. Target Bucket: ${TargetBucket} is required.`)
+  }
+  // extract path and key
+  const { Bucket, Key } = await s3FileParser(SourceFullPath)
+  if (_.isUndefined(Bucket) || _.isUndefined(Key)) {
+    throw new Error(
+      `Invalid Param. SourcefullPath doesnt have bucket/key name. Bucket: ${Bucket}, key: ${Key}`
+    )
+  }
+  // if target key is not provided then
+  // set source key as target key
+  let target = !_.isUndefined(TargetKey) && !_.isEmpty(TargetKey) ? TargetKey : Key
+  const copyResp = await copyS3toS3({
+    SourceBucket: Bucket,
+    SourceKey: Key,
+    TargetBucket,
+    TargetKey: target,
+  })
+  // if copied successfully then return full path of the copied target path
+  if (!_.isUndefined(copyResp) && !_.isUndefined(copyResp.ETag)) {
+    return `${TargetBucket}/${target}`
+  }
+  return ''
+}
+
+export async function ArchiveS3File({ SourceFullPath, TargetBucket, TargetKey }) {
+  if (_.isUndefined(SourceFullPath) || _.isEmpty(SourceFullPath)) {
+    throw new Error(`Invalid Param. SourceFullPath: ${SourceFullPath} is required.`)
+  }
+  if (_.isUndefined(TargetBucket) || _.isEmpty(TargetBucket)) {
+    throw new Error(`Invalid Param. Target Bucket: ${TargetBucket} is required.`)
+  }
+  // extract path and key
+  const { Bucket, Key } = await s3FileParser(SourceFullPath)
+
+  if (_.isUndefined(Bucket) || _.isUndefined(Key)) {
+    throw new Error(
+      `Invalid Param. SourcefullPath doesnt have bucket/key name. Bucket: ${Bucket}, key: ${Key}`
+    )
+  }
+  // get only file name and ignore all subfolders related to pipeline tasks.
+  const filename = Key.replace(/\/\d+\//gi, '/')
+  // if target key is not provided then
+  // set source key as target key
+  let target = !_.isUndefined(TargetKey) && !_.isEmpty(TargetKey) ? TargetKey : filename
+  const moveResp = await moveS3toS3({
+    SourceBucket: Bucket,
+    SourceKey: Key,
+    TargetBucket,
+    TargetKey: target,
+  })
+  // if copied successfully then return full path of the copied target path
+  if (!_.isUndefined(moveResp) && !_.isUndefined(moveResp.ETag)) {
+    return `${TargetBucket}/${target}`
+  }
+  return ''
+}
+
+export async function deleteS3({ SourceFullPath }) {
+  if (_.isUndefined(SourceFullPath) || _.isEmpty(SourceFullPath)) {
+    throw new Error(`Invalid Param. SourceFullPath: ${SourceFullPath} is required.`)
+  }
+  // extract path and key
+  const { Bucket, Key } = await s3FileParser(SourceFullPath)
+  if (_.isUndefined(Bucket) || _.isUndefined(Key)) {
+    throw new Error(
+      `Invalid Param. SourcefullPath doesnt have bucket/key name. Bucket: ${Bucket}, key: ${Key}`
+    )
+  }
+  const delResp = await DeleteFile({
+    SourceBucket: Bucket,
+    SourceKey: Key,
+  })
+  // if deleted successfully then return full path of the copied target path
+  if (!_.isUndefined(delResp) && !_.isUndefined(delResp.Deleted) && delResp.Deleted === true) {
+    return { S3FullPath: `${delResp.Bucket}/${delResp.Key}`, Deleted: true }
+  }
+  return { S3FullPath: `${Bucket}/${Key}`, Deleted: false }
 }

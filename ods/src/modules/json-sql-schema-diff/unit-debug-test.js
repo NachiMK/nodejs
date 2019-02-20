@@ -3,9 +3,10 @@ import { SchemaDiff } from './index'
 import { GetJSONFromS3Path } from '../s3ODS'
 import { getAndSetVarsFromEnvFile } from '../../../env'
 import { getConnectionString } from '../../data/psql/index'
+import { getPreStageDefaultCols } from '../../modules/ODSConstants'
 
 const S3JsonSchemaPath =
-  's3://dev-ods-data/unit-test/clients/test-clients-Schema-20180925_154121235.json'
+  's3://int-ods-data/dynamodb/carrier-messages/10353/10354-10355-carrier-messages-Schema-20190205_145403047.json'
 
 async function testSchemaDiff() {
   getAndSetVarsFromEnvFile(false)
@@ -16,7 +17,10 @@ async function testSchemaDiff() {
   const objDiff = new SchemaDiff(event)
 
   try {
-    const resp = await objDiff.SQLScript()
+    const resp = await objDiff.SQLScript({
+      AddTrackingCols: true,
+      AdditionalColumns: getPreStageDefaultCols(),
+    })
     console.log('resp', JSON.stringify(resp, null, 2))
     return resp
   } catch (err) {

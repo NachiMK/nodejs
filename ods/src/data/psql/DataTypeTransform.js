@@ -174,6 +174,7 @@ export const DataTypeTransferEnum = {
       DataLength: 256,
     },
     postgresType: 'char',
+    UseTextForLongerStrings: true,
   },
   character: {
     HigherTypes: ['text', 'character varying'],
@@ -183,12 +184,14 @@ export const DataTypeTransferEnum = {
       DataLength: 256,
     },
     postgresType: 'char',
+    UseTextForLongerStrings: true,
   },
   text: {
     HigherTypes: ['text'],
     AllowHigerLength: true,
     FallbackHigherType: FallBackTypeEnum['character varying'],
     postgresType: 'text',
+    UseTextForLongerStrings: true,
   },
   varchar: {
     HigherTypes: ['text', 'character varying'],
@@ -198,6 +201,7 @@ export const DataTypeTransferEnum = {
       DataLength: 512,
     },
     postgresType: 'character varying',
+    UseTextForLongerStrings: true,
   },
   'character varying': {
     HigherTypes: ['text', 'character varying', 'varchar'],
@@ -207,6 +211,7 @@ export const DataTypeTransferEnum = {
       DataLength: 512,
     },
     postgresType: 'character varying',
+    UseTextForLongerStrings: true,
   },
   uuid: {
     HigherTypes: ['text', 'character varying'],
@@ -511,13 +516,26 @@ export function GetNewType(existingType, changeToType) {
       DataTypeTransferEnum[existingType.DataType].FallbackHigherType.postgresType
     // set length to fall back types default length
     retNewType.DataLength =
-      DataTypeTransferEnum[existingType.DataType][retNewType.DataType].DataLength || -1
+      DataTypeTransferEnum[existingType.DataType].FallbackHigherType.DataLength || -1
     retNewType.precision =
-      DataTypeTransferEnum[existingType.DataType][retNewType.DataType].precision || -1
-    retNewType.scale = DataTypeTransferEnum[existingType.DataType][retNewType.DataType].scale || -1
+      DataTypeTransferEnum[existingType.DataType].FallbackHigherType.precision || -1
+    retNewType.scale = DataTypeTransferEnum[existingType.DataType].FallbackHigherType.scale || -1
   } else {
     return {}
   }
   // return it
   return retNewType
+}
+
+/**
+ * Removes any characters that are NOT
+ *  a-z
+ *  A-Z
+ *  0-9
+ *  _ (underscore)
+ *  - (hypen)
+ *  ' '(blank space)
+ */
+export function GetCleanColumnName(colName) {
+  return colName.replace(/[^a-zA-Z0-9_ -]/gi, '')
 }

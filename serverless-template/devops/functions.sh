@@ -23,6 +23,14 @@ gitBranch() {
   echo $(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
 }
 
+getPackageVersion() {
+  cat ./package.json \
+    | grep version \
+    | head -1 \
+    | awk -F: '{ print $2 }' \
+    | sed 's/[\ ",]//g'
+}
+
 slack() {
   if [ -z "$2" ]; then
     echo Not enough arguments sent for slack

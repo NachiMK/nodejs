@@ -1,10 +1,10 @@
 {
-  "TargetTable": "dev-modeling-price-points",
-  "S3DataFilePath": "s3://dev-ods-data/load-test/modeling-price-points/modeling-price-points-20180907_154039.json",
+  "TargetTable": "int-ods-testtable-1",
+  "S3DataFilePath": "s3://int-ods-data/fake-data/ods-testtable-v2/testtable-20190212_1412.json",
   "Action": "put",
   "DeleteOptions" : {
-    "KeyName" : "ID",
-    "KeyNameInFile" : "ID"
+    "KeyName" : "Id",
+    "KeyNameInFile" : "Id"
   },
   "ContinueUpdateOnError": true,
   "LogLevel": "debug"

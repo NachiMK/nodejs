@@ -39,7 +39,7 @@ if [ "${dbhostname}" = "rds" ]; then
     read password
     export PGPASSWORD=$password
 elif [ "${dbhostname}" = "rds2" ]; then 
-    dbhostname='-h datalake-try.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_root'
+    dbhostname='-h datalake.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U hixme_ods_root'
     echo "Enter psql password for RDS Server ${stage}:"
     read password
     export PGPASSWORD=$password
@@ -78,6 +78,8 @@ if [ "${resetdata}" = "ResetData:TRUE" ]; then
         echo "Deploying Data:" $filename
         psql ${dbhostname} -d odsconfig_${stagename} -f "$filename"
     done
+    echo "Post Deployment.. Update TaskAttribute"
+    psql ${dbhostname} -d odsconfig_${stagename} -c "UPDATE ods.\"TaskAttribute\" TA  SET \"AttributeValue\" = REPLACE(TA.\"AttributeValue\", 'dev-', '$stagename-') WHERE   TA.\"AttributeValue\" like 'dev-%';"
 else
     echo "Not Resetting Data. To Reset send param ResetData:TRUE"
 fi

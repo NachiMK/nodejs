@@ -153,7 +153,7 @@
       }
     },
     "Gender": { "type": "string", "chance": "gender" },
-    "OriginalHireDate": { "type": "string", "format": "date", "faker": "date.past" },
+    "OriginalHireDate": { "type": "string", "format": "date-time", "faker": "date.past" },
     "ClientPublicKey": {
       "type": "string",
       "minLength": 36,
@@ -168,7 +168,7 @@
       "maximum": 30,
       "multipleOf": 2
     },
-    "TerminationDate": { "type": "string", "format": "date" },
+    "TerminationDate": { "type": "string", "format": "date-time" },
     "Smoker": { "type": "boolean" },
     "UserRole": {
       "type": "string",

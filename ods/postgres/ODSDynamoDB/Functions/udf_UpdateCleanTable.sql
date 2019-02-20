@@ -15,6 +15,8 @@ RETURNS TABLE (
 DECLARE 
     sql_code text;
     Updatecols text;
+    UpdatedEndDate json;
+    UpdatedAllCols json;
 BEGIN
 -- Existing: 1/1/2018 to 12/31/9999
 -- INcoming: 1/2/2018 to 12/31/9999 
@@ -35,10 +37,10 @@ BEGIN
     FROM    public."vwColumnDefinition" as CT
     INNER
     JOIN    public."vwColumnDefinition" as ST ON CT."ColumnName" = ST."ColumnName"
-    WHERE   CT."TableSchema" ~ CleanTableSchema
-    AND     ST."TableSchema" ~ StageTableSchema
-    AND     CT."TableName"   ~ CleanTable
-    AND     ST."TableName"   ~ StageTable
+    WHERE   CT."TableSchema" = CleanTableSchema
+    AND     ST."TableSchema" = StageTableSchema
+    AND     CT."TableName"   = CleanTable
+    AND     ST."TableName"   = StageTable
     AND     CT."ColumnName" !~ PrimaryKeyName
     AND     CT."ColumnName" !~ BusinessKeyColumn
     AND     CT."ColumnName" !~ 'DataPipeLineTaskQueueId'
@@ -49,30 +51,53 @@ BEGIN
 
     RAISE NOTICE 'Update Cols: %', Updatecols;
 
-    sql_code := 'UPDATE ' || CleanTableSchema || '."'|| CleanTable ||'"
-    SET     "EffectiveEndDate" = CASE WHEN CT."EffectiveStartDate"::DATE < stg."HistoryDate"::DATE
-                                        THEN (stg."HistoryDate" - interval ''1 day'')::DATE
-                                        ELSE CT."EffectiveStartDate"::DATE
-                                    END
-            ,"StgId" = stg."StgId"
-            ,"Parent_Id" = -1
-            ,"Root_Id" = -1
-            ,"DataPipeLineTaskQueueId" = ' || CAST(TaskQueueId AS VARCHAR) || '
-            ,' || Updatecols || '
-    FROM    ' || CleanTableSchema || '."'|| CleanTable ||'" CT
-    INNER
-    JOIN    ' || StageTableSchema || '."'|| StageTable ||'" stg ON CT."'|| BusinessKeyColumn ||'" = stg."'|| BusinessKeyColumn ||'"
+    sql_code := 'WITH CTEEndRecord AS (
+    UPDATE ' || CleanTableSchema || '."'|| CleanTable ||'" AS CT
+    SET     "EffectiveEndDate" = (stg."HistoryCreated" - interval ''1 day'')::DATE
+    FROM    ' || StageTableSchema || '."'|| StageTable ||'" stg
     WHERE   1 = 1
-    AND     CT."EffectiveStartDate"::DATE <= stg."HistoryDate"::DATE
+    AND     CT."'|| BusinessKeyColumn ||'" = stg."'|| BusinessKeyColumn ||'"
+    AND     CT."EffectiveStartDate"::DATE < stg."HistoryCreated"::DATE
     AND     CT."EffectiveEndDate" = ''12-31-9999''
     AND     CT."RowDeleted" = false
     AND     stg."StgRowDeleted" = false
     AND     stg."DataPipeLineTaskQueueId" = ' || CAST(PreStageToStageTaskId as VARCHAR) || '
-    RETURNING CT."StgId", CT."' || PrimaryKeyName || '" as "TableId";';
-    RAISE NOTICE 'SQL Code to update %', sql_code;
+    RETURNING CT."StgId", CT."' || PrimaryKeyName || '" as "TableId"
+    )
+    SELECT array_to_json(array_agg(row_to_json(t)))
+    FROM (SELECT * FROM CTEEndRecord) AS t;';
+    EXECUTE sql_code INTO UpdatedEndDate;
 
-    sql_code := 'SELECT CAST(1 as bigint), CAST(1 as bigint)';
-    RETURN QUERY EXECUTE sql_code;
+    sql_code := 'WITH CTEUpdateAll AS (
+    UPDATE ' || CleanTableSchema || '."'|| CleanTable ||'" AS CT
+    SET      "StgId" = stg."StgId"
+            ,"DataPipeLineTaskQueueId" = ' || CAST(TaskQueueId AS VARCHAR) || '
+            ,' || Updatecols || '
+    FROM    ' || StageTableSchema || '."'|| StageTable ||'" stg
+    WHERE   1 = 1
+    AND     CT."'|| BusinessKeyColumn ||'" = stg."'|| BusinessKeyColumn ||'"
+    AND     CT."EffectiveStartDate"::DATE = stg."HistoryCreated"::DATE
+    AND     CT."EffectiveEndDate" = ''12-31-9999''
+    AND     CT."RowDeleted" = false
+    AND     stg."StgRowDeleted" = false
+    AND     stg."DataPipeLineTaskQueueId" = ' || CAST(PreStageToStageTaskId as VARCHAR) || '
+    RETURNING CT."StgId", CT."' || PrimaryKeyName || '" as "TableId"
+    )
+    SELECT array_to_json(array_agg(row_to_json(t)))
+    FROM (SELECT * FROM CTEUpdateAll) AS t;';
+    RAISE NOTICE 'SQL Code to update %', sql_code;
+    EXECUTE sql_code INTO UpdatedAllCols;
+
+    sql_code :='
+    SELECT   CAST(CAST(T->''StgId'' AS VARCHAR(20)) AS BIGINT) AS "StgId"
+            ,CAST(CAST(T->''TableId'' AS VARCHAR(20)) AS BIGINT) AS "TableId"
+    FROM    json_array_elements($1) as T
+    UNION
+    SELECT   CAST(CAST(T->''StgId'' AS VARCHAR(20)) AS BIGINT) AS "StgId"
+            ,CAST(CAST(T->''TableId'' AS VARCHAR(20)) AS BIGINT) AS "TableId"
+    FROM    json_array_elements($2) as T';
+
+    RETURN QUERY EXECUTE sql_code USING UpdatedEndDate, UpdatedAllCols;
 
 END;
 $$ LANGUAGE plpgsql;

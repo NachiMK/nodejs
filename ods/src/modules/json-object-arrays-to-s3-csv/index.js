@@ -294,7 +294,7 @@ export class JsonObjectArrayToS3CSV {
   getParams(key) {
     let keyName = this.S3OutputKeyPrefix
     if (this.Options.appendKeyNameToFileName) {
-      keyName = `${keyName}${key}`
+      keyName = `${keyName}${key.replace(/[\W]+/gi, '-')}`
     }
     keyName = getFileName(
       keyName,

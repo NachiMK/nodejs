@@ -1,7 +1,7 @@
 {
     "JsonSchema": "", 
-    "TableName": "clients", 
-    "TableSchema": "stg",
+    "TableName": "carrier_messages", 
+    "TableSchema": "raw",
     "DataTypeKey": "db_type",
     "DBConnection": "" 
 }

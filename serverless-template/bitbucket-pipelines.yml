@@ -26,7 +26,7 @@ pipelines:
             - npm install
             - npm run lint
             - npm run deploy:prod
-            - ./scripts/slack_deployment_status.sh
+            - ./devops/slack_deployment_status.sh
 
     develop:
       - step:
@@ -38,4 +38,4 @@ pipelines:
             - npm install
             - npm run lint
             - npm run deploy:int
-            - ./scripts/slack_deployment_status.sh
+            - ./devops/slack_deployment_status.sh

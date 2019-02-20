@@ -9,13 +9,18 @@ RETURNS VOID AS $$
     DECLARE DeleteScript TEXT DEFAULT '';
 BEGIN
 
+    -- IF IDs to update is null or empty, then return back
+    IF IDsToRemove IS NULL OR LENGTH(TRIM(IDsToRemove)) = 0 THEN
+        RETURN;
+    END IF;
+
     -- Find only Rows that were updated today
     dsql = '
     SELECT  STRING_AGG(CAST("' || PrimaryKeyName || '" AS VARCHAR), '','')
     FROM    ' || CleanTableSchema || '."' || CleanParentTableName || '" AS CT
     WHERE   "EffectiveEndDate" = ''9999-12-31''::DATE
     AND     EXISTS (SELECT TableId 
-                    FROM regexp_split_to_table(''' || COALESCE(IDsToRemove, '') || ''', '','') AS TableId 
+                    FROM regexp_split_to_table(''' || IDsToRemove || ''', '','') AS TableId 
                     WHERE CAST(TableId as BIGINT) = CT."'||PrimaryKeyName||'")
     ';
     EXECUTE dsql INTO UpdatedIdsToday;

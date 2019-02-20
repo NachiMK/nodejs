@@ -1,0 +1,15 @@
+{
+    "dev-clients": {
+      "TotalRecords": 50,
+      "Files": [
+        {
+            "SourceEntity": "clients",
+            "StartIndex": 1,
+            "EndIndex": 50,
+            "RowCountInBatch": 50,
+            "ImportSequence": 0,
+            "S3File": "s3://dev-ods-data/dynamodb/clients/initial/clients-1-to-25-20181219_194126031.json"
+        }
+      ]
+    }
+}

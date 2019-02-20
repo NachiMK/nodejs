@@ -44,6 +44,7 @@ BEGIN
     WHERE   DPL."SourceEntity"      = TableName
     AND     S."DataSourceName" = 'DynamoDB'
     AND     D."DataSourceName" = 'S3/JSON'
+    AND     DPL."DeletedFlag"  = false
     RETURNING "DataPipeLineTaskQueueId"
     INTO    DataPipeLineTaskQueueId;
 

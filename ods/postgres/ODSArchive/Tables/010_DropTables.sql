@@ -1,0 +1,2 @@
+-- DROP TABLE IF EXISTS arch."TaskQueueAttributeLogArchive";
+-- DROP TABLE IF EXISTS arch."DataPipeLineTaskQueueArchive";

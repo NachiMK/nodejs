@@ -130,6 +130,10 @@ export const logSQLCommand = async (params = {}, commandType = 'UNKNOWN') => {
     error: undefined,
   }
 
+  if (params.DoNotLog === true) {
+    retSingleValue.scalarValue = -1
+    return retSingleValue
+  }
   const odsLogDbName = process.env.log_dbname || 'ODSLog'
   const { Query, DBName } = params
   const BatchKey = params.BatchKey || getDefaultBatchKey(Query)
@@ -302,7 +306,7 @@ function getDefaultBatchKey(Query) {
 
 function QuoteSQL(Query) {
   if (Query && typeof Query === 'string') {
-    return Query.replace('?', '\\?')
+    return Query.replace(/\?/gi, '\\?')
   }
   return Query
 }

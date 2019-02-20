@@ -102,7 +102,7 @@ export class JsonToJsonFlattner {
               jsonRowWithId
             )
             rowsArrayWithIds.push(_.cloneDeep(jsonRowWithId))
-            this.LogString('Done adding IDs to objects.', 'info')
+            this.LogString('Done adding IDs to objects.', 'debug')
             this.LogJson('json_row_with_id:', _.cloneDeep(jsonRowWithId), 'debug')
           }
         })
@@ -113,7 +113,7 @@ export class JsonToJsonFlattner {
         rowsArrayWithIds.forEach((jsonRowWithId) => {
           if (!_.isEmpty(jsonRowWithId)) {
             this.normalizeMe(_.cloneDeep(jsonRowWithId), this.TableName)
-            this.LogString('Done normalizing data.', 'info')
+            this.LogString('Done normalizing data.', 'debug')
             // extract various tables and JSON schema paths for those tables.
             this.UpdateOuputAddKeysAndPath()
           }
@@ -137,7 +137,7 @@ export class JsonToJsonFlattner {
     try {
       // get normalized data
       await this.getNormalizedDataset()
-      this.LogString('Normalized Data is available.', 'info')
+      this.LogString('Normalized Data is available.', 'debug')
       if (
         this.ModuleStatus !== 'success' ||
         !this.Output.NormalizedDataSet ||
@@ -197,12 +197,13 @@ export class JsonToJsonFlattner {
       let idx = 0
       _.forIn(this.Output.NormalizedDataSet, (rows, tblName) => {
         let path = ''
-        console.log(`table: ${tblName}, size: ${_.size(rows)}, idx: ${idx}`)
+        this.logger.log('debug', `table: ${tblName}, size: ${_.size(rows)}, idx: ${idx}`)
         if (!_.isEmpty(rows) && _.size(rows) > 0) {
           path = rows[0][this.globalDefaultUriPath] || '~Unknown'
           if (!_.isUndefined(path) && path.length > 0) {
-            // path = path.substring(1)
-            path = path.substring(1).replace(/\//gi, '.')
+            // only replace if there is a single Slash
+            // if the slash is escaped then dont replace it.
+            path = path.substring(1).replace(/([^\^]{1}[^~]{1})\//gi, '$1.')
           }
         }
         // extract ods_path
@@ -357,7 +358,7 @@ export class JsonToJsonFlattner {
     )
 
     if (childObj && !_.isUndefined(parentId)) {
-      childObj[this.globalDefaultParentPath] = `/${parentName}`
+      childObj[this.globalDefaultParentPath] = `/${parentName.replace(/\//gi, '^~/')}`
       childObj[this.gloablDefaultParentUri] = `/${parentId}`
 
       this.LogJson(`after adding parent at level: ${parentLevel} to me :`, childObj, 'debug')
@@ -413,7 +414,7 @@ export class JsonToJsonFlattner {
   addUriPath(objToAdd, objName) {
     if (!_.isUndefined(objToAdd) && _.isObject(objToAdd)) {
       if (!objToAdd[this.globalDefaultUriPath]) {
-        objToAdd[this.globalDefaultUriPath] = `/${objName}`
+        objToAdd[this.globalDefaultUriPath] = `/${objName.replace(/\//gi, '^~/')}`
       }
     }
   }

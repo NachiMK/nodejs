@@ -1,16 +1,21 @@
 import moment from 'moment'
 import { getTableInfoAllTables } from './index'
 
+let stgToCapture = 'dev'
+if (process.argv.length > 2) {
+  stgToCapture = process.argv[2]
+}
 const fs = require('fs')
-let outputPath = `/Users/Nachi/Documents/myjunk/allTableInfo_${moment().format(
+let outputPath = `/Users/Nachi/Documents/myjunk/allTableInfo_${stgToCapture}-${moment().format(
   'YYYYMMDD_HHmmssSSS'
 )}.json`
-if (process.argv.length > 2) {
-  let outputPath = process.argv[2]
+if (process.argv.length > 3) {
+  outputPath = process.argv[3]
 }
-getTableInfoAllTables('prod')
+console.log(`Capturing Table info for Stage: ${stgToCapture}, Output Path: ${outputPath}`)
+getTableInfoAllTables(stgToCapture)
   .then((res) => {
-    console.log(`Reults from Table info: ${res}, written to file: ${outputPath}`)
+    console.log(`Reults from Table info: ${res}`)
     fs.writeFile(outputPath, JSON.stringify(res, null, 2))
   })
   .catch((err) => {

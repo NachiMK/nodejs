@@ -71,7 +71,11 @@ export class SQLTableDiff {
     return blnRet
   }
 
-  async GetSQLDiffScript(defaultColumns = {}, SourceColsToIgnore = {}) {
+  async GetSQLDiffScript(
+    defaultColumns = {},
+    SourceColsToIgnore = {},
+    RemoveNonAlphaNumericCharsInColumnNames
+  ) {
     try {
       await this.ValidateParam()
       const defOutput = await this.GetTableSchema()
@@ -91,6 +95,7 @@ export class SQLTableDiff {
         })
         if (isEmpty(defOutput.TargetDefintion)) {
           jDiff.NewTable = {}
+          jDiff.CreateNewTable = true
           Object.assign(jDiff.NewTable, defOutput.SourceDefinition)
         } else {
           jDiff = await objSchDiff.GetJsonDiff(
@@ -99,7 +104,11 @@ export class SQLTableDiff {
           )
         }
         // generate script
-        const script = await objSchDiff.GenerateSQLFromJsonDiff(jDiff, defaultColumns)
+        const script = await objSchDiff.GenerateSQLFromJsonDiff(
+          jDiff,
+          defaultColumns,
+          RemoveNonAlphaNumericCharsInColumnNames
+        )
         return script
       }
     } catch (err) {

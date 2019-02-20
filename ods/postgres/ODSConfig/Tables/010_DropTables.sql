@@ -13,3 +13,4 @@
 -- DROP TABLE IF EXISTS ods."DataPipeLineMapping";
 -- DROP TABLE IF EXISTS ods."IntervalType";
 -- DROP TABLE IF EXISTS ods."DataSource";
+-- DROP TABLE IF EXISTS ods."DataPipeLineInitialImport";

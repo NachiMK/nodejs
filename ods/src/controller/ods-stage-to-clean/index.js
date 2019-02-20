@@ -8,7 +8,7 @@ import {
 import { SaveStringToS3File } from '../../modules/s3ODS'
 import { SQLTableDiff } from '../../modules/sql-schema-diff/SQLTableDiff'
 import { IsValidString } from '../../utils/string-utils/index'
-import { executeCommand, getConnectionString, executeScalar, executeQueryRS } from '../../data/psql'
+import { executeCommand, getConnectionString, executeQueryRS } from '../../data/psql'
 import { getCleanTableDefaultCols, getPreStageDefaultCols } from '../../modules/ODSConstants'
 
 const JsonObjectNameEnum = DynamicAttributeEnum.JsonObjectName.value
@@ -116,14 +116,17 @@ export class ODSStageToClean {
         }
         if (AttributeName.match(regExJ)) {
           const [idx] = filtered[item].split('-')
-          const tblname = filtered[item].replace(/\d+-/gi, '').replace('-', '_')
+          const tblname = filtered[item]
+            .replace(/\d+-/gi, '')
+            .replace(/-/gi, '_')
+            .replace(/[\W]+/gi, '')
           retCollection[fileCommonKey] = {
             Index: parseInt(idx),
             [StageTblEnum]: filtered[`${fileCommonKey}.${StageTblEnum}`],
             [JsonSchemaPathPropName]: filtered[`${fileCommonKey}.${JsonSchemaPathPropName}`],
             [JsonObjectNameEnum]: filtered[item],
             [CleanTableNameEnum]: `${ParentPrefix}${tblname}`,
-            S3OutputPrefix: `${s3Prefix}${filtered[item]}-db`,
+            S3OutputPrefix: `${s3Prefix}${filtered[item].replace(/[^\w-]/gm, '')}-db`,
             StageRowCount: filtered[`${fileCommonKey}.${RowCntEnum}`],
           }
         }
@@ -134,7 +137,7 @@ export class ODSStageToClean {
     return {}
   }
 
-  async LoadData() {
+  async LoadData(RemoveNonAlphaNumericCharsInColumnNames = true) {
     const output = {
       status: {
         message: 'processing',
@@ -155,7 +158,11 @@ export class ODSStageToClean {
           const defaultColumns = this.getDefaultTrackingCols(table, tables)
           const colsToIgnore = getPreStageDefaultCols()
           // apply schema difference
-          const diffScript = await sqlTblDiffObj.GetSQLDiffScript(defaultColumns, colsToIgnore)
+          const diffScript = await sqlTblDiffObj.GetSQLDiffScript(
+            defaultColumns,
+            colsToIgnore,
+            RemoveNonAlphaNumericCharsInColumnNames
+          )
           let applyResp = false
           // Sync Clean table with stage table
           if (IsValidString(diffScript)) {
@@ -273,21 +280,20 @@ export class ODSStageToClean {
       IsRoot: false,
     }
     const [...lineagePath] = jsonSchemaPath.split('.')
-    const tbl =
-      Array.isArray(lineagePath) && lineagePath.length > 0
-        ? lineagePath[lineagePath.length - 1].replace('-', '_')
-        : ''
+    const ParentPrefix = this.TaskAttributes[CleanTablePrefixEnum]
+    const prefixRegEx = new RegExp(`^${ParentPrefix}`, 'gi')
+    const tbl = table[CleanTableNameEnum]
     let parentid = ''
     let rootid = ''
     let IsRootTable = true
     // find parent
     if (!_.isUndefined(lineagePath) && _.size(lineagePath) > 1) {
-      parentid = lineagePath[lineagePath.length - 2].replace('-', '_')
-      rootid = lineagePath[0].replace('-', '_')
+      parentid = lineagePath[lineagePath.length - 2].replace(/-/gi, '_')
+      rootid = lineagePath[0].replace(/-/gi, '_')
       IsRootTable = false
     }
     output.TableName = tbl
-    output.PrimaryKeyName = `${tbl}Id`
+    output.PrimaryKeyName = `${tbl.replace(prefixRegEx, '')}Id`
     output.ParentId = `Parent_${parentid}Id`
     output.RootId = `Root_${rootid}Id`
     if (!IsRootTable) {
@@ -301,10 +307,10 @@ export class ODSStageToClean {
         }
       })
       output.CleanParentTableName = !_.isUndefined(objParent)
-        ? objParent[CleanTableNameEnum].replace('-', '_')
+        ? objParent[CleanTableNameEnum].replace(/-/gi, '_')
         : ''
       output.StageParentTableName = !_.isUndefined(objParent)
-        ? objParent[StageTblEnum].replace('-', '_')
+        ? objParent[StageTblEnum].replace(/-/gi, '_')
         : ''
       // find my root table
       const rootPath = lineagePath[0]
@@ -316,7 +322,7 @@ export class ODSStageToClean {
         }
       })
       output.RootParentTableName = !_.isUndefined(objRoot)
-        ? objRoot[CleanTableNameEnum].replace('-', '_')
+        ? objRoot[CleanTableNameEnum].replace(/-/gi, '_')
         : ''
     } else {
       output.IsRoot = true
@@ -326,10 +332,12 @@ export class ODSStageToClean {
 
   getDefaultTrackingCols(table, tableList) {
     const c = this.getLienageColsAndTables(table, tableList)
+    const ParentPrefix = this.TaskAttributes[CleanTablePrefixEnum]
+    const prefixRegEx = new RegExp(`^${ParentPrefix}`, 'gi')
     let jstr = JSON.stringify(getCleanTableDefaultCols())
     const backtojson = JSON.parse(
       jstr
-        .replace(/{TableName}/gi, c.TableName)
+        .replace(/{TableName}/gi, c.TableName.replace(prefixRegEx, ''))
         .replace(/{Parent}/gi, c.ParentId)
         .replace(/{Root}/gi, c.RootId)
     )
