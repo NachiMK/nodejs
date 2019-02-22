@@ -102,12 +102,14 @@ export class JsonSchemaToDBSchema {
       this.logger.log('debug', `Cols and Types:${colsAndTypes}`)
       // get script
       this._outputTableName = this.getTableName()
-      const dbScript = await this.getCreateTableSQL(
+      const createScript = await this.getCreateTableSQL(
         this.TableSchema,
         this.OutputTableName,
         colsAndTypes,
         this.CleanColumnNames
       )
+      const dbScript = `DROP TABLE IF EXISTS "${this.TableSchema}"."${this.OutputTableName}";
+      ${createScript};`
       this.logger.log('debug', `SQL Script:${dbScript}`)
       return dbScript
     }

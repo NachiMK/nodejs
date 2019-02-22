@@ -66,8 +66,6 @@ export function getTablesToDeploy(envStage) {
         'prod-modeling-group-plans',
         'prod-modeling-price-points',
         'prod-modeling-scenarios',
-        'prod-modeling-validation',
-        'prod-models',
         'prod-notes',
         'prod-payroll-deductions',
         'prod-persons',
@@ -101,8 +99,6 @@ export function getTablesToDeploy(envStage) {
         'int-modeling-group-plans',
         'int-modeling-price-points',
         'int-modeling-scenarios',
-        'int-modeling-validation',
-        'int-models',
         'int-notes',
         'int-persons',
         'int-platform-authorization-events',
@@ -134,8 +130,6 @@ export function getTablesToDeploy(envStage) {
         'dev-modeling-group-plans',
         'dev-modeling-price-points',
         'dev-modeling-scenarios',
-        'dev-modeling-validation',
-        'dev-models',
         'dev-notes',
         'dev-payroll-deductions',
         'dev-persons',
@@ -161,7 +155,6 @@ function getTablesToMigrateHistory(envStage) {
         'prod-client-benefits',
         'prod-clients',
         'prod-enrollments',
-        'prod-models',
         'prod-notes',
         'prod-persons',
         'prod-prospect-census-profiles',
@@ -170,7 +163,7 @@ function getTablesToMigrateHistory(envStage) {
     } else if (envStage === 'int') {
       retArray = ['int-cart']
     } else {
-      retArray = ['dev-cart', 'dev-models']
+      retArray = ['dev-cart']
     }
   }
   return retArray

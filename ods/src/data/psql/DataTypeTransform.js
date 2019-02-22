@@ -528,14 +528,25 @@ export function GetNewType(existingType, changeToType) {
 }
 
 /**
- * Removes any characters that are NOT
+ * Replaces any characters that is NOT one of the following with hypen
  *  a-z
  *  A-Z
  *  0-9
  *  _ (underscore)
  *  - (hypen)
  *  ' '(blank space)
+ *
+ * Also if there are
+ *  two or more hypens, it replaces with just single one
+ *  tow or more blanks, it replaces with just single one
+ *  Replaces any column that starts with a blank space to hypen (or else Knex removes it)
+ *  Replaces any column that end with a blank space to hypen (or else Knex removes it)
  */
 export function GetCleanColumnName(colName) {
-  return colName.replace(/[^a-zA-Z0-9_ -]/gi, '')
+  return colName
+    .replace(/^ /gi, '-')
+    .replace(/[^a-zA-Z0-9_ -]/gi, '-')
+    .replace(/-{2,}/gi, '-')
+    .replace(/ {2,}/gi, ' ')
+    .replace(/ $/gi, '-')
 }

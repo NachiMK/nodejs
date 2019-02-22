@@ -1,8 +1,8 @@
 {
-    "DataPipeLineTaskQueueId": 10400,
+    "DataPipeLineTaskQueueId": 155365,
     "TaskConfigName": "Stage to Clean",
     "RunSequence": 2060,
     "Status": "On Hold",
-    "TableName": "client-census",
+    "TableName": "models",
     "LogLevel": "warn"
 }
