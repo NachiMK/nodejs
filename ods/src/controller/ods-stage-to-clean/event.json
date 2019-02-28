@@ -1,8 +1,8 @@
 {
-    "DataPipeLineTaskQueueId": 155365,
+    "DataPipeLineTaskQueueId": 168101,
     "TaskConfigName": "Stage to Clean",
     "RunSequence": 2060,
     "Status": "On Hold",
-    "TableName": "models",
+    "TableName": "ods-testtable-1",
     "LogLevel": "warn"
 }

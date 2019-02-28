@@ -10,10 +10,12 @@ DECLARE
     taskStatusId    INT;
     Ready_20        INT DEFAULT 20;
     OnHold_10       INT DEFAULT 10;
+    Error_60        INT DEFAULT 60;
     IsParent        BOOLEAN DEFAULT false;
     ChildTaskStatusId       INT;
     ParentTaskId            INT DEFAULT -1;
     SibilingTaskStatusId    INT;
+    ParentTaskStatusId      INT DEFAULT -1;
 BEGIN
     IF ResetOption NOT IN ('ResetTask', 'ResetTaskAndSibilings'
                         ,'DeleteAttributes','DeleteTask'
@@ -49,6 +51,14 @@ BEGIN
 
     ChildTaskStatusId := taskStatusId;
     SibilingTaskStatusId := taskStatusId;
+
+    -- If Child changed then set parent status
+    SELECT CASE WHEN taskStatusId = OnHold_10 THEN Ready_20 ELSE taskStatusId END 
+    INTO   ParentTaskStatusId
+    WHERE  ResetOption IN ('ResetTask', 'ResetTaskAndSibilings') 
+    AND    ParentTaskId > 0
+    AND    ParentTaskId != DataPipeLineTaskQueueId;
+
     -- If given Task is parent & status is Ready then Child Task should be on hold
     IF taskStatusId = Ready_20 THEN
         ChildTaskStatusId := OnHold_10;
@@ -117,10 +127,22 @@ BEGIN
                                             DQ."TaskStatusId"
                                   END
                 ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
+                ,"Error" = null
         FROM    TmpKeysToUpdate AS T 
         WHERE   DQ."DataPipeLineTaskQueueId" = T."ResetId"
         AND     T."ResetId" > 0
         AND     DQ."TaskStatusId" != taskStatusId;
+
+        -- UPDATE Parent Status ONLY if Child status changes
+        UPDATE ods."DataPipeLineTaskQueue" AS DQ
+        SET     "TaskStatusId"  = ParentTaskStatusId
+                ,"UpdatedDtTm"  = CURRENT_TIMESTAMP
+                ,"Error" = null
+        WHERE   DQ."DataPipeLineTaskQueueId" != DataPipeLineTaskQueueId
+        AND     DQ."DataPipeLineTaskQueueId" = ParentTaskId
+        AND     DQ."TaskStatusId" != ParentTaskStatusId
+        AND     ParentTaskId > 0
+        AND     ParentTaskStatusId > 0;
 
         -- Delete Attributes
         DELETE  FROM ods."TaskQueueAttributeLog"

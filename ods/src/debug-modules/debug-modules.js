@@ -11,12 +11,12 @@ async function TestModules() {
   let event = getEventFromParams()
   getAndSetVarsFromEnvFile(false)
   try {
-    event.JsonSchemaFilePath = await Step1_CreateSchema(event)
+    //event.JsonSchemaFilePath = await Step1_CreateSchema(event)
     event.DataFile = await Step2_GetDataFile(event)
     event.CombinedSchemaFile = await Step3_CreateSchemaFromData(event)
     event.S3FlatJsonFile = await Step4_NormalizeData(event)
-    event.JsonToCSVResp = await Step5_JsonToCSV(event)
-    event.CsvToPostgresResp = await Step6_CSVtoPostgres(event)
+    //event.JsonToCSVResp = await Step5_JsonToCSV(event)
+    //event.CsvToPostgresResp = await Step6_CSVtoPostgres(event)
     return 'success'
   } catch (err) {
     console.error(`Error: ${err.message}`)
@@ -36,7 +36,7 @@ TestModules()
   })
 
 function getEventFromParams() {
-  let event = require('./event.json')
+  let event = require('./data818-event.json')
   process.argv.forEach((val, index) => {
     console.log(`Node Command Line Parameters: ${index}: ${val}`)
   })

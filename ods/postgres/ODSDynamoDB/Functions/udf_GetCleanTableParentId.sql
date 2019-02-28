@@ -73,10 +73,10 @@ BEGIN
                                                             AND  sc1."ODS_Batch_Id" = sp1."ODS_Batch_Id"
                                                             AND  sc1."DataPipeLineTaskQueueId" = sp1."DataPipeLineTaskQueueId"
         INNER
-        JOIN    '|| CleanTableSchema || '."' || CleanTableParentName || '" cp1 ON cp1."DataPipeLineTaskQueueId" = '|| CAST(TaskQueueId AS VARCHAR) || '
-                                                            AND cp1."StgId" = sp1."StgId"
+        JOIN    '|| CleanTableSchema || '."' || CleanTableParentName || '" cp1 ON cp1."ODS_DataPipeLineTaskQueueId" = '|| CAST(TaskQueueId AS VARCHAR) || '
+                                                            AND cp1."ODS_StgId" = sp1."StgId"
         WHERE   sc1."DataPipeLineTaskQueueId" = '|| CAST(PreStageToStageTaskId AS VARCHAR) || '
-        AND     cp1."RowDeleted" = false;';
+        AND     cp1."ODS_RowDeleted" = false;';
 
         -- query for # of Parent records
         sql_code := REPLACE(sql_get_rows, '<FieldList>', 'COUNT(*)');
@@ -115,19 +115,19 @@ BEGIN
                 FROM    INFORMATION_SCHEMA.COLUMNS C
                 WHERE   C.table_schema = ''' || CleanTableSchema || '''
                 AND     C.table_name = ''' || CleanTableName || '''
-                AND     C.column_name ~ ''Root_.*Id''
+                AND     C.column_name ~ ''ODS_Root_.*Id''
                 AND     EXISTS 
                         (
                             SELECT  1
                             FROM    INFORMATION_SCHEMA.COLUMNS AS R
                             WHERE   R.table_schema = c.table_schema
                             AND     R.table_name = ''' || RootTableName || '''
-                            AND     R.column_name ~ REPLACE(C.column_name, ''Root_'', '''')
+                            AND     R.column_name ~ REPLACE(C.column_name, ''ODS_Root_'', '''')
                         );';
             RAISE NOTICE 'SQL Query to get Root Column: %', sql_code;
             EXECUTE sql_code INTO RootColName;
 
-            IF RootColName ~* 'Root_Id' THEN
+            IF RootColName ~* 'ODS_Root_Id' THEN
                 RootColName := ParentPKcol;
             END IF;
 

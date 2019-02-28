@@ -293,9 +293,9 @@ export class ODSStageToClean {
       IsRootTable = false
     }
     output.TableName = tbl
-    output.PrimaryKeyName = `${tbl.replace(prefixRegEx, '')}Id`
-    output.ParentId = `Parent_${parentid}Id`
-    output.RootId = `Root_${rootid}Id`
+    output.PrimaryKeyName = `ODS_${tbl.replace(prefixRegEx, '')}Id`
+    output.ParentId = `ODS_Parent_${parentid}Id`
+    output.RootId = `ODS_Root_${rootid}Id`
     if (!IsRootTable) {
       // find my parent stage/clean table
       const parentPath = lineagePath.slice(0, lineagePath.length - 1).join('.')
@@ -331,17 +331,15 @@ export class ODSStageToClean {
   }
 
   getDefaultTrackingCols(table, tableList) {
-    const c = this.getLienageColsAndTables(table, tableList)
-    const ParentPrefix = this.TaskAttributes[CleanTablePrefixEnum]
-    const prefixRegEx = new RegExp(`^${ParentPrefix}`, 'gi')
+    const lineageCols = this.getLienageColsAndTables(table, tableList)
     let jstr = JSON.stringify(getCleanTableDefaultCols())
     const backtojson = JSON.parse(
       jstr
-        .replace(/{TableName}/gi, c.TableName.replace(prefixRegEx, ''))
-        .replace(/{Parent}/gi, c.ParentId)
-        .replace(/{Root}/gi, c.RootId)
+        .replace(/{PrimaryKey}/gi, lineageCols.PrimaryKeyName)
+        .replace(/{Parent}/gi, lineageCols.ParentId)
+        .replace(/{Root}/gi, lineageCols.RootId)
     )
-    if (!c.IsRoot) {
+    if (!lineageCols.IsRoot) {
       // delete json objects where AddOnlyToRootTable: True
       // if this table is not a ROOT table
       return _.omitBy(backtojson, (coldefintion, colName) => {

@@ -295,7 +295,7 @@ function getUpdateQuery(Id, SaveStatus) {
   const attributes = _.omit(SaveStatus, ['Error', 'Status', 'Input'])
   return `SELECT * FROM ods."udf_UpdateDataPipeLineTaskQueueStatus"(${Id},'${status}','${JSON.stringify(
     statusError
-  )}','${JSON.stringify(attributes)}')`
+  ).replace(/'/gi, `''`)}','${JSON.stringify(attributes)}')`
 }
 
 function getSetAttributeQuery(taskId) {

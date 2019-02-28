@@ -55,15 +55,12 @@ function GetSchemaByPath(jsonSchema, dataPath) {
     // if items, get properties.
     let schema
     if (
-      !_.isUndefined(jsonSchema.items) &&
-      !_.isUndefined(jsonSchema.items.properties) &&
+      jsonSchema.items &&
+      jsonSchema.items.properties &&
       !_.isUndefined(jsonSchema.items.properties[firstKey])
     ) {
       schema = _.cloneDeep(jsonSchema.items.properties)
-    } else if (
-      !_.isUndefined(jsonSchema.properties) &&
-      !_.isUndefined(jsonSchema.properties[firstKey])
-    ) {
+    } else if (jsonSchema.properties && !_.isUndefined(jsonSchema.properties[firstKey])) {
       schema = _.cloneDeep(jsonSchema.properties)
     }
     // within property  find the key
