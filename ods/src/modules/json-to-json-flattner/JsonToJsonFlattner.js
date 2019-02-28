@@ -19,6 +19,7 @@ export class JsonToJsonFlattner {
     NormalizedS3Path: undefined,
     JsonKeysAndPath: {},
   }
+  _jsonKeysAndParents = []
   logger = createLogger({
     format: _format.combine(
       _format.timestamp({
@@ -75,6 +76,9 @@ export class JsonToJsonFlattner {
   get InputFileHasData() {
     return this.inputFileHasData
   }
+  get JsonKeysAndParent() {
+    return this._jsonKeysAndParents
+  }
 
   async getNormalizedDataset() {
     let parentKey
@@ -110,9 +114,16 @@ export class JsonToJsonFlattner {
       this.LogJson('rows with IDs:', rowsArrayWithIds.length, 'debug')
       // object has any items
       if (rowsArrayWithIds && rowsArrayWithIds.length > 0) {
+        // add root table first
+        this.JsonKeysAndParent.push({
+          JsonKey: this.TableName,
+          ParentKey: '',
+          TableName: this.TableName,
+        })
         rowsArrayWithIds.forEach((jsonRowWithId) => {
           if (!_.isEmpty(jsonRowWithId)) {
-            this.normalizeMe(_.cloneDeep(jsonRowWithId), this.TableName)
+            this.GetKeysAndParents(jsonRowWithId, this.TableName)
+            this.normalizeMe(_.cloneDeep(jsonRowWithId), this.TableName, '')
             this.LogString('Done normalizing data.', 'debug')
             // extract various tables and JSON schema paths for those tables.
             this.UpdateOuputAddKeysAndPath()
@@ -252,7 +263,7 @@ export class JsonToJsonFlattner {
             'debug'
           )
           if (IsArrayOfSimpleTypes(jsonRow[attribute])) {
-            // let my_parent = getNewParentParamObject(my_id, my_name, my_level, json_row);
+            // Add Array Index Id and Value ,so  ['test'] becomes => {Id:1, Value:'test'}
             retJsonRow[attribute] = this.convertSimpleArrayToObjects(
               jsonRow[attribute],
               myId,
@@ -264,16 +275,13 @@ export class JsonToJsonFlattner {
           } else {
             // loop through each object and get the values;
             const myObjArrays = jsonRow[attribute]
-            // this.PrintJson("1.mapping my_obj_array:", my_obj_arrays, 'debug');
             retJsonRow[attribute] = myObjArrays.map((val) => {
-              // this.PrintJson("my_obj_array:", val, 'debug');
               this.LogString(
                 `2.parent:${myId} parent_my_level: ${myLevel} parent(attribute): ${attribute} parent: ${parentName}`,
                 'debug'
               )
               const nObj = {}
               this.IdMeAndMyDescendents(val, myId, myLevel, parentName, attribute, jsonRow, nObj)
-              // this.PrintJson("9000.nObj:", nObj, 'debug');
               return nObj
             })
           }
@@ -376,9 +384,10 @@ export class JsonToJsonFlattner {
   }
 
   getNewObjectFromArrayElement(val, idx, arrayName) {
-    const obj = {}
-    obj.ArrayIndex = idx
-    obj.ArrayValue = val
+    const obj = {
+      ArrayIndex: idx,
+      ArrayValue: val,
+    }
     this.addBatchId(obj)
     this.addBatchUniqueId(obj, arrayName)
     this.LogJson('obj', obj, 'debug')
@@ -433,20 +442,64 @@ export class JsonToJsonFlattner {
     this.LogJson('Uri updated', objToUpdate, 'debug')
   }
 
-  normalizeMe(jsonToNormalize, tableName) {
+  GetKeysAndParents(jsonRows, parent) {
+    // add all keys of complex objects
+    _.forEach(jsonRows, (value, key) => {
+      if (_.isObject(jsonRows[key])) {
+        // add only if the object is not already in our list
+        if (
+          !_.find(this.JsonKeysAndParent, function(o) {
+            return o.JsonKey === key
+          })
+        ) {
+          this.JsonKeysAndParent.push({
+            JsonKey: key,
+            ParentKey: parent,
+            TableName: key,
+          })
+        } else if (
+          !_.find(this.JsonKeysAndParent, function(o) {
+            return o.JsonKey === key && o.ParentyKey === parent
+          })
+        ) {
+          this.JsonKeysAndParent.push({
+            JsonKey: key,
+            ParentKey: parent,
+            TableName: `${parent}_${key}`,
+          })
+        }
+      }
+    })
+
+    _.forEach(jsonRows, (value, key) => {
+      if (_.isArray(value)) {
+        if (!IsArrayOfSimpleTypes(value)) {
+          value.forEach((element) => {
+            this.GetKeysAndParents(element, key)
+          })
+        }
+      } else if (_.isObject(value)) {
+        // add my children by doing a recursive call.
+        this.GetKeysAndParents(value, key)
+      }
+    })
+  }
+
+  normalizeMe(jsonToNormalize, tableName, parentName) {
     const localCopy = jsonToNormalize
     this.LogString(`normalizeMe input: ${localCopy}`, 'debug')
 
     if (tableName.length > 0) {
       // create a new array
-      if (!this.Output.NormalizedDataSet[tableName]) {
-        this.Output.NormalizedDataSet[tableName] = []
-      }
+      // TODO: DATA-818 Fix: Each table should contain the Parent_Name
+      // We can easily find PARENT NAME from the ODS_Path of this object.
+      // let us do this only if Same object exists with different parent.
+      this.initializeNormalizedDataSet(tableName, parentName)
     }
     this.LogString(`Table: ${tableName}`, 'debug')
     if (localCopy && !_.isEmpty(localCopy)) {
       // copy all simple objects
-      this.copySimpleObject(tableName, localCopy)
+      this.copySimpleObject(tableName, localCopy, parentName)
 
       const AttributeKeys = Object.keys(localCopy)
       AttributeKeys.forEach((attribute) => {
@@ -461,23 +514,55 @@ export class JsonToJsonFlattner {
               'debug'
             )
             myObjArrays.forEach((val) => {
-              this.normalizeMe(val, attribute)
+              this.normalizeMe(val, attribute, tableName)
             })
             delete localCopy[attribute]
           }
         } else if (_.isObject(localCopy[attribute])) {
           this.LogString(`processing attributes of object:${attribute}`, 'debug')
-          this.normalizeMe(localCopy[attribute], attribute)
+          this.normalizeMe(localCopy[attribute], attribute, tableName)
           delete localCopy[attribute]
         }
       })
 
       // in case any properties left after processing complex objects.
-      if (localCopy) this.copySimpleObject(tableName, localCopy)
+      if (localCopy) this.copySimpleObject(tableName, localCopy, parentName)
     }
   }
 
-  copySimpleObject(tableName, sourceObject) {
+  initializeNormalizedDataSet(jsonKey, parentKey) {
+    // do we have the table already
+    const tblNameObj = _.find(this.JsonKeysAndParent, function(o) {
+      return o.JsonKey == jsonKey && o.ParentKey == parentKey
+    })
+    // if we dont have this table so far then simply add it
+    if (tblNameObj && !this.Output.NormalizedDataSet[tblNameObj.TableName]) {
+      this.Output.NormalizedDataSet[`${tblNameObj.TableName}`] = []
+    } else if (!tblNameObj) {
+      // This should never happen, if it does check
+      // this.GetKeysAndParents is working properly.
+      throw new Error(
+        `Json Key: ${jsonKey} with Parent : ${parentKey} is not found in JsonKeysAndParents`
+      )
+    }
+  }
+
+  addToNormalizedDS(tableName, parentName, objToAdd) {
+    const objKey = _.find(this.JsonKeysAndParent, (o) => {
+      return o.JsonKey == tableName && o.ParentKey == parentName
+    })
+    if (objKey) {
+      this.Output.NormalizedDataSet[objKey.TableName].push(objToAdd)
+    } else {
+      // This should never happen, if it does check
+      // initializeNormalizedDataSet() & GetKeysAndParents() is working properly.
+      throw new Error(
+        `Table: ${tableName} with Parent : ${parentName} is not found in NormalizedDataSet`
+      )
+    }
+  }
+
+  copySimpleObject(tableName, sourceObject, parentName) {
     if (HasSimpleTypes(sourceObject)) {
       const obj = {}
       // extract all properties of simple data types and add to our current table and return
@@ -496,7 +581,7 @@ export class JsonToJsonFlattner {
 
       // add to array
       if (AttributeKeys && AttributeKeys.length > 0) {
-        this.Output.NormalizedDataSet[tableName].push(obj)
+        this.addToNormalizedDS(tableName, parentName, obj)
       }
     }
   }

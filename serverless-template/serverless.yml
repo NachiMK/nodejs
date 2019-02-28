@@ -84,12 +84,31 @@ provider:
   # TODO: improve the (below) 'environment' function so that it exports 'stackTags'!
   environment:            ${file(env.js):getAndSetVarsFromEnvFile}
   iamRoleStatements:      ${file(src/config.yml):iamRoleStatements}
+
+  # VPC 
+  #     - Is only needed for to access RDS / Aurora 
+  #     - Can be set here for the whole service, and/or at function level
+  #     - There are two subnet options
+  #        1. Public subnet  - allows access to RDS/Aurora but not DynamoDB
+  #        2. Private subnet - allows access to RDS/Aurora AND DynamoDB via gateway
+  # 
+  #     - Use one of the two vpc configurations below for RDS/Aurora
+  
+  #  1. Public subnet
+  # vpc:
+  #   securityGroupIds:
+  #     - sg-0c3aa668
+  #   subnetIds: 
+  #     - subnet-df4b3da8  # Public Subnet A
+  #     - subnet-37b2e252  # Public Subnet B
+  
+  # #  2. Private subnet
   vpc:
     securityGroupIds:
       - sg-0c3aa668
-    subnetIds:
-      - subnet-df4b3da8
-      - subnet-37b2e252
+    subnetIds: 
+      - subnet-f8bf74b1  # Private Subnet A
+      - subnet-1aaa1b7d  # Private Subnet B
 
 functions:                ${file(src/config.yml):functions}
 

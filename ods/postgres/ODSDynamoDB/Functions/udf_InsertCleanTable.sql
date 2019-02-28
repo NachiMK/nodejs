@@ -1,6 +1,6 @@
 -- udf_InsertCleanTable
-DROP FUNCTION IF EXISTS public."udf_InsertCleanTable"(jsonb);
-CREATE OR REPLACE FUNCTION public."udf_InsertCleanTable"(MergeParams jsonb)
+DROP FUNCTION IF EXISTS public."udf_InsertCleanTable"(jsonb, boolean);
+CREATE OR REPLACE FUNCTION public."udf_InsertCleanTable"(MergeParams jsonb, NoInsertPrintOnly boolean default false)
 RETURNS TABLE (
      "StgId"    BIGINT
     ,"TableId"  BIGINT
@@ -74,24 +74,25 @@ BEGIN
 
     IF IsRootTable THEN
         -- If Root no Parent or Root is required.
-        AdditionalTargetCols := ',"Parent_Id","Root_Id","EffectiveStartDate"' ||
-                                ',"EffectiveEndDate","RowCreatedDtTm","RowDeleted"'||
-                                ',"DataPipeLineTaskQueueId", "' || BusinessKeyColumn || '"' ;
+        AdditionalTargetCols := ',"ODS_StgId","ODS_Parent_Id","ODS_Root_Id","ODS_EffectiveStartDate"' ||
+                                ',"ODS_EffectiveEndDate","ODS_RowCreatedDtTm","ODS_RowDeleted"'||
+                                ',"ODS_DataPipeLineTaskQueueId", "' || BusinessKeyColumn || '"' ;
         -- source columns
         AdditionalSourceCols := '
-        , -1 as "Parent_Id"
-        , -1 AS "Root_Id"
-        , ST."HistoryCreated"::DATE as "EffectiveStartDate"
-        , ''12/31/9999'' as "EffectiveEndDate"
-        , CURRENT_TIMESTAMP AS "RowCreatedDtTm"
-        , false as "RowDeleted"
-        , ' || CAST(TaskQueueId as VARCHAR) || ' as "DataPipeLineTaskQueueId"
+        , ST."StgId" as "ODS_StgId"
+        , -1 as "ODS_Parent_Id"
+        , -1 AS "ODS_Root_Id"
+        , ST."HistoryCreated"::DATE as "ODS_EffectiveStartDate"
+        , ''12/31/9999'' as "ODS_EffectiveEndDate"
+        , CURRENT_TIMESTAMP AS "ODS_RowCreatedDtTm"
+        , false as "ODS_RowDeleted"
+        , ' || CAST(TaskQueueId as VARCHAR) || ' as "ODS_DataPipeLineTaskQueueId"
         , ST."' || BusinessKeyColumn || '" AS BusinessKeyColumn';
 
         WHERECondition := ' AND   NOT EXISTS (SELECT 1 FROM ' || CleanTableSchema ||'."' || CleanTableName || '" AS C' ||
                           ' WHERE C."'|| BusinessKeyColumn || '" = ST."'|| BusinessKeyColumn ||'" ' ||
-                          ' AND   C."EffectiveStartDate" = ST."HistoryCreated"::date ' ||
-                          ' AND   C."EffectiveEndDate" = ''12-31-9999'')';
+                          ' AND   C."ODS_EffectiveStartDate" = ST."HistoryCreated"::date ' ||
+                          ' AND   C."ODS_EffectiveEndDate" = ''12-31-9999'')';
     ELSE
         -- Find my Parent Column
         SELECT  column_name
@@ -99,7 +100,7 @@ BEGIN
         FROM    INFORMATION_SCHEMA.COLUMNS
         WHERE   table_schema = CleanTableSchema
         AND     table_name   = CleanTableName
-        AND     column_name ~ 'Parent_.*Id';
+        AND     column_name ~ 'ODS_Parent_.*Id';
 
         -- find my Root Column from my parent.
         SELECT  column_name
@@ -107,17 +108,18 @@ BEGIN
         FROM    INFORMATION_SCHEMA.COLUMNS
         WHERE   table_schema = CleanTableSchema
         AND     table_name   = CleanTableName
-        AND     column_name ~ 'Root_.*Id';
+        AND     column_name ~ 'ODS_Root_.*Id';
 
         -- update the Target col list for inserting
-        AdditionalTargetCols := ', "' ||ParentColName || '","' || RootColName || 
-        '","RowCreatedDtTm","RowDeleted","DataPipeLineTaskQueueId"';
+        AdditionalTargetCols := ',"ODS_StgId", "' ||ParentColName || '","' || RootColName || 
+        '","ODS_RowCreatedDtTm","ODS_RowDeleted","ODS_DataPipeLineTaskQueueId"';
         
         -- update source column list
         AdditionalSourceCols := '
+        , ST."StgId" as "ODS_StgId"
         , COALESCE(P."ParentId", -1) as "' ||ParentColName || '"
         , COALESCE(P."RootId", -1) AS "' || RootColName || '"
-        , CURRENT_TIMESTAMP AS "RowCreatedDtTm"
+        , CURRENT_TIMESTAMP AS "ODS_RowCreatedDtTm"
         , false as "RowDeleted"
         , ' || CAST(TaskQueueId as VARCHAR) || ' as "DataPipeLineTaskQueueId"';
 
@@ -126,7 +128,7 @@ BEGIN
                                       ) AS P ON P."StgId" = ST."StgId" ';
 
         WHERECondition := ' AND   NOT EXISTS (SELECT 1 FROM ' || CleanTableSchema || '."' || CleanTableName || '" AS C' ||
-                          ' WHERE C."StgId" = ST."StgId")';
+                          ' WHERE C."ODS_StgId" = ST."StgId")';
 
     END IF;
 
@@ -142,7 +144,7 @@ BEGIN
                 || JoinCondition
                 || ' WHERE "DataPipeLineTaskQueueId" = ' || CAST(PreStageToStageTaskId AS VARCHAR) || ' '
                 || WHERECondition
-                || ' RETURNING "StgId", "' || PrimaryKeyName || '" AS "TableId" ;';
+                || ' RETURNING "ODS_StgId" AS "StgId", "' || PrimaryKeyName || '" AS "TableId" ;';
     RAISE NOTICE 'SQL Code to Insert: %', sql_code;
 
     IF sql_code IS NULL THEN
@@ -161,12 +163,17 @@ BEGIN
                 ,WHERECondition,JoinCondition;
     END IF;
 
-    RETURN QUERY EXECUTE sql_code;
+    -- This helps in debugging.
+    IF (NoInsertPrintOnly IS NULL OR NoInsertPrintOnly = false) THEN
+        RETURN QUERY EXECUTE sql_code;
+    ELSE
+        RETURN QUERY EXECUTE 'SELECT -100000, -100000';
+    END IF;
 
 END;
 $$ LANGUAGE plpgsql;
-GRANT ALL on FUNCTION public."udf_InsertCleanTable"(jsonb) TO odsddb_role;
-GRANT ALL on FUNCTION public."udf_InsertCleanTable"(jsonb) TO public;
+GRANT ALL on FUNCTION public."udf_InsertCleanTable"(jsonb, boolean) TO odsddb_role;
+GRANT ALL on FUNCTION public."udf_InsertCleanTable"(jsonb, boolean) TO public;
 /*
     --Testing code
     SELECT *

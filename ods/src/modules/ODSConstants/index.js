@@ -83,7 +83,7 @@ export function getPreStageDefaultCols() {
 
 export function getCleanTableDefaultCols() {
   return {
-    '{TableName}Id': {
+    '{PrimaryKey}': {
       DataType: 'bigserial',
       DataLength: -1,
       precision: -1,
@@ -104,7 +104,7 @@ export function getCleanTableDefaultCols() {
       scale: -1,
       Default: '-1',
     },
-    EffectiveStartDate: {
+    ODS_EffectiveStartDate: {
       DataType: 'date',
       DataLength: -1,
       precision: -1,
@@ -112,7 +112,7 @@ export function getCleanTableDefaultCols() {
       Default: 'NOW',
       AddOnlyToRootTable: true,
     },
-    EffectiveEndDate: {
+    ODS_EffectiveEndDate: {
       DataType: 'date',
       DataLength: -1,
       precision: -1,
@@ -120,10 +120,10 @@ export function getCleanTableDefaultCols() {
       Default: '12/31/9999',
       AddOnlyToRootTable: true,
     },
-    RowCreatedDtTm: { DataType: 'timestamptz', DataLength: -1, precision: -1, scale: -1 },
-    RowDeleted: { DataType: 'boolean', DataLength: -1, precision: -1, scale: -1 },
-    DataPipeLineTaskQueueId: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
-    StgId: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
+    ODS_RowCreatedDtTm: { DataType: 'timestamptz', DataLength: -1, precision: -1, scale: -1 },
+    ODS_RowDeleted: { DataType: 'boolean', DataLength: -1, precision: -1, scale: -1 },
+    ODS_DataPipeLineTaskQueueId: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
+    ODS_StgId: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
     ODS_Batch_Id: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
     ODS_Id: { DataType: 'bigint', DataLength: -1, precision: -1, scale: -1 },
     ODS_Parent_Path: { DataType: 'varchar', DataLength: 1000, precision: -1, scale: -1 },

@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS public."udf_UpdateCleanTable"(varchar, varchar, varchar, varchar, varchar, bigint, bigint, varchar);
+DROP FUNCTION IF EXISTS public."udf_UpdateCleanTable"(varchar, varchar, varchar, varchar, varchar, bigint, bigint, varchar, boolean);
 CREATE OR REPLACE FUNCTION public."udf_UpdateCleanTable"(
      StageTableSchema VARCHAR(256)
     ,StageTable VARCHAR(256)
@@ -7,7 +7,8 @@ CREATE OR REPLACE FUNCTION public."udf_UpdateCleanTable"(
     ,PrimaryKeyName VARCHAR(256)
     ,TaskQueueId BIGINT 
     ,PreStageToStageTaskId BIGINT
-    ,BusinessKeyColumn VARCHAR(256) DEFAULT '')
+    ,BusinessKeyColumn VARCHAR(256) DEFAULT ''
+    ,NoUpdatePrintOnly BOOLEAN DEFAULT FALSE)
 RETURNS TABLE (
      "StgId"    BIGINT
     ,"TableId"  BIGINT
@@ -43,7 +44,7 @@ BEGIN
     AND     ST."TableName"   = StageTable
     AND     CT."ColumnName" !~ PrimaryKeyName
     AND     CT."ColumnName" !~ BusinessKeyColumn
-    AND     CT."ColumnName" !~ 'DataPipeLineTaskQueueId'
+    AND     CT."ColumnName" !~ 'ODS_DataPipeLineTaskQueueId'
     AND     ST."ColumnName" !~ 'Stg';
 
     RAISE NOTICE 'Params:CleanTableSchema: %, StageTableSchema: %, CleanTable: %, StageTable: %, PrimaryKeyName: %, BusinessKeyColumn: %',
@@ -53,40 +54,49 @@ BEGIN
 
     sql_code := 'WITH CTEEndRecord AS (
     UPDATE ' || CleanTableSchema || '."'|| CleanTable ||'" AS CT
-    SET     "EffectiveEndDate" = (stg."HistoryCreated" - interval ''1 day'')::DATE
+    SET     "ODS_EffectiveEndDate" = (stg."HistoryCreated" - interval ''1 day'')::DATE
     FROM    ' || StageTableSchema || '."'|| StageTable ||'" stg
     WHERE   1 = 1
     AND     CT."'|| BusinessKeyColumn ||'" = stg."'|| BusinessKeyColumn ||'"
-    AND     CT."EffectiveStartDate"::DATE < stg."HistoryCreated"::DATE
-    AND     CT."EffectiveEndDate" = ''12-31-9999''
-    AND     CT."RowDeleted" = false
+    AND     CT."ODS_EffectiveStartDate"::DATE < stg."HistoryCreated"::DATE
+    AND     CT."ODS_EffectiveEndDate" = ''12-31-9999''
+    AND     CT."ODS_RowDeleted" = false
     AND     stg."StgRowDeleted" = false
     AND     stg."DataPipeLineTaskQueueId" = ' || CAST(PreStageToStageTaskId as VARCHAR) || '
-    RETURNING CT."StgId", CT."' || PrimaryKeyName || '" as "TableId"
+    RETURNING CT."ODS_StgId" AS "StgId", CT."' || PrimaryKeyName || '" as "TableId"
     )
     SELECT array_to_json(array_agg(row_to_json(t)))
     FROM (SELECT * FROM CTEEndRecord) AS t;';
-    EXECUTE sql_code INTO UpdatedEndDate;
+
+    IF NoUpdatePrintOnly IS NULL OR NoUpdatePrintOnly = FALSE THEN
+        EXECUTE sql_code INTO UpdatedEndDate;
+    ELSE
+        RAISE NOTICE 'SQL Code to update Dates %', sql_code;    
+    END IF;
 
     sql_code := 'WITH CTEUpdateAll AS (
     UPDATE ' || CleanTableSchema || '."'|| CleanTable ||'" AS CT
-    SET      "StgId" = stg."StgId"
-            ,"DataPipeLineTaskQueueId" = ' || CAST(TaskQueueId AS VARCHAR) || '
+    SET      "ODS_StgId" = stg."StgId"
+            ,"ODS_DataPipeLineTaskQueueId" = ' || CAST(TaskQueueId AS VARCHAR) || '
             ,' || Updatecols || '
     FROM    ' || StageTableSchema || '."'|| StageTable ||'" stg
     WHERE   1 = 1
     AND     CT."'|| BusinessKeyColumn ||'" = stg."'|| BusinessKeyColumn ||'"
-    AND     CT."EffectiveStartDate"::DATE = stg."HistoryCreated"::DATE
-    AND     CT."EffectiveEndDate" = ''12-31-9999''
-    AND     CT."RowDeleted" = false
+    AND     CT."ODS_EffectiveStartDate"::DATE = stg."HistoryCreated"::DATE
+    AND     CT."ODS_EffectiveEndDate" = ''12-31-9999''
+    AND     CT."ODS_RowDeleted" = false
     AND     stg."StgRowDeleted" = false
     AND     stg."DataPipeLineTaskQueueId" = ' || CAST(PreStageToStageTaskId as VARCHAR) || '
-    RETURNING CT."StgId", CT."' || PrimaryKeyName || '" as "TableId"
+    RETURNING CT."ODS_StgId" AS "StgId", CT."' || PrimaryKeyName || '" as "TableId"
     )
     SELECT array_to_json(array_agg(row_to_json(t)))
     FROM (SELECT * FROM CTEUpdateAll) AS t;';
-    RAISE NOTICE 'SQL Code to update %', sql_code;
-    EXECUTE sql_code INTO UpdatedAllCols;
+
+    IF NoUpdatePrintOnly IS NULL OR NoUpdatePrintOnly = FALSE THEN
+        EXECUTE sql_code INTO UpdatedAllCols;
+    ELSE
+        RAISE NOTICE 'SQL Code to update %', sql_code;
+    END IF;
 
     sql_code :='
     SELECT   CAST(CAST(T->''StgId'' AS VARCHAR(20)) AS BIGINT) AS "StgId"
@@ -97,12 +107,17 @@ BEGIN
             ,CAST(CAST(T->''TableId'' AS VARCHAR(20)) AS BIGINT) AS "TableId"
     FROM    json_array_elements($2) as T';
 
-    RETURN QUERY EXECUTE sql_code USING UpdatedEndDate, UpdatedAllCols;
+    IF NoUpdatePrintOnly IS NULL OR NoUpdatePrintOnly = FALSE THEN
+        RETURN QUERY EXECUTE sql_code USING UpdatedEndDate, UpdatedAllCols;
+    ELSE
+        RAISE NOTICE 'SQL Code to return updated rows %', sql_code;
+        RETURN QUERY EXECUTE 'SELECT -10000 AS "StgId", -10000 AS "TableId"';
+    END IF;
 
 END;
 $$ LANGUAGE plpgsql;
-GRANT ALL on FUNCTION public."udf_UpdateCleanTable"(varchar, varchar, varchar, varchar, varchar, bigint, bigint, varchar) TO odsddb_role;
-GRANT ALL on FUNCTION public."udf_UpdateCleanTable"(varchar, varchar, varchar, varchar, varchar, bigint, bigint, varchar) TO public;
+GRANT ALL on FUNCTION public."udf_UpdateCleanTable"(varchar, varchar, varchar, varchar, varchar, bigint, bigint, varchar, boolean) TO odsddb_role;
+GRANT ALL on FUNCTION public."udf_UpdateCleanTable"(varchar, varchar, varchar, varchar, varchar, bigint, bigint, varchar, boolean) TO public;
 /*
     -- Testing code
     SELECT  *

@@ -2,6 +2,7 @@ import isEmpty from 'lodash/isEmpty'
 import forEach from 'lodash/forEach'
 import isUndefined from 'lodash/isUndefined'
 import size from 'lodash/size'
+import isObject from 'lodash/isObject'
 import { ExtractMatchingKeyFromSchema } from '../json-extract-matching-keys/index'
 import { KnexTable } from '../../data/psql/table/knexTable'
 import { IsValidString } from '../../utils/string-utils'
@@ -292,6 +293,32 @@ export class SchemaDiff {
     return output
   }
 
+  /**
+   * This function will check if col list 1 and 2 have
+   * any matching columns by column name. if so it will throw an error
+   * @param {*} colList1
+   * @param {*} colList2
+   */
+  CheckForDuplicateCols(colList1, colList2) {
+    if (colList1 && colList2 && isObject(colList1) && isObject(colList2)) {
+      const listToLoop = size(colList1) < size(colList2) ? colList1 : colList2
+      const listToCheck = size(colList1) < size(colList2) ? colList2 : colList1
+      forEach(listToLoop, (column, colName) => {
+        // check if column exists in the other list
+        if (listToCheck[colName]) {
+          // exists so throw an error
+          throw new Error(
+            `Column: ${colName} exists twice. Entry in List 1: ${JSON.stringify(
+              column
+            )}, Entry in List 2: ${JSON.stringify(
+              listToCheck[colName]
+            )}Check parameters to Create Table.`
+          )
+        }
+      })
+    }
+  }
+
   async GenerateSQLFromJsonDiff(
     jsonDiff,
     defaultColsForNewTable = {},
@@ -305,6 +332,8 @@ export class SchemaDiff {
         // if the original objects didn't have any simple properties.
         //if (!isUndefined(jsonDiff.NewTable) && size(jsonDiff.NewTable) > 0) {
         if (!isUndefined(jsonDiff.NewTable) && jsonDiff.CreateNewTable) {
+          // if default cols and new table cols have conflicting columns throw an error
+          this.CheckForDuplicateCols(defaultColsForNewTable, jsonDiff.NewTable)
           // create new table with all columns
           Object.assign(defaultColsForNewTable, jsonDiff.NewTable)
           dbScript = await objtbl.getCreateTableSQL(
