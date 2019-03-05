@@ -87,6 +87,7 @@ function getInput(task) {
     S3UniformJsonPrefix: task.getTaskAttributeValue(
       PreDefinedAttributeEnum.PrefixUniformJSONFile.value
     ),
+    JsonKeysToIgnore: task.getTaskAttributeValue(PreDefinedAttributeEnum.JsonKeysToIgnore.value),
     S3FlatJsonPrefix: task.getTaskAttributeValue(PreDefinedAttributeEnum.PrefixFlatJSONFile.value),
     TableName: task.TableName,
     BatchId: task.DataPipeLineTaskQueueId,

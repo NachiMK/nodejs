@@ -1,8 +1,8 @@
 {
-    "DataPipeLineTaskQueueId": 98471,
+    "DataPipeLineTaskQueueId": 96751,
     "TaskConfigName": "Pre-Stage to Stage",
     "RunSequence": 2050,
     "Status": "On Hold",
-    "TableName": "modeling-configuration",
+    "TableName": "enrollments",
     "LogLevel": "warn"
 }

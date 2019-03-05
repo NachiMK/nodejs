@@ -20,7 +20,8 @@
       "S3UniformJsonPrefix": "unit-test/testtable-1/data818/UniformJSON-",
       "S3FlatJsonPrefix": "unit-test/testtable-1/data818/FlatJSON-",
       "BatchId": 888,
-      "LogLevel": "info"
+      "LogLevel": "info",
+      "JsonKeysToIgnore": "BenefitsBackup"
     },
     "FlatToCSV": {
       "S3OutputKeyPrefix": "unit-test/testtable-1/data818/CSVFile-",

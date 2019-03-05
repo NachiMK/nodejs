@@ -4,6 +4,7 @@ import _ from 'lodash'
 import { GetJSONFromS3Path, SaveJsonToS3File } from '../s3ODS'
 import { ExtractMatchingKeyFromSchema } from '../json-extract-matching-keys/index'
 import fillMissingKeys from 'object-fill-missing-keys'
+import { deleteByPath } from '../delete-json-objects-by-keys/delete-json-objects-by-keys'
 
 export class JsonMissingKeyFiller {
   output = {
@@ -27,6 +28,7 @@ export class JsonMissingKeyFiller {
 
   constructor(params = {}) {
     this.s3SchemaFile = params.S3SchemaFile || ''
+    this.jsonKeysToIgnore = params.JsonKeysToIgnore || ''
     this.s3DataFile = params.S3DataFile || ''
     this.s3OutputBucket = params.S3OutputBucket || ''
     this.s3OutputKey = params.S3OutputKey || ''
@@ -38,6 +40,9 @@ export class JsonMissingKeyFiller {
   }
   get S3SchemaFile() {
     return this.s3SchemaFile
+  }
+  get JsonKeysToIgnore() {
+    return this.jsonKeysToIgnore
   }
   get S3DataFile() {
     return this.s3DataFile
@@ -81,13 +86,19 @@ export class JsonMissingKeyFiller {
     try {
       this.ValidateParams()
       const schemaFromS3 = await GetJSONFromS3Path(this.S3SchemaFile)
-      const dataFromS3 = await GetJSONFromS3Path(this.S3DataFile)
+      let dataFromS3 = await GetJSONFromS3Path(this.S3DataFile)
 
       if (!schemaFromS3 || !dataFromS3) {
         throw new Error(
           `No data in Schema File: ${this.S3SchemaFile} or in Data File: ${this.S3DataFile}`
         )
       }
+
+      // remove certain Json Objects we dont want to process
+      if (this.JsonKeysToIgnore) {
+        dataFromS3 = this.RemoveJsonObjectsByPath(dataFromS3, this.JsonKeysToIgnore)
+      }
+
       if (ConvertSimpleArrayToObjects) {
         this.ReplaceSimpleArrayToObjects(dataFromS3)
       }
@@ -153,6 +164,17 @@ export class JsonMissingKeyFiller {
             this.ReplaceSimpleArrayToObjects(row)
           }
         }
+      })
+    }
+  }
+
+  RemoveJsonObjectsByPath = (dataRows, pathsToRemove) => {
+    if (dataRows) {
+      // remove by keys
+      return deleteByPath({
+        JsonData: dataRows,
+        CommaSeparatedPaths: pathsToRemove,
+        LogLevel: this.LogLevel,
       })
     }
   }

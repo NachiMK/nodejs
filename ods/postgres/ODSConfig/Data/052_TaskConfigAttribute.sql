@@ -23,6 +23,7 @@ VALUES
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3UniformJSONBucketName')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'Prefix.UniformJSONFile')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'Prefix.FlatJSONFile')
+    ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'JsonKeysToIgnore')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3DataFile')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'S3SchemaFile')
     ,('JSON History to Flat JSON', 'Process JSON to Postgres', 'LogLevel')

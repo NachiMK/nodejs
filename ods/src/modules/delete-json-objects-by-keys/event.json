@@ -1,0 +1,99 @@
+[
+  {
+    "S3FilePath": "s3://int-ods-data/unit-test/data824/test-delete-by-keys.json",
+    "JsonKeysToDelete": "CartBackup.Cart,Cart.Benefit.CoveredPeople,TestNode.ChildNode",
+    "LogLevel": "info"
+  },
+  {
+    "LogLevel": "info",
+    "JsonKeysToDelete": "CartBackup.Cart,Cart.Benefit.CoveredPeople,TestNode.ChildNode",
+    "JsonData": {
+      "EnrollmentDate": "1/1/2016",
+      "TestNode": {
+        "ChildNode": {
+          "Name": "test"
+        },
+        "OtherNode": "test"
+      },
+      "CartBackup": {
+        "Cart": [
+          {
+            "Benefit": {
+              "CoveredPeople": {
+                "Name": "test1",
+                "Age": 31
+              },
+              "BenefitName": "Health"
+            }
+          }
+        ]
+      },
+      "Cart": [
+        {
+          "Benefit": {
+            "CoveredPeople": {
+              "Name": "test1",
+              "Age": 31
+            },
+            "BenefitName": "Health"
+          }
+        },
+        {
+          "Benefit": {
+            "CoveredPeople": {
+              "Name": "Aglac",
+              "Age": 31
+            },
+            "BenefitName": "Life"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "LogLevel": "info",
+    "JsonKeysToDelete": "Person.NotNeeded,Person.Assets.Zip",
+    "JsonData": [
+      {
+        "Person": {
+          "FirstName": "Joe",
+          "NotNeeded" : "test",
+          "Assets": [
+            {
+              "Id": 1,
+              "Address": "123 St",
+              "Zip": "91030"
+            }
+          ]
+        }
+      },
+      {
+        "Person": {
+          "FirstName": "Jane",
+          "Assets": [
+            {
+              "Id": 2,
+              "Address": "800 St",
+              "ZipCode": "90003"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "LogLevel": "info",
+    "JsonKeysToDelete": "Person.Zip Code,Person.My Documents.File Type",
+    "JsonData": {
+      "Person" : {
+        "Name": "Joe",
+        "Last Name": "Smith",
+        "Zip Code" : 91303,
+        "My Documents" : {
+          "Name" : "Excel File",
+          "File Type" : "excel"
+        }
+      }
+    }
+  }
+]

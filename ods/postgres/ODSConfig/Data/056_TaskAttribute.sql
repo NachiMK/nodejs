@@ -77,6 +77,36 @@ AND     A."AttributeName" != 'Prefix.StageSchemaFile'
 AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
 AND     DPT."DeletedFlag" = false;
 
+;WITH CTEIgnoreKeys
+AS
+(
+    SELECT 'ods-testtable-1' as "SourceEntity", 'BenefitsBackup' as "PathsToIgnore"
+    UNION SELECT 'enrollments' as "SourceEntity", 'CartBackup' as "PathsToIgnore"
+    UNION SELECT 'prospect-census-models' as "SourceEntityr", 'PlanBestMatchesWithPlanType.MatchingPlans' as "PathsToIgnore"
+)
+INSERT INTO
+    ods."TaskAttribute"
+    (
+         "DataPipeLineTaskId"
+        ,"AttributeId"
+        ,"AttributeValue"
+    )
+SELECT   DPT."DataPipeLineTaskId"
+        ,TCA."AttributeId"
+        ,C."PathsToIgnore"
+FROM    DPLTables Tbls
+INNER
+JOIN    CTEIgnoreKeys AS C ON C."SourceEntity" = Tbls."CleanTableName"
+INNER
+JOIN    ods."DataPipeLineTask" DPT   ON DPT."SourceEntity" =  Tbls."CleanTableName"
+INNER
+JOIN    ods."TaskConfigAttribute" AS TCA ON TCA."DataPipeLineTaskConfigId" = DPT."DataPipeLineTaskConfigId"
+INNER
+JOIN    ods."Attribute" AS A ON A."AttributeId" = TCA."AttributeId"
+WHERE   A."AttributeName" LIKE 'JsonKeysToIgnore'
+AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
+AND     DPT."DeletedFlag" = false;
+
 INSERT INTO
     ods."TaskAttribute"
     (

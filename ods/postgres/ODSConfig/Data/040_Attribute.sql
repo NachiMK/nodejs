@@ -17,6 +17,7 @@ FROM    (
             UNION   SELECT 'S3UniformJSONBucketName' as "AttributeName"
             UNION   SELECT 'Prefix.UniformJSONFile' as "AttributeName"
             UNION   SELECT 'Prefix.FlatJSONFile' as "AttributeName"
+            UNION   SELECT 'JsonKeysToIgnore' as "AttributeName"
             UNION   SELECT 'S3UniformJSONFile' as "AttributeName" --Output/Input
             UNION   SELECT 'S3FlatJsonFile' as "AttributeName" --Output/Input
             UNION   SELECT 'Flat.#.JsonObjectName' as "AttributeName" --Output/Input

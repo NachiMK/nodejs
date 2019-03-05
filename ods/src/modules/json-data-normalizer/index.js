@@ -63,6 +63,7 @@ function getParamsForFillingMissedKeys(params) {
     S3DataFile: params.S3DataFile,
     Overwrite: 'yes',
     S3SchemaFile: params.S3SchemaFile,
+    JsonKeysToIgnore: params.JsonKeysToIgnore,
     S3OutputBucket: params.S3OutputBucket,
     S3OutputKey: params.S3UniformJsonPrefix,
     LogLevel: params.LogLevel || 'warn',
@@ -78,6 +79,7 @@ function getParamsToFlattenJson(params) {
     TableName: params.TableName,
     BatchId: params.BatchId,
     OutputType: 'Save-to-S3',
+    JsonKeysToIgnore: params.JsonKeysToIgnore,
     LogLevel: params.LogLevel || 'warn',
     S3DataFilePath: undefined,
   }

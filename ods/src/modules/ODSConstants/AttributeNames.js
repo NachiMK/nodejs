@@ -21,6 +21,7 @@ export const PreDefinedAttributeEnum = {
   S3SchemaFileBucketName: { value: 'S3SchemaFileBucketName', Prefix: '', HasRunningIndex: false },
   S3UniformJSONBucketName: { value: 'S3UniformJSONBucketName', Prefix: '', HasRunningIndex: false },
   S3UniformJSONFile: { value: 'S3UniformJSONFile', Prefix: '', HasRunningIndex: false },
+  JsonKeysToIgnore: { value: 'JsonKeysToIgnore', Prefix: '', HasRunningIndex: false },
   SaveIntermediateResults: { value: 'SaveIntermediateResults', Prefix: '', HasRunningIndex: false },
   LogLevel: { value: 'LogLevel', Prefix: '', HasRunningIndex: false },
   SaveIntermediateResults: {
