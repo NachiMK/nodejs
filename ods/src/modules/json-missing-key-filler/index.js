@@ -222,28 +222,29 @@ export class JsonMissingKeyFiller {
   }
 
   DeleteMissingObjects(targetObj, sourceObj, PathToTarget) {
-    const target =
-      !_.isUndefined(PathToTarget) && PathToTarget.length > 0
-        ? eval(`targetObj${PathToTarget}`)
-        : targetObj
-    _.forIn(target, (rowValue, rowKey) => {
-      // delete if present only in target and not in source
-      if (
-        _.isObject(target[rowKey]) &&
-        // source is missing or empty
-        (_.isUndefined(sourceObj[rowKey]) || _.isEmpty(sourceObj[rowKey]))
-      ) {
-        delete target[rowKey]
-      }
-    })
-    // // find and delete missing keys
-    // const missingKeys = missingDeepKeys(targetObj, sourceObj, false)
-    // if (!_.isUndefined(missingKeys) && _.size(missingKeys) > 0) {
-    //   // remove keys that was not in original data
-    //   missingKeys.forEach((missingKeyPath) => {
-    //     this.DeleteObject(targetObj, missingKeyPath)
-    //   })
-    // }
+    try {
+      const target =
+        !_.isUndefined(PathToTarget) && PathToTarget.length > 0
+          ? eval(`targetObj${PathToTarget}`)
+          : targetObj
+      _.forIn(target, (rowValue, rowKey) => {
+        // delete if present only in target and not in source
+        if (
+          _.isObject(target[rowKey]) &&
+          // source is missing or empty
+          (_.isUndefined(sourceObj[rowKey]) || _.isEmpty(sourceObj[rowKey]))
+        ) {
+          delete target[rowKey]
+        }
+      })
+    } catch (err) {
+      console.log(
+        `Error: ${
+          err.message
+        }, targetObj: ${targetObj}, SourceObj: ${sourceObj}, PathToTarget: ${PathToTarget}`
+      )
+      throw new Error(`Error Deleting PathToTarget: ${PathToTarget}, error: ${err.message}`)
+    }
   }
 
   RemoveObjectsWithOnlyDefaultValues(filledRows, OrigdataRow, PathToDataRow = '') {

@@ -447,6 +447,10 @@ export function AllowCast(existingType, changeToType) {
 }
 
 export function GetNewLength(oldType, newType) {
+  // for text we dont need a length
+  if (newType.DataType === 'text') {
+    return -1
+  }
   // get old length
   const oldDataLength = isNumber(oldType.DataLength) ? oldType.DataLength : 0
   const newDataLength = isNumber(newType.DataLength) ? newType.DataLength : 0
