@@ -89,9 +89,9 @@ echo "Drop & Create DB (-c): Set to -c TRUE if you want to DROP & CREATE the ent
 
 new_deploy_role="ods_deploy_role_${stagename}"
 new_deploy_user="ods_deploy_user_${stagename}"
-app_role="odsconfig_app_role_${stagename}"
-app_user="odsconfig_app_user_${stagename}"
-db="odsconfig_${stagename}"
+app_role="odslog_app_role_${stagename}"
+app_user="odslog_app_user_${stagename}"
+db="odslog_${stagename}"
 
 idxpw='1'
 if [ "${stagename}" = "int" ]; then
@@ -169,7 +169,7 @@ function createRoleUser {
 }
 
 if [ "${create}" = "CreateDB:TRUE" ]; then 
-    echo "Dropping and Creating Database..."     
+    echo "Dropping and Creating Database..." 
     deployToPostgresCmd "DROP DATABASE IF EXISTS ${db};"
     deployToPostgresCmd "CREATE DATABASE ${db} WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';"
     deployToPostgresCmd "REVOKE CONNECT ON DATABASE ${db} FROM PUBLIC;"
@@ -205,8 +205,6 @@ if [ "${resetdb}" = "ResetData:TRUE" ]; then
         [ -e "$filename" ] || continue
         deployFile $filename
     done
-    echo "Post Deployment.. Update TaskAttribute"
-    deployCmd "UPDATE ods.\"TaskAttribute\" TA  SET \"AttributeValue\" = REPLACE(TA.\"AttributeValue\", 'dev-', '$stagename-') WHERE   TA.\"AttributeValue\" like 'dev-%';"
 else
     echo "Not Resetting DB. To Reset send param ResetData:TRUE"
 fi
@@ -231,7 +229,6 @@ for filename in PostDeployment/*.sql; do
     deployFile $filename
 done
 
-grantPermissionToSchema "ods" "${app_role}"
 grantPermissionToSchema "public" "${app_role}"
 
 export PGPASSWORD=''

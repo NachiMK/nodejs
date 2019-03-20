@@ -16,5 +16,4 @@ FROM    (
         ) AS ST
 WHERE   NOT EXISTS (SELECT 1 FROM ods."DataSource" AS S WHERE S."DataSourceName" = ST."DataSourceName");
 
-SELECT * FROM ods."DataSource";
-
+-- SELECT * FROM ods."DataSource";

@@ -7,6 +7,8 @@ const { argv } = require('yargs');
 const { get } = require('delver');
 const { green, reset } = require('chalk');
 const dotenv = require('dotenv');
+const fs = require('fs');
+const path = require('path');
 
 const {
   centerText,
@@ -36,18 +38,26 @@ function pluralize(count = 0) {
 module.exports.getAndSetVarsFromEnvFile = (shouldPrint = true) =>
   new Promise((resolve) => {
     const taskDescription = 'Locating ".env" Config File';
-    const { parsed: environmentVariables = {} } = dotenv.config();
-    // in this case, if we don't have any env variables, we don't want to reject;
-    // instead, we want to resolve with a single environment variable: "STAGE"
+    let environmentVariables = {};
+    if (fs.existsSync(path.join(__dirname, '.env'))) {
+      const { parsed } = dotenv.config();
+      environmentVariables = parsed || {};
+    } else {
+      // in this case, if we don't have any env variables, we don't want to reject;
+      // instead, we want to resolve with the db and stage environment variables
+      const { DEV_CORE_PG, INT_CORE_PG, PROD_CORE_PG, DEFAULT_DATABASE_PG } = process.env;
+      environmentVariables = { DEV_CORE_PG, INT_CORE_PG, PROD_CORE_PG, DEFAULT_DATABASE_PG };
+    }
 
     // CAUTION! - Will remove environment variables that are not the current stage
     const stages = ['dev', 'int', 'prod'];
-    const stagesToRemove = stages.filter(s => s !== STAGE.toLowerCase());
+    const stagesToRemove = stages.filter((s) => s !== STAGE.toLowerCase());
 
     Object.keys(environmentVariables).forEach((key) => {
       if (
-        stagesToRemove.some(stageToRemove =>
-          key.toUpperCase().startsWith(`${stageToRemove.toUpperCase()}_`))
+        stagesToRemove.some((stageToRemove) =>
+          key.toUpperCase().startsWith(`${stageToRemove.toUpperCase()}_`)
+        )
       ) {
         delete environmentVariables[key];
       }
@@ -55,7 +65,9 @@ module.exports.getAndSetVarsFromEnvFile = (shouldPrint = true) =>
 
     const envVariableCount = Object.keys(environmentVariables).length;
 
-    const taskSuccessInfo = `Exported ${green(envVariableCount)} Variable${pluralize(envVariableCount)}`;
+    const taskSuccessInfo = `Exported ${green(envVariableCount)} Variable${pluralize(
+      envVariableCount
+    )}`;
     if (shouldPrint) success(taskDescription, taskSuccessInfo);
     resolve(Object.assign({}, environmentVariables, { STAGE }));
   });
@@ -91,9 +103,7 @@ module.exports.getAPIBasePath = (shouldPrint = true) =>
     const taskDescription = 'Setting API Path';
     const serviceNameFromPackageJSONFile = get(pkg, 'name', 'untitled-project');
     // removes the "service" text at the end, if any!
-    const apiBasePath = serviceNameFromPackageJSONFile
-      .replace(/-service/gim, '')
-      .trim();
+    const apiBasePath = serviceNameFromPackageJSONFile.replace(/-service/gim, '').trim();
     const taskSuccessInfo = `Path: "${green(`/${apiBasePath}`)}"`;
     if (shouldPrint) success(taskDescription, taskSuccessInfo);
     resolve(apiBasePath);

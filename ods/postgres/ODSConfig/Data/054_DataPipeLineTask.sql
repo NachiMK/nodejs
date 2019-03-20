@@ -72,8 +72,8 @@ ORDER   BY
 ;
 
 
-SELECT  *
-FROM   ods."DataPipeLineTask" as DPL
-ORDER   BY
-   LEFT("TaskName", 20), "TaskTypeId", "RunSequence"
-;
+-- SELECT  *
+-- FROM   ods."DataPipeLineTask" as DPL
+-- ORDER   BY
+--    LEFT("TaskName", 20), "TaskTypeId", "RunSequence"
+-- ;

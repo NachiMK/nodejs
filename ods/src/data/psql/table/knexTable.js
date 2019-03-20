@@ -363,7 +363,9 @@ export class KnexTable {
           rowCount = isNaN(parseInt(retRS.scalarValue)) ? -1 : parseInt(retRS.scalarValue)
         } else {
           throw new Error(
-            `Copy Data for BatchId :${DataPipeLineTaskQueueId} completed but did not load data. Response:${retRS}`
+            `Copy Data for BatchId :${DataPipeLineTaskQueueId} completed but did not load data. Error from DB:${JSON.stringify(
+              retRS.error
+            )}`
           )
         }
       } catch (err) {

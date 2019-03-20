@@ -16,4 +16,4 @@ FROM    (
         ) AS ST
 WHERE   NOT EXISTS (SELECT 1 FROM ods."IntervalType" AS S WHERE S."IntervalTypeDesc" = ST."IntervalTypeDesc");
 
-SELECT * FROM ods."IntervalType" ORDER BY "IntervalType";
+-- SELECT * FROM ods."IntervalType" ORDER BY "IntervalType";

@@ -11,3 +11,4 @@ SET row_security = off;
 -- Name: odsconfig; Type: DATABASE; Schema: -; Owner: -
 --
 CREATE DATABASE odslog_dev WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+REVOKE CONNECT ON DATABASE odslog_dev FROM PUBLIC;

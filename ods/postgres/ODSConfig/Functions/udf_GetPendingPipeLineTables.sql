@@ -25,14 +25,13 @@ BEGIN
             WHERE   DPC."TaskName" = 'Process JSON to Postgres'
             AND     T."TaskStatusDesc" IN ('Ready')
             AND     DPL."DeletedFlag" = false
-            AND     NOT EXISTS 
+            AND     DPL."DataPipeLineTaskId" NOT IN 
                     (
-                        SELECT  *
+                        SELECT  DISTINCT "DataPipeLineTaskId"
                         FROM    ods."DataPipeLineTaskQueue" AS Q
                         INNER
                         JOIN    ods."TaskStatus"    AS T    ON T."TaskStatusId" = Q."TaskStatusId"
-                        WHERE   "DataPipeLineTaskId" = DPL."DataPipeLineTaskId"
-                        AND     "TaskStatusDesc" IN ('Processing', 'Error')
+                        WHERE   "TaskStatusDesc" IN ('Processing', 'Error')
                     )
         ) AS T
     WHERE   "TblSeq" = 1

@@ -81,7 +81,8 @@ AND     DPT."DeletedFlag" = false;
 AS
 (
     SELECT 'ods-testtable-1' as "SourceEntity", 'BenefitsBackup' as "PathsToIgnore"
-    UNION SELECT 'enrollments' as "SourceEntity", 'CartBackup' as "PathsToIgnore"
+    UNION SELECT 'benefits' as "SourceEntity", 'input' as "PathsToIgnore"
+    UNION SELECT 'enrollments' as "SourceEntity", 'CartBackup,BundleGroupsOld,HixmeRecommendedBundleGroupsOld' as "PathsToIgnore"
     UNION SELECT 'prospect-census-models' as "SourceEntityr", 'PlanBestMatchesWithPlanType.MatchingPlans' as "PathsToIgnore"
 )
 INSERT INTO
@@ -258,4 +259,4 @@ WHERE   A."AttributeName" IN ('BusinessKeyColumn')
 AND     NOT EXISTS (SELECT 1 FROM ods."TaskAttribute" WHERE "AttributeId" = TCA."AttributeId" AND "DataPipeLineTaskId" = DPT."DataPipeLineTaskId")
 AND     DPT."DeletedFlag" = false;
 
-SELECT * FROM ods."TaskAttribute";
+-- SELECT * FROM ods."TaskAttribute";

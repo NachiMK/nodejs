@@ -13,4 +13,4 @@ FROM    (
         ) AS ST
 WHERE   NOT EXISTS (SELECT 1 FROM ods."TaskType" AS S WHERE S."TaskTypeDesc" = ST."TaskTypeDesc");
 
-SELECT * FROM ods."TaskType" ORDER BY "TaskType";
+-- SELECT * FROM ods."TaskType" ORDER BY "TaskType";

@@ -18,4 +18,4 @@ FROM    (
         ) AS ST
 WHERE   NOT EXISTS (SELECT 1 FROM ods."TaskStatus" AS S WHERE S."TaskStatusDesc" = ST."TaskStatusDesc");
 
-SELECT * FROM ods."TaskStatus" ORDER BY "TaskStatus";
+-- SELECT * FROM ods."TaskStatus" ORDER BY "TaskStatus";

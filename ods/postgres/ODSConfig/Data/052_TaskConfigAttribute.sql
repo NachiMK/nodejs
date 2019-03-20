@@ -114,4 +114,4 @@ WHERE NOT EXISTS (SELECT 1 FROM ods."TaskConfigAttribute" as S
                  AND    S."DataPipeLineTaskConfigId" = STG."DataPipeLineTaskConfigId")
 ;
 
-SELECT * FROM ods."TaskConfigAttribute";
+-- SELECT * FROM ods."TaskConfigAttribute";

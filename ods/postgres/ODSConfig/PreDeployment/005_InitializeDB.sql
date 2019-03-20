@@ -17,3 +17,5 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 CREATE SCHEMA IF NOT EXISTS ods;
+CREATE EXTENSION IF NOT EXISTS tablefunc;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp"

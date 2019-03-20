@@ -31,7 +31,7 @@ FROM    DPLTables Tbls, ods."DataPipeLineTask" DPT
 WHERE   DPT."TaskName" = Tbls."CleanTableName" || ' - DynamoDB to S3'
 AND     NOT EXISTS (SELECT 1 FROM ods."DataPipeLineTaskParam" WHERE "DataPipeLineTaskId" = DPT."DataPipeLineTaskId");
 
-SELECT * FROM ods."DataPipeLineTaskParam";
+-- SELECT * FROM ods."DataPipeLineTaskParam";
 
 
 /*

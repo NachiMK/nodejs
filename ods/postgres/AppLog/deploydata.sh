@@ -68,7 +68,7 @@ else
 fi
 
 if [ -z "${param_deployUser}" ]; then 
-    dbUserName='hixme_ods_root'
+    dbUserName='hixme_root'
 else 
     dbUserName=${param_deployUser}
 fi
@@ -87,11 +87,11 @@ echo "Deplpy User (-u): Set to User name you want to use for this deployment.:${
 echo "Reset Data(-r): Set to -r if you want to reset data for all tables (dont do this in prod):${resetdb}"
 echo "Drop & Create DB (-c): Set to -c TRUE if you want to DROP & CREATE the entire database (dont do this in prod):${create}"
 
-new_deploy_role="ods_deploy_role_${stagename}"
-new_deploy_user="ods_deploy_user_${stagename}"
-app_role="odsconfig_app_role_${stagename}"
-app_user="odsconfig_app_user_${stagename}"
-db="odsconfig_${stagename}"
+new_deploy_role="apilog_deploy_role_${stagename}"
+new_deploy_user="apilog_deploy_user_${stagename}"
+app_role="apilog_app_role_${stagename}"
+app_user="apilog_app_user_${stagename}"
+db="apilog_${stagename}"
 
 idxpw='1'
 if [ "${stagename}" = "int" ]; then
@@ -103,7 +103,7 @@ else
 fi
 
 if [ "${dbhostname}" = "rds" ]; then 
-    dbhostname='-h datalake.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U '${dbUserName}
+    dbhostname='-h primary-01.cwoqm2lwdsxk.us-west-2.rds.amazonaws.com -p 5432 -U '${dbUserName}
     if [ -z "${PGPASSWORD}" ]; then 
         echo "Enter psql password for user: ${dbUserName} to deploy in RDS Server ${stagename}:"
         read -s password
@@ -169,12 +169,12 @@ function createRoleUser {
 }
 
 if [ "${create}" = "CreateDB:TRUE" ]; then 
-    echo "Dropping and Creating Database..."     
+    echo "Dropping and Creating Database..." 
     deployToPostgresCmd "DROP DATABASE IF EXISTS ${db};"
     deployToPostgresCmd "CREATE DATABASE ${db} WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';"
     deployToPostgresCmd "REVOKE CONNECT ON DATABASE ${db} FROM PUBLIC;"
     deployToPostgresCmd "REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;"
-
+  
     default_pwd="H!xme_0ds_deploy_${stagename}${idxpw}"
     createRoleUser "${new_deploy_role}" "${new_deploy_user}" "${default_pwd}"
     deployToPostgresCmd "GRANT ALL PRIVILEGES ON DATABASE ${db} to ${new_deploy_role};"
@@ -205,8 +205,6 @@ if [ "${resetdb}" = "ResetData:TRUE" ]; then
         [ -e "$filename" ] || continue
         deployFile $filename
     done
-    echo "Post Deployment.. Update TaskAttribute"
-    deployCmd "UPDATE ods.\"TaskAttribute\" TA  SET \"AttributeValue\" = REPLACE(TA.\"AttributeValue\", 'dev-', '$stagename-') WHERE   TA.\"AttributeValue\" like 'dev-%';"
 else
     echo "Not Resetting DB. To Reset send param ResetData:TRUE"
 fi
@@ -231,7 +229,7 @@ for filename in PostDeployment/*.sql; do
     deployFile $filename
 done
 
-grantPermissionToSchema "ods" "${app_role}"
+grantPermissionToSchema "log" "${app_role}"
 grantPermissionToSchema "public" "${app_role}"
 
 export PGPASSWORD=''

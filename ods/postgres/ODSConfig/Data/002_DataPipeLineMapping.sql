@@ -27,4 +27,4 @@ WHERE   NOT EXISTS (SELECT 1 FROM ods."DataPipeLineMapping" DP
                     WHERE DP."SourceDataSourceId" = S."DataSourceId" 
                     AND DP."TargetDataSourceId" = T."DataSourceId");
 
-SELECT * FROM ods."DataPipeLineMapping";
+-- SELECT * FROM ods."DataPipeLineMapping";

@@ -13,4 +13,4 @@ FROM    (
         ) AS ST
 WHERE   NOT EXISTS (SELECT 1 FROM ods."RangeType" AS S WHERE S."RangeTypeDesc" = ST."RangeTypeDesc");
 
-SELECT * FROM ods."RangeType";
+-- SELECT * FROM ods."RangeType";

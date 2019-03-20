@@ -93,4 +93,4 @@ AND     NOT EXISTS (SELECT 1 FROM ods."DataPipeLineTaskConfig" AS SRC
                     AND SRC."DataPipeLineMappingId" = STM."DataPipeLineMappingId")
 ;
 
-SELECT * FROM ods."DataPipeLineTaskConfig";
+-- SELECT * FROM ods."DataPipeLineTaskConfig";

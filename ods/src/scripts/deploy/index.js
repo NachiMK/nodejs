@@ -77,8 +77,8 @@ export function getTablesToDeploy(envStage) {
         'prod-waived-benefits',
       ]
     } else if (envStage === 'int') {
-      retArray = ['int-clients', 'int-ods-testtable-1']
-      const retArray2 = [
+      const retArray_test = ['int-clients', 'int-ods-testtable-1']
+      retArray = [
         'int-benefit-change-events',
         'int-benefits',
         'int-bundle-event-offers',
@@ -88,7 +88,6 @@ export function getTablesToDeploy(envStage) {
         'int-client-benefits',
         'int-client-census',
         'int-client-price-points',
-        'int-clients',
         'int-enrollment-events',
         'int-enrollment-questions',
         'int-enrollment-responses',

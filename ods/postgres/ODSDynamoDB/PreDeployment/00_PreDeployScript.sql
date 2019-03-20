@@ -11,7 +11,7 @@ BEGIN
 END;
 $$;
 
-CREATE EVENT TRIGGER trg_create_set_owner
- ON ddl_command_end
- WHEN tag IN ('CREATE TABLE')
- EXECUTE PROCEDURE trg_create_set_owner();
+-- CREATE EVENT TRIGGER trg_create_set_owner
+--  ON ddl_command_end
+--  WHEN tag IN ('CREATE TABLE')
+--  EXECUTE PROCEDURE trg_create_set_owner();

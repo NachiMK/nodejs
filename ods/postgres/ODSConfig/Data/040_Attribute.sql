@@ -52,4 +52,4 @@ WHERE   NOT EXISTS (SELECT 1 FROM ods."Attribute" AS T WHERE S."AttributeName" =
 ORDER BY
         "AttributeName";
 
-SELECT * FROM ods."Attribute";
+-- SELECT * FROM ods."Attribute";
