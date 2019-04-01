@@ -23,7 +23,7 @@ functions:
   get-member:
     handler: build/routes/members/get/index.get
     description: "Get Member Graph"
-    # DANG! - Serverless supports SSM for loading secrets from parameter store and bundling with lambda, but knex still needs connection string from .env file.
+    # TODO! - Serverless supports SSM for loading secrets from parameter store and bundling with lambda
     # So we still have to copy around .env files until we figure out a solution.
     # environment:
       #PG_CONNECTION: ${ssm:${file(env.js):getStageUppercase}_BUNDLE_PG~true}

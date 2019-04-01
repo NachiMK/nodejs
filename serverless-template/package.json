@@ -33,7 +33,7 @@
     "log_fetch_start_time": "2h",
     "region": "us-west-2",
     "runtime": "nodejs8.10",
-    "stage": "int"
+    "stage": "dev"
   },
   "scripts": {
     "build:min": "npm run build -- --compact --minified --source-maps false",
@@ -74,23 +74,19 @@
     "tag": "git tag -am $npm_package_version $npm_package_version && git push --tags",
     "test:wip": "jest -t wip --passWithNoTests",
     "test": "STAGE=$npm_package_config_stage jest --passWithNoTests",
-    "knex:dev": "knex --env dev",
-    "knex:int": "knex --env int",
-    "knex:prod": "knex --env prod",
-    "knex:migrate:dev": "babel-node node_modules/.bin/knex migrate:latest --env dev",
-    "knex:migrate:int": "babel-node node_modules/.bin/knex migrate:latest --env int",
-    "knex:migrate:prod": "babel-node node_modules/.bin/knex migrate:latest --env prod",
     "prettier": "prettier --config .prettierrc --write src/**/*.js",
     "release:major": "TYPE=major ./node_modules/@hixme/bitbucket-scripts/devops/release.sh",
     "release:minor": "TYPE=minor ./node_modules/@hixme/bitbucket-scripts/devops/release.sh",
     "release:patch": "TYPE=patch ./node_modules/@hixme/bitbucket-scripts/devops/release.sh",
     "release:unwind": "./node_modules/@hixme/bitbucket-scripts/devops/release.sh -u",
+    "release:summary": "./node_modules/@hixme/bitbucket-scripts/devops/release.sh -s",
     "hotfix": "./node_modules/@hixme/bitbucket-scripts/devops/hotfix.sh"
   },
   "dependencies": {
     "@hixme/before-after-middleware": "^2.2.1",
     "@hixme/dynamo-middleware": "^1.0.0",
     "@hixme/model-middleware": "1.4.5",
+    "@hixme/objection-init-middleware": "1.1.2",
     "@hixme/role-authorizer-middleware": "^1.0.0",
     "@hixme/role-policy": "5.10.0",
     "@hixme/sanitizer-middleware": "^1.0.0",
@@ -102,7 +98,6 @@
     "delver": "1.1.2",
     "dotenv": "5.0.0",
     "fortune-cookie": "0.0.1",
-    "knex": "0.15.2",
     "lodash": "4.17.5",
     "node-fetch": "2.0.0",
     "objection": "1.2.2",
@@ -113,7 +108,7 @@
     "warewolf": "2.0.6"
   },
   "devDependencies": {
-    "@hixme/bitbucket-scripts": "6.2.5",
+    "@hixme/bitbucket-scripts": "6.3.3",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.0",
     "babel-eslint": "8.2.2",

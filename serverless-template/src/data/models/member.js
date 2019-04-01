@@ -1,43 +1,46 @@
-import { Model } from 'objection';
-import { BaseModel } from '../../modules/objection-utils';
+import { BaseModel } from '@hixme/objection-init-middleware';
 import { MemberSchema } from './member.schema.json';
 
 export default class Member extends BaseModel {
-  static defaultSchema = 'family';
-
   static tableName = 'Members';
 
   static idColumn = 'MemberID';
 
   static jsonSchema = MemberSchema;
 
-  // This object defines the relations to other models/tables.
-  static relationMappings = {
-    Phones: {
-      relation: Model.HasManyRelation,
-      modelClass: `${__dirname}/phone`, // This is a convention used by objection.js to create relationships without require loops.
-      join: {
-        from: 'Members.MemberID',
-        to: 'Phones.MemberID',
-      },
-    },
+  static get relationMappings() {
+    /* eslint-disable global-require */
+    // https://vincit.github.io/objection.js/#relations
+    const Phone = require('./phone');
 
-    Children: {
-      relation: Model.HasManyRelation,
-      modelClass: `${__dirname}/member`,
-      join: {
-        from: 'Members.MemberID',
-        to: 'Members.ParentID',
+    // This object defines the relations to other models/tables.
+    return {
+      Phones: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: Phone,
+        join: {
+          from: 'Members.MemberID',
+          to: 'Phones.MemberID',
+        },
       },
-    },
 
-    Parent: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: `${__dirname}/member`,
-      join: {
-        from: 'Members.ParentID',
-        to: 'Members.MemberID',
+      Children: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: Member,
+        join: {
+          from: 'Members.MemberID',
+          to: 'Members.ParentID',
+        },
       },
-    },
-  };
+
+      Parent: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: Member,
+        join: {
+          from: 'Members.ParentID',
+          to: 'Members.MemberID',
+        },
+      },
+    };
+  }
 }

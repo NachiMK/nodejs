@@ -2,9 +2,9 @@ import ware from 'warewolf';
 import { before, after } from '@hixme/before-after-middleware';
 import { isRoleAuthorized } from '@hixme/role-authorizer-middleware';
 import { validateParams } from '@hixme/validator-middleware';
+import { initKnexAsync, destroyKnexAsync } from '@hixme/objection-init-middleware';
 import { ROLE_PLATFORM_HIXME_ADMIN } from '@hixme/role-policy';
 import { getMemberGraph, upsertMemberGraph } from '../../../controllers/members';
-import { initKnexAsync, destroyKnexAsync } from '../../../modules/objection-utils';
 
 export const get = ware(
   before,

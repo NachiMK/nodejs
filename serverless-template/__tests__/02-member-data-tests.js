@@ -1,5 +1,9 @@
-import { initKnex, destroyKnex } from '../src/modules/objection-utils';
+import dotenv from 'dotenv';
+import { initKnex, destroyKnex } from '@hixme/objection-init-middleware';
 import { getMemberGraph, upsertMemberGraph } from '../src/controllers/members';
+
+// Required to load environment variables from .env for jest
+dotenv.config();
 
 // Jest callback that runs before any of the tests run
 beforeAll(() => {
@@ -53,8 +57,8 @@ describe('Member data tests', () => {
       LastName: 'Doe',
       DateOfBirth: '1980-01-01',
       Parent: null,
-      Phones:
-        [{
+      Phones: [
+        {
           MemberID: 1,
           PhoneNumber: '800-111-2222',
           Extension: null,
@@ -63,9 +67,10 @@ describe('Member data tests', () => {
           MemberID: 1,
           PhoneNumber: '310-123-3333',
           Extension: null,
-        }],
-      Children:
-        [{
+        },
+      ],
+      Children: [
+        {
           ParentID: 1,
           FirstName: 'Danny',
           LastName: 'Doe',
@@ -76,7 +81,8 @@ describe('Member data tests', () => {
           FirstName: 'Jenny',
           LastName: null,
           DateOfBirth: null,
-        }],
+        },
+      ],
     });
   });
 });
