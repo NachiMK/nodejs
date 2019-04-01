@@ -378,7 +378,7 @@ export class KnexTable {
       }
     } else {
       throw new Error(
-        `Invalid Parameter. Either ${PreStageTableName} is undefined or ${DataPipeLineTaskQueueId} is empty.`
+        `Invalid Parameter. Either PreStageTableName: ${PreStageTableName} is undefined or DataPipeLineTaskQueueId: ${DataPipeLineTaskQueueId} is empty.`
       )
     }
     return rowCount

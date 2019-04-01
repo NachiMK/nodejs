@@ -85,6 +85,7 @@ export class OdsPreStageToStage {
             .replace(/-/gi, '_')
             .replace(/[\W]+/gi, '')
           retCollection[fileCommonKey] = {
+            ...retCollection[fileCommonKey],
             [JsonObjectNameEnum]: filtered[item],
             [StageTablePrefix]: `${stgParentPrefix}${tblname}`,
             Index: parseInt(idx),
