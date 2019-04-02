@@ -1,0 +1,35 @@
+{
+  "name": "@hixme/generate-schema",
+  "version": "1.1.2",
+  "description": "Hixme library to generate json-schema from JSON with format, UUID, enum, and length detection",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test",
+    "build": "cross-env BABEL_ENV=commonjs babel *.js --out-dir lib --source-maps"
+  },
+  "author": {
+    "name": "Chad Bumstead chad.bumstead@hixme.com"
+  },
+  "contributors": [
+    "Nachi Muthukumar"
+  ],
+  "files": [
+    "lib",
+    "src"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "generate-schema": "^2.6.0",
+    "is-uuid": "^1.0.2",
+    "json-schema-library": "^3.3.2",
+    "moment": "^2.15.2"
+  },
+  "devDependencies": {
+    "cross-env": "^5.2.0",
+    "eslint": "^4.15.0",
+    "mocha": "^4.1.0",
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^10.0.1",
+    "babel-preset-env": "^1.7.0"
+  }
+}
