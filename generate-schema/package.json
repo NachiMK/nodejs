@@ -3,8 +3,15 @@
   "version": "1.1.2",
   "description": "Hixme library to generate json-schema from JSON with format, UUID, enum, and length detection",
   "main": "index.js",
+  "private": true,
+  "config": {
+    "NOTE": "THE FOLLOWING VALUES ARE COPIED FROM SERVERLESS!",
+    "region": "us-west-2",
+    "runtime": "nodejs8.10",
+    "STAGE": "dev"
+  },
   "scripts": {
-    "test": "mocha test",
+    "test": "jest",
     "build": "cross-env BABEL_ENV=commonjs babel *.js --out-dir lib --source-maps"
   },
   "author": {
@@ -25,11 +32,12 @@
     "moment": "^2.15.2"
   },
   "devDependencies": {
-    "cross-env": "^5.2.0",
-    "eslint": "^4.15.0",
-    "mocha": "^4.1.0",
     "babel-cli": "^6.26.0",
     "babel-eslint": "^10.0.1",
-    "babel-preset-env": "^1.7.0"
+    "babel-preset-env": "^1.7.0",
+    "cross-env": "^5.2.0",
+    "eslint": "^4.15.0",
+    "jest": "^24.7.1",
+    "mocha": "^4.1.0"
   }
 }

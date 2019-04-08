@@ -85,6 +85,280 @@ const schema = generateSchema.json('Person', persons)
 }
 ```
 
+## Example
+
+Generate JSON Schema with popular format deduction
+
+```js
+const persons = [
+  {
+    Id: "363f1eec-a814-4518-a738-6cb844b6cf92",
+    FirstName: "John",
+    Gender: "Male",
+    BirthDate: "2000-04-01",
+    DivisionCode: "PRP",
+    NumberAndString: "test",
+    Salary: 10023.456787,
+    DateUpdated: "2018-01-16T23:33:01+00:00"
+  },
+  {
+    Id: "474f1eec-a814-4518-a738-6cb844b6cf92",
+    FirstName: "Negate",
+    Gender: "Male",
+    BirthDate: "1999-05-01",
+    DivisionCode: "SFW",
+    NumberAndString: "test",
+    Salary: -10023.5,
+    DateUpdated: "2018-01-16T23:33:01+00:00"
+  },
+  {
+    Id: "363f1eec-a814-4518-a738-6cb844b6cf92",
+    FirstName: "Rani",
+    Gender: "Female",
+    BirthDate: "2002-04-01",
+    DivisionCode: "HDW",
+    NumberAndString: "one",
+    Salary: 10023.7,
+    DateUpdated: "2018-01-16T23:33:01+00:00"
+  },
+  {
+    Id: "abaa80cc-e0eb-4a33-8292-ec937ffe773b_INACTIVE",
+    FirstName: "Cindy",
+    Gender: "Female",
+    BirthDate: "March 10",
+    DivisionCode: "2018-01-16T23:33:44+00:00",
+    NumberAndString: 10,
+    Salary: 10023.4501,
+    DateUpdated: "2018-01-16T23:33:44+00:00"
+  }
+];
+
+const schema = generateSchema.json('Person', persons, {
+    pickPopularFormat: true
+  })
+```
+
+### Outputs
+
+If you observe the data in "DivisionCode" key some are string and 
+some are date-time, without the option pickPopularFormats the format
+would be date-time, with option turned on it picks the format as string
+because the format "string" appears more times then date-time and string
+can hold any types.
+
+```js
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Person Set",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "Id": {
+        "type": "string",
+        "minLength": 36,
+        "maxLength": 36,
+        "format": "uuid"
+      },
+      "FirstName": {
+        "type": "string",
+        "format": "string"
+      },
+      "Gender": {
+        "type": "string",
+        "format": "string"
+      },
+      "BirthDate": {
+        "type": "string",
+        "format": "date"
+      },
+      "DivisionCode": {
+        "type": "string",
+        "format": "string"
+      },
+      "NumberAndString": {
+        "type": [
+          "string",
+          "number"
+        ],
+        "format": "string"
+      },
+      "Salary": {
+        "type": "number",
+        "format": "number"
+      },
+      "DateUpdated": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": [
+      "Id",
+      "FirstName",
+      "Gender",
+      "BirthDate",
+      "DivisionCode",
+      "NumberAndString",
+      "Salary",
+      "DateUpdated"
+    ],
+    "title": "Person"
+  }
+}
+```
+
+## Example
+
+Generate JSON Schema with format counts (but not with popular format)
+
+```js
+const persons = [
+  {
+    Id: "363f1eec-a814-4518-a738-6cb844b6cf92",
+    FirstName: "John",
+    Gender: "Male",
+    BirthDate: "2000-04-01",
+    DivisionCode: "PRP",
+    NumberAndString: "test",
+    Salary: 10023.456787,
+    DateUpdated: "2018-01-16T23:33:01+00:00"
+  },
+  {
+    Id: "474f1eec-a814-4518-a738-6cb844b6cf92",
+    FirstName: "Negate",
+    Gender: "Male",
+    BirthDate: "1999-05-01",
+    DivisionCode: "SFW",
+    NumberAndString: "test",
+    Salary: -10023.5,
+    DateUpdated: "2018-01-16T23:33:01+00:00"
+  },
+  {
+    Id: "363f1eec-a814-4518-a738-6cb844b6cf92",
+    FirstName: "Rani",
+    Gender: "Female",
+    BirthDate: "2002-04-01",
+    DivisionCode: "HDW",
+    NumberAndString: "one",
+    Salary: 10023.7,
+    DateUpdated: "2018-01-16T23:33:01+00:00"
+  },
+  {
+    Id: "abaa80cc-e0eb-4a33-8292-ec937ffe773b_INACTIVE",
+    FirstName: "Cindy",
+    Gender: "Female",
+    BirthDate: "March 10",
+    DivisionCode: "2018-01-16T23:33:44+00:00",
+    NumberAndString: 10,
+    Salary: 10023.4501,
+    DateUpdated: "2018-01-16T23:33:44+00:00"
+  }
+];
+
+const schema = generateSchema.json('Person', persons, {
+    addFormatCounts: true
+  })
+```
+
+### Outputs
+
+If you observe the data in "DivisionCode" key some are string and 
+some are date-time. If you set addFormatCounts it will add how many
+times a particular format appears. DivisionCode will have a new output
+
+formats: {date-time:1, string:3} meaning string appears 3 times and date-time appears 1 time.
+
+This can be used by caller to determine the format instead of using the given
+format or picking the popular format.
+
+```js
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Person Set",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "Id": {
+        "type": "string",
+        "minLength": 36,
+        "maxLength": 36,
+        "format": "string",
+        "formats": {
+          "uuid": 3,
+          "string": 1
+        }
+      },
+      "FirstName": {
+        "type": "string",
+        "format": "string",
+        "formats": {
+          "string": 4
+        }
+      },
+      "Gender": {
+        "type": "string",
+        "format": "string",
+        "formats": {
+          "string": 4
+        }
+      },
+      "BirthDate": {
+        "type": "string",
+        "format": "string",
+        "formats": {
+          "date": 3,
+          "string": 1
+        }
+      },
+      "DivisionCode": {
+        "type": "string",
+        "format": "date-time",
+        "formats": {
+          "string": 3,
+          "date-time": 1
+        }
+      },
+      "NumberAndString": {
+        "type": [
+          "string",
+          "number"
+        ],
+        "format": "number",
+        "formats": {
+          "string": 3,
+          "number": 1
+        }
+      },
+      "Salary": {
+        "type": "number",
+        "format": "number",
+        "formats": {
+          "number": 4
+        }
+      },
+      "DateUpdated": {
+        "type": "string",
+        "format": "date-time",
+        "formats": {
+          "date-time": 4
+        }
+      }
+    },
+    "required": [
+      "Id",
+      "FirstName",
+      "Gender",
+      "BirthDate",
+      "DivisionCode",
+      "NumberAndString",
+      "Salary",
+      "DateUpdated"
+    ],
+    "title": "Person"
+  }
+}
+```
 
 ## Example
 

@@ -1,6 +1,6 @@
 {
   "name": "ods-service",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Operational Data Store Service",
   "author": "Nachi <nachi.muthukumar@hixme.com> (https://hixme.com)",
   "contributors": [
@@ -33,10 +33,10 @@
     "deploy:dev": "npm run build && SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region --odsloglevel info",
     "deploy:function:dev": "npm run build && SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region --odsloglevel info function --function",
     "deploy:function:int": "npm run build && sls deploy --stage int --region $npm_package_config_region --odsloglevel info function --function",
-    "~deploy:function:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region --odsloglevel info function --function",
+    "deploy:function:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region --odsloglevel info function --function",
     "deploy:function": "npm run deploy:function:dev --",
     "deploy:int": "npm run build && sls deploy --stage int --region $npm_package_config_region --odsloglevel warn",
-    "~deploy:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region --odsloglevel warn",
+    "deploy:prod": "npm run build && sls deploy --stage prod --region $npm_package_config_region --odsloglevel warn",
     "deploy": "npm run deploy:dev --",
     "info:stage": "sls info --verbose --region $npm_package_config_region --stage",
     "info": "sls info --verbose --region $npm_package_config_region",
