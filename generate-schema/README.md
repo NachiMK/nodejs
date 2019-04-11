@@ -467,6 +467,8 @@ Generates JSON Schema from an Object or Array
 - `generateEnums` flag is used to add enum list to schema for string types and defaults to false
 - `maxEnumValues` is used to limit the number of enum values detected and defaults to 20
 - `generateLengths` flag to generate minLength and maxLength attributes based on values in json and defaults to false 
+- `pickPopularFormat` flag to pick popular format if more than one format exists
+- `addFormatCounts` flag to include counts by format for each key in data
 
 
 [JSON Schema]: http://json-schema.org

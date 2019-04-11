@@ -39,3 +39,34 @@ echo $(less -FX ${outfile})
 
 # Testing
 # ./src/bash-scripts/invoke-save-schema-to-s3.sh modeling-census,modeling-price-points prod
+
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh application-submission-workflows prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh benefit-change-events prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh benefits prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh bundle-event-offers-log prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh bundle-event-offers prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh bundle-events prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh carrier-messages prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh client-benefits prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh client-census prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh client-price-points prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh clients prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh enrollment-events prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh enrollment-questions prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh enrollment-responses prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh enrollments prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh locations prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh modeling-census prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh modeling-configuration prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh modeling-group-plans prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh modeling-price-points prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh modeling-scenarios prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh notes prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh payroll-deductions prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh persons prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh platform-authorization-events prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh prospect-census-models prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh prospect-census-profiles prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh prospects prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh tags prod &&
+# ./src/bash-scripts/invoke-save-schema-to-s3.sh waived-benefits prod

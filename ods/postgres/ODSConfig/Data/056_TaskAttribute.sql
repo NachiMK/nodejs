@@ -83,7 +83,8 @@ AS
     SELECT 'ods-testtable-1' as "SourceEntity", 'BenefitsBackup' as "PathsToIgnore"
     UNION SELECT 'benefits' as "SourceEntity", 'input' as "PathsToIgnore"
     UNION SELECT 'enrollments' as "SourceEntity", 'CartBackup,BundleGroupsOld,HixmeRecommendedBundleGroupsOld' as "PathsToIgnore"
-    UNION SELECT 'prospect-census-models' as "SourceEntityr", 'PlanBestMatchesWithPlanType.MatchingPlans' as "PathsToIgnore"
+    UNION SELECT 'prospect-census-models' as "SourceEntity", 'PlanBestMatchesWithPlanType.MatchingPlans' as "PathsToIgnore"
+    UNION SELECT 'modeling-configuration' as "SourceEntity", 'Validation.AvailablePlanSummary.Carriers' as "PathsToIgnore"
 )
 INSERT INTO
     ods."TaskAttribute"

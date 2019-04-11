@@ -7,7 +7,7 @@ CREATE TEMPORARY TABLE DPLTables
 INSERT INTO 
         DPLTables ("TableName", "CleanTableName")
 SELECT  "DynamoTableName" as "TableName"
-        ,REPLACE(REPLACE("DynamoTableName", 'prod-', ''), '-history-v2', '') as "CleanTableName"
+        ,"CleanTableName"
 FROM    ods."DynamoTablesHelper" 
 WHERE   "Stage" = 'prod';
 

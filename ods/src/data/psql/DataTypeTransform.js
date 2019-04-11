@@ -350,6 +350,13 @@ export const JsonPostgreTypeMappingEnum = {
       defaultLength: 512,
     },
   },
+  uuid: {
+    Value: 120,
+    postgres: {
+      dataType: 'character varying',
+      defaultLength: 50,
+    },
+  },
 }
 
 export function IsValidTypeObject(objToValidate) {

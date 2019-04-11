@@ -51,6 +51,12 @@ function addSchemaLimits(rootSchema, data, options) {
       } else if (moment(value, moment.ISO_8601, true).isValid()) {
         stat.formats["date-time"] = (stat.formats["date-time"] || 0) + 1;
         stat.schemaUpdateFunctions.push(s => (s.format = "date-time"));
+      }
+      // booleans are often considered as valid numbers
+      // so we need to flag those formats as boolean
+      else if (!isNaN(value) && typeof value === "boolean") {
+        stat.formats["boolean"] = (stat.formats["boolean"] || 0) + 1;
+        stat.schemaUpdateFunctions.push(s => (s.format = "boolean"));
       } else if (!isNaN(value)) {
         stat.formats["number"] = (stat.formats["number"] || 0) + 1;
         stat.schemaUpdateFunctions.push(s => (s.format = "number"));
@@ -122,6 +128,20 @@ function findUpdatePopularformat(stat) {
       prevCnt = Cnt;
     }
   });
+  // NOT SURE IF WE SHOULD DO THIS YET.
+  // // if we have even one entry (format) as a string then
+  // // that super seeds all other formats
+  // // eg: if one value is string and all other values are boolean
+  // // we should flag the format as string. because that one entry cannot be convereted to boolean :(
+  // if (stat.formats["string"]) {
+  //   popularFormats.splice(0);
+  //   popularFormats.push({
+  //     FormatName: "string",
+  //     Count: stat.formats["string"]
+  //   });
+  // }
+  // NOT SURE IF WE SHOULD DO THIS YET.
+
   //if we have at least one popular format
   // then let us find which one to use.
   if (_.size(popularFormats) > 0) {

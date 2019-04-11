@@ -1,9 +1,8 @@
 {
   "name": "@hixme/generate-schema",
-  "version": "1.1.2",
+  "version": "1.2.0-beta.2",
   "description": "Hixme library to generate json-schema from JSON with format, UUID, enum, and length detection",
   "main": "index.js",
-  "private": true,
   "config": {
     "NOTE": "THE FOLLOWING VALUES ARE COPIED FROM SERVERLESS!",
     "region": "us-west-2",
